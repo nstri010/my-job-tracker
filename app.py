@@ -6,61 +6,57 @@ from utils import scrape_job_link
 # Page Config
 st.set_page_config(page_title="Job Tracker Portfolio", layout="wide")
 
-# --- CUSTOM HEADER WITH LOGIN ---
-# This creates a row at the very top. 
-# The first column is wide for the title, the second is for the login button.
+# Initialize session state for login if it doesn't exist
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+# --- CUSTOM HEADER WITH TOP-RIGHT MENU ---
 head_col1, head_col2 = st.columns([4, 1])
 
 with head_col1:
     st.title("📂 Job Application Tracker")
 
 with head_col2:
-    # Use an expander to act as a "Dropdown Menu" in the top right
     with st.expander("👤 Account Menu"):
-        tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
-        
-        with tab1:
-            # ADMIN LOGIN
-            ADMIN_USERNAME = "Nakisha"
-            ADMIN_PASSWORD = "Password123" # Keep your secret password here
-            
-            u_in = st.text_input("Username", key="login_user")
-            p_in = st.text_input("Password", type="password", key="login_pw")
-            
-            if st.button("Login", use_container_width=True):
-                if u_in == ADMIN_USERNAME and p_in == ADMIN_PASSWORD:
-                    st.session_state['logged_in'] = True
-                    st.success("Welcome, Nakisha!")
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials.")
-        
-        with tab2:
-            st.write("✨ **Interested in your own tracker?**")
-            st.info("Account creation is currently restricted to the administrator. If you'd like to see a demo of the backend, please reach out via LinkedIn!")
-
-# Check login status (defaults to False)
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
+        if not st.session_state['logged_in']:
+            tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
+            with tab1:
+                # ADMIN LOGIN CREDENTIALS
+                ADMIN_USERNAME = "Nakisha"
+                ADMIN_PASSWORD = "Password123" # <--- CHANGE THIS
+                
+                u_in = st.text_input("Username", key="login_user")
+                p_in = st.text_input("Password", type="password", key="login_pw")
+                
+                if st.button("Login", use_container_width=True):
+                    if u_in == ADMIN_USERNAME and p_in == ADMIN_PASSWORD:
+                        st.session_state['logged_in'] = True
+                        st.success("Welcome, Nakisha!")
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials.")
+            with tab2:
+                st.write("✨ **Interested in your own tracker?**")
+                st.info("Account creation is currently restricted to the administrator. Please reach out via LinkedIn for a full demo!")
+        else:
+            st.write(f"Logged in as **Nakisha**")
+            if st.button("Logout", use_container_width=True):
+                st.session_state['logged_in'] = False
+                st.rerun()
 
 # --- STYLING ---
 st.markdown("""
     <style>
-    /* Remove the default sidebar arrow since we aren't using it much now */
+    /* Hide Sidebar and customize theme */
     [data-testid="stSidebarNav"] {display: none;}
-    
     .stApp { background: #0b0f19; color: white; }
     .job-header { background: #1a1f2b; padding: 12px 18px; border-radius: 8px 8px 0 0; border-left: 5px solid #ff4b4b; border-bottom: 1px solid #2e3440; display: flex; justify-content: space-between; align-items: center; }
     .button-tray { background: #161b22; padding: 10px; border-radius: 0 0 8px 8px; border: 1px solid #2e3440; border-top: none; margin-bottom: 20px; }
-    
-    /* Make the Account Menu expander look like a button */
     .stExpander { border: 1px solid #ff4b4b !important; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📂 Job Application Tracker")
-
-# --- ADD NEW JOB SECTION (PUBLIC DEMO) ---
+# --- ADD NEW JOB SECTION (GUEST DEMO READY) ---
 with st.expander("➕ Add New Application"):
     c1, c2 = st.columns(2)
     with c1: company = st.text_input("Company Name")
@@ -77,23 +73,24 @@ with st.expander("➕ Add New Application"):
     
     if st.button("💾 Save to Tracker"):
         if st.session_state.get('logged_in'):
-            # REAL SAVE
+            # REAL SAVE TO GOOGLE SHEETS
             if save_job(build_job_record(company, position, description, applied_on)):
                 st.success("Successfully saved to Private Vault!"); st.rerun()
         else:
-            # DEMO SAVE
+            # GUEST DEMO MODE
             st.balloons()
-            st.warning("✨ Demo Mode: This application would be saved to the Google Sheet if you were logged in!")
+            st.warning("✨ Demo Mode: If you were logged in, this would save to your Google Sheet!")
 
-# --- DISPLAY SECTION (GATED) ---
+# --- DISPLAY SECTION (ADMIN GATED) ---
 st.header("📋 Your Applications")
 
 if st.session_state.get('logged_in'):
     all_jobs = load_jobs()
+    # Filter for jobs that aren't 'Hidden'
     active_jobs = [j for j in all_jobs if str(j.get('status', '')) != "Hidden"]
 
     if not active_jobs:
-        st.info("Your private vault is empty.")
+        st.info("Your private vault is currently empty.")
     
     for job in reversed(active_jobs):
         job_date = job.get('date_applied', 'N/A')
@@ -120,6 +117,6 @@ if st.session_state.get('logged_in'):
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.info("🔒 Private data is hidden. Log in via the sidebar to view saved applications.")
-    # Show a placeholder image or some sample data for the portfolio look
-    st.image("https://images.unsplash.com/photo-1586281380349-63157106804c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", caption="Admin View Dashboard (Locked)")
+    st.info("🔒 Private data is hidden. Log in via the Account Menu to view saved applications.")
+    # Portfolio placeholder
+    st.image("https://images.unsplash.com/photo-1586281380349-63157106804c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", caption="Admin Dashboard (Private Mode)")
