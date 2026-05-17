@@ -118,5 +118,20 @@ if st.session_state.get('logged_in'):
             st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.info("🔒 Private data is hidden. Log in via the Account Menu to view saved applications.")
-    # Portfolio placeholder
-    st.image("https://images.unsplash.com/photo-1586281380349-63157106804c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", caption="Admin Dashboard (Private Mode)")
+    
+    # --- PROFESSIONAL MOCK DASHBOARD ---
+    st.markdown("""
+        <div style="background-color: #1a1f2b; padding: 20px; border-radius: 10px; border: 1px dashed #2e3440; opacity: 0.6;">
+            <h4 style="color: #ff4b4b; margin-top: 0;">Admin Dashboard (Private Mode)</h4>
+            <div style="height: 15px; width: 80%; background: #2e3440; border-radius: 5px; margin-bottom: 10px;"></div>
+            <div style="height: 15px; width: 60%; background: #2e3440; border-radius: 5px; margin-bottom: 20px;"></div>
+            <div style="display: flex; gap: 10px;">
+                <div style="height: 80px; width: 100px; background: #2e3440; border-radius: 8px;"></div>
+                <div style="height: 80px; width: 100px; background: #2e3440; border-radius: 8px;"></div>
+                <div style="height: 80px; width: 100px; background: #2e3440; border-radius: 8px;"></div>
+            </div>
+            <p style="text-align: center; color: #5c6370; margin-top: 20px; font-size: 0.9em;">
+                <i>Database connection active. Login required to decrypt records.</i>
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
