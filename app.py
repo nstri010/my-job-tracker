@@ -120,13 +120,13 @@ else:
     st.divider()
     st.markdown("""
         <div style="text-align: center; padding: 20px;">
-            <h3 style="color: #a9b1d6;">👋 Welcome to the Tracker</h3>
-            <p style="color: #5c6370; font-size: 1.1em;">
-                To keep my job search private, the personal application list is hidden by default. 
-                <b>Guests are welcome to try the "Add New Application" tool above!</b>
+            <h3 style="color: #ffffff;">✨ Try it out!</h3>
+            <p style="color: #a9b1d6; font-size: 1.1em;">
+                Guests are welcome to try the <b>"Add New Application"</b> tool above!
             </p>
-            <p style="color: #ff4b4b; font-size: 0.9em; margin-top: 10px;">
-                <i>Sign in via the Account Menu (top right) to unlock the full database.</i>
+            <p style="color: #5c6370; font-size: 1.0em;">
+                If you would like to save your applications and track your progress, 
+                please <b>create an account</b> or <b>sign in</b>.
             </p>
         </div>
     """, unsafe_allow_html=True)
