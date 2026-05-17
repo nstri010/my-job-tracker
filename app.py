@@ -117,29 +117,6 @@ if st.session_state.get('logged_in'):
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.info("🔒 Private data is hidden. Log in via the Account Menu to view saved applications.")
-    
-    # --- PORTFOLIO PROJECT SPECS ---
-    st.markdown("""
-        <div style="background-color: #1a1f2b; padding: 25px; border-radius: 10px; border-left: 5px solid #ff4b4b;">
-            <h3 style="color: white; margin-top: 0;">Project Technical Overview</h3>
-            <p style="color: #a9b1d6;">This application was developed to demonstrate full-stack integration and data automation for technical roles.</p>
-            
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                <span style="background: #2e3440; color: #ff4b4b; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; border: 1px solid #ff4b4b;">Python</span>
-                <span style="background: #2e3440; color: #ff4b4b; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; border: 1px solid #ff4b4b;">Streamlit</span>
-                <span style="background: #2e3440; color: #ff4b4b; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; border: 1px solid #ff4b4b;">Google Sheets API</span>
-                <span style="background: #2e3440; color: #ff4b4b; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; border: 1px solid #ff4b4b;">Web Scraping (BS4)</span>
-                <span style="background: #2e3440; color: #ff4b4b; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; border: 1px solid #ff4b4b;">CRUD Logic</span>
-            </div>
-            
-            <div style="margin-top: 20px; border-top: 1px solid #2e3440; padding-top: 15px;">
-                <p style="color: #5c6370; font-size: 0.9em; line-height: 1.6;">
-                    <b>Key Features:</b><br>
-                    • Secure Admin Login for data persistence.<br>
-                    • Automated Job Description extraction from external URLs.<br>
-                    • Dynamic Database management via Google Sheets connection.
-                </p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    # This shows a simple, clean message and nothing else.
+    st.write("---")
+    st.caption("Admin data is encrypted. Please sign in to view your application history.")
