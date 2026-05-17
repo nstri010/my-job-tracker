@@ -2,7 +2,6 @@ import os
 import requests
 import pypdf
 import docx2txt
-import pdfkit
 from bs4 import BeautifulSoup
 
 def extract_text_from_file(file_path):
@@ -32,11 +31,5 @@ def scrape_job_link(url):
         return f"Could not fetch: {e}"
 
 def generate_pdf_snapshot(url, filename):
-    try:
-        output_path = f"resumes/{filename}"
-        path_to_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-        config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
-        pdfkit.from_url(url, output_path, configuration=config)
-        return True
-    except:
-        return False
+    # We are disabling this for the cloud version to prevent errors
+    return False
