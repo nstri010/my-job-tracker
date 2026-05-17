@@ -6,31 +6,55 @@ from utils import scrape_job_link
 # Page Config
 st.set_page_config(page_title="Job Tracker Portfolio", layout="wide")
 
-# --- AUTHENTICATION SIDEBAR ---
-st.sidebar.title("🔐 Access Portal")
-st.sidebar.info("Guests can use the 'Add New' tools as a demo. Sign in to view and save to the private database.")
+# --- CUSTOM HEADER WITH LOGIN ---
+# This creates a row at the very top. 
+# The first column is wide for the title, the second is for the login button.
+head_col1, head_col2 = st.columns([4, 1])
 
-# You can change these credentials
-ADMIN_USERNAME = "Nakisha"
-ADMIN_PASSWORD = "Password123" # CHANGE THIS BEFORE DEPLOYING
+with head_col1:
+    st.title("📂 Job Application Tracker")
 
-user_input = st.sidebar.text_input("Username")
-pw_input = st.sidebar.text_input("Password", type="password")
+with head_col2:
+    # Use an expander to act as a "Dropdown Menu" in the top right
+    with st.expander("👤 Account Menu"):
+        tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
+        
+        with tab1:
+            # ADMIN LOGIN
+            ADMIN_USERNAME = "Nakisha"
+            ADMIN_PASSWORD = "Password123" # Keep your secret password here
+            
+            u_in = st.text_input("Username", key="login_user")
+            p_in = st.text_input("Password", type="password", key="login_pw")
+            
+            if st.button("Login", use_container_width=True):
+                if u_in == ADMIN_USERNAME and p_in == ADMIN_PASSWORD:
+                    st.session_state['logged_in'] = True
+                    st.success("Welcome, Nakisha!")
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
+        
+        with tab2:
+            st.write("✨ **Interested in your own tracker?**")
+            st.info("Account creation is currently restricted to the administrator. If you'd like to see a demo of the backend, please reach out via LinkedIn!")
 
-if user_input == ADMIN_USERNAME and pw_input == ADMIN_PASSWORD:
-    st.session_state['logged_in'] = True
-    st.sidebar.success("Logged in as Admin")
-else:
+# Check login status (defaults to False)
+if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
-    if user_input:
-        st.sidebar.error("Invalid Credentials - Demo Mode")
 
 # --- STYLING ---
 st.markdown("""
     <style>
+    /* Remove the default sidebar arrow since we aren't using it much now */
+    [data-testid="stSidebarNav"] {display: none;}
+    
     .stApp { background: #0b0f19; color: white; }
     .job-header { background: #1a1f2b; padding: 12px 18px; border-radius: 8px 8px 0 0; border-left: 5px solid #ff4b4b; border-bottom: 1px solid #2e3440; display: flex; justify-content: space-between; align-items: center; }
     .button-tray { background: #161b22; padding: 10px; border-radius: 0 0 8px 8px; border: 1px solid #2e3440; border-top: none; margin-bottom: 20px; }
+    
+    /* Make the Account Menu expander look like a button */
+    .stExpander { border: 1px solid #ff4b4b !important; }
     </style>
     """, unsafe_allow_html=True)
 
