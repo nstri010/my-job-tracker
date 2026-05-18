@@ -1,67 +1,73 @@
-import json
-import os
-from datetime import datetime
+from parse_rest.connection import register
+from parse_rest.datatypes import Object
+import streamlit as st
 
-FILE_NAME = "job_tracker.json"
-RESUME_FOLDER = "resumes"
+# --- CONNECT TO BACK4APP ---
+# These keys are from your JobTracker dashboard screenshot
+APPLICATION_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
+CLIENT_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
 
-if not os.path.exists(RESUME_FOLDER):
-    os.makedirs(RESUME_FOLDER)
+# This registers the connection so Python can talk to Back4App
+register(APPLICATION_ID, CLIENT_KEY)
 
+# --- DEFINE THE JOB OBJECT ---
+# This acts as the blueprint for the 'Job' class you created in Step 1
+class Job(Object):
+    pass
 
-def load_jobs():
-    if not os.path.exists(FILE_NAME):
-        return []
+# --- DATABASE FUNCTIONS ---
+
+def save_job(company, position, description):
+    """
+    Saves a new job application to your Back4App database.
+    This replaces the old 'append_row' logic from Google Sheets.
+    """
     try:
-        with open(FILE_NAME, "r") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except (json.JSONDecodeError, FileNotFoundError):
-        return []
-
-
-def save_job(new_job):
-    jobs = load_jobs()
-    if any(j['company'].lower() == new_job['company'].lower() and
-           j['position'].lower() == new_job['position'].lower() for j in jobs):
+        new_job = Job(
+            company=company,
+            position=position,
+            description=description,
+            status="Active"
+        )
+        new_job.save()
+        return True
+    except Exception as e:
+        st.error(f"Error saving to Back4App: {e}")
         return False
 
-    jobs.append(new_job)
-    with open(FILE_NAME, "w") as f:
-        json.dump(jobs, f, indent=4)
-    return True
+def load_jobs():
+    """
+    Fetches all jobs stored in Back4App to display them on your site.
+    Equivalent to a 'Query' in your BeReal Swift project.
+    """
+    try:
+        # Fetching all records and sorting by the date they were created
+        return Job.Query.all().order_by("-createdAt")
+    except Exception as e:
+        st.error(f"Error loading from Back4App: {e}")
+        return []
 
+def delete_job(job_id):
+    """
+    Deletes a specific job application using its unique Back4App objectId.
+    """
+    try:
+        job_to_del = Job.Query.get(objectId=job_id)
+        job_to_del.delete()
+        return True
+    except Exception as e:
+        st.error(f"Error deleting job: {e}")
+        return False
 
 def update_job_status(job_id, new_status):
-    jobs = load_jobs()
-    for job in jobs:
-        if str(job['id']) == str(job_id):
-            job['status'] = new_status
-            break
-    with open(FILE_NAME, "w") as f:
-        json.dump(jobs, f, indent=4)
-
-
-def update_job_details(job_id, updated_company, updated_position, updated_description):
-    jobs = load_jobs()
-    for job in jobs:
-        if str(job['id']) == str(job_id):
-            job['company'] = updated_company
-            job['position'] = updated_position
-            job['description'] = updated_description
-            break
-    with open(FILE_NAME, "w") as f:
-        json.dump(jobs, f, indent=4)
-
-
-def build_job_record(company, position, description, applied_date, resume_name=None, snapshot_name=None):
-    return {
-        "id": datetime.now().strftime("%Y%m%d%H%M%S%f"),
-        "date_applied": applied_date.strftime("%Y-%m-%d"),
-        "company": company,
-        "position": position,
-        "description": description,
-        "resume_filename": resume_name,
-        "snapshot_filename": snapshot_name,
-        "status": "Applied"
-    }
+    """
+    Updates the status of a job (e.g., changing it to 'Hidden' or 'Applied').
+    """
+    try:
+        job_to_update = Job.Query.get(objectId=job_id)
+        job_to_update.status = new_status
+        job_to_update.save()
+        return True
+    except Exception as e:
+        st.error(f"Error updating status: {e}")
+        return False
