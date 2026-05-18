@@ -3,14 +3,13 @@ import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
+# ENSURE THIS IS THE MASTER KEY (The longest one in your settings)
+MASTER_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
 
-# CRITICAL: Replace this string with your MASTER KEY from the dashboard
-# (It's usually the one right below the REST API Key)
-MASTER_KEY = 'PASTE_YOUR_MASTER_KEY_HERE' 
+# Using the generic users endpoint
+USER_URL = "https://parseapi.back4app.com/users"
 
-BASE_URL = "https://parseapi.back4app.com/classes/Job"
-
-# This header tells Back4App "I am the owner, let me in"
+# We are strictly using the Master Key header here
 HEADERS = {
     "X-Parse-Application-Id": APP_ID,
     "X-Parse-Master-Key": MASTER_KEY,
@@ -18,57 +17,45 @@ HEADERS = {
 }
 
 # --- JOB DATABASE FUNCTIONS ---
+# (Keeping these the same so your tracker doesn't break)
+BASE_URL = "https://parseapi.back4app.com/classes/Job"
 
 def save_job(company, position, description):
-    payload = {
-        "company": company, 
-        "position": position, 
-        "description": description, 
-        "status": "Active"
-    }
-    response = requests.post(BASE_URL, json=payload, headers=HEADERS)
-    return response.status_code == 201
+    payload = {"company": company, "position": position, "description": description, "status": "Active"}
+    return requests.post(BASE_URL, json=payload, headers=HEADERS).status_code == 201
 
 def load_jobs():
     response = requests.get(f"{BASE_URL}?order=-createdAt", headers=HEADERS)
-    if response.status_code == 200:
-        return response.json().get("results", [])
-    return []
-
-def delete_job(object_id):
-    url = f"{BASE_URL}/{object_id}"
-    response = requests.delete(url, headers=HEADERS)
-    return response.status_code == 200
+    return response.json().get("results", []) if response.status_code == 200 else []
 
 def update_job_status(object_id, new_status):
     url = f"{BASE_URL}/{object_id}"
-    payload = {"status": new_status}
-    response = requests.put(url, json=payload, headers=HEADERS)
-    return response.status_code == 200
+    return requests.put(url, json={"status": new_status}, headers=HEADERS).status_code == 200
 
-# --- USER AUTHENTICATION FUNCTIONS ---
+def delete_job(object_id):
+    return requests.delete(f"{BASE_URL}/{object_id}", headers=HEADERS).status_code == 200
+
+# --- THE NEW USER SIGN UP FUNCTION ---
 
 def sign_up_user(username, password, email):
-    # The specific endpoint for built-in User management
-    user_url = "https://parseapi.back4app.com/users"
-    
-    payload = {
+    """Attempting a direct POST to the users table"""
+    data = {
         "username": username,
         "password": password,
         "email": email
     }
     
     try:
-        # Using the Master Key header here is what bypasses the "unauthorized" error
-        response = requests.post(user_url, json=payload, headers=HEADERS)
+        # We are forcing the request to ignore cached sessions
+        response = requests.post(USER_URL, json=data, headers=HEADERS)
         
         if response.status_code == 201:
             return True
         else:
-            # This will print the actual error from the server to your app
-            st.error(f"Server says: {response.json().get('error')}")
+            # This will show the RAW error from the server so we can see the 'Real' problem
+            raw_error = response.json()
+            st.error(f"Server Error {response.status_code}: {raw_error}")
             return False
-            
     except Exception as e:
-        st.error(f"App Connection Error: {e}")
+        st.error(f"Connection Error: {e}")
         return False
