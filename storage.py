@@ -4,7 +4,7 @@ import streamlit as st
 # --- CONNECT TO BACK4APP ---
 # Your unique keys from the Back4App dashboard
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
-REST_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
+REST_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
 
 # The base URL for your Job class
 BASE_URL = "https://parseapi.back4app.com/classes/Job"
