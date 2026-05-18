@@ -12,21 +12,23 @@ except Exception as e:
 
 # --- AUTHENTICATION FUNCTIONS ---
 def sign_up_user(username, password):
+    # Transforms username to satisfy Supabase email requirements
     email_format = f"{username}@tracker.com"
     try:
         response = supabase.auth.sign_up({"email": email_format, "password": password})
         return response.user is not None
     except Exception:
-        # Removed the st.error here so it doesn't double up
+        # Returns False silently so app.py can show a custom error
         return False
 
 def login_user(username, password):
+    # Matches the dummy domain used during signup
     email_format = f"{username}@tracker.com"
     try:
         response = supabase.auth.sign_in_with_password({"email": email_format, "password": password})
         return response.user is not None
     except Exception:
-        # Removed the st.error here so it doesn't double up
+        # Returns False silently so app.py can show a custom error
         return False
 
 # --- DATABASE FUNCTIONS ---
@@ -48,7 +50,7 @@ def load_jobs():
     try:
         response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return response.data
-    except Exception as e:
+    except Exception:
         return []
 
 def delete_job(job_id):
