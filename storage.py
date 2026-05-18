@@ -2,13 +2,11 @@ import requests
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
-# Your unique keys from the Back4App dashboard
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
-# Using the Master Key here is our "Skeleton Key" for the database
+# This is your Master Key (MC7MU...)
 MASTER_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
 
-# URLs for your classes
-# We use 'Member' instead of the restricted 'User' to bypass Free Plan limits
+# We use a custom 'Member' class to avoid the 401 Unauthorized plan lock
 MEMBER_URL = "https://parseapi.back4app.com/classes/Member"
 JOB_URL = "https://parseapi.back4app.com/classes/Job"
 
@@ -21,7 +19,6 @@ HEADERS = {
 # --- JOB DATABASE FUNCTIONS ---
 
 def save_job(company, position, description):
-    """Saves a new job application to the Job class"""
     payload = {
         "company": company,
         "position": position,
@@ -32,20 +29,17 @@ def save_job(company, position, description):
     return response.status_code == 201
 
 def load_jobs():
-    """Fetches all jobs to display in the UI"""
     response = requests.get(f"{JOB_URL}?order=-createdAt", headers=HEADERS)
     if response.status_code == 200:
         return response.json().get("results", [])
     return []
 
 def delete_job(object_id):
-    """Permanently deletes a job using its objectId"""
     url = f"{JOB_URL}/{object_id}"
     response = requests.delete(url, headers=HEADERS)
     return response.status_code == 200
 
 def update_job_status(object_id, new_status):
-    """Changes the status of a job (e.g., to 'Hidden')"""
     url = f"{JOB_URL}/{object_id}"
     payload = {"status": new_status}
     response = requests.put(url, json=payload, headers=HEADERS)
@@ -54,7 +48,7 @@ def update_job_status(object_id, new_status):
 # --- USER AUTHENTICATION FUNCTIONS ---
 
 def sign_up_user(username, password, email):
-    """Creates a new record in our custom Member class"""
+    """Creates a record in the 'Member' class to bypass restricted User settings"""
     payload = {
         "username": username,
         "password": password,
@@ -62,13 +56,13 @@ def sign_up_user(username, password, email):
     }
     
     try:
-        # Posting to MEMBER_URL instead of the restricted /users endpoint
+        # Notice we are hitting MEMBER_URL now
         response = requests.post(MEMBER_URL, json=payload, headers=HEADERS)
         
         if response.status_code == 201:
             return True
         else:
-            # If it still fails, this will show the exact reason from the server
+            # This will now tell us if a field is missing or if permissions are wrong
             error_data = response.json()
             st.error(f"Database Error: {error_data.get('error', 'Unknown Error')}")
             return False
