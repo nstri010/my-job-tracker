@@ -1,4 +1,3 @@
-
 import streamlit as st
 from supabase import create_client, Client
 
@@ -45,7 +44,7 @@ def save_job(company, position, description):
 
 def load_jobs():
     try:
-        response = supabase.table("jobs").select("*").execute()
+        response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return response.data
     except Exception as e:
         return []
