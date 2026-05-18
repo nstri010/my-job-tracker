@@ -52,7 +52,7 @@ if not st.session_state['logged_in']:
         st.markdown("""
             <div style="text-align: center; margin-bottom: 20px;">
                 <h2 style="color: white; margin-bottom: 0;">Welcome</h2>
-                <p style="color: #94a3b8; font-size: 0.9rem;">Sign in to your dashboard</p>
+                <p style="color: #94a3b8; font-size: 0.9rem;">Sign in to access your saved jobs and resumes.</p>
             </div>
         """, unsafe_allow_html=True)
 
