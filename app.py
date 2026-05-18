@@ -80,7 +80,6 @@ if not st.session_state['logged_in']:
         # --- TEXT POSITIONED UNDER THE MENU ---
         st.markdown("""
             <div style="text-align: center; margin-top: 20px;">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">A calm, organized space created just for you to track your saved jobs and resumes.</p>
                 <p style="color: #94a3b8; font-size: 0.85rem; font-weight: bold;">Sign in to access your saved jobs and resumes.</p>
             </div>
         """, unsafe_allow_html=True)
