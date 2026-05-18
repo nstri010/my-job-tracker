@@ -1,48 +1,41 @@
-from parse_rest.connection import register
-from parse_rest.datatypes import Object
+import requests
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
-# These are your unique keys from your JobTracker dashboard
-APPLICATION_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
-CLIENT_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
+# Using your keys from the screenshot
+APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
+REST_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
 
-# This starts the connection
-register(APPLICATION_ID, CLIENT_KEY)
+BASE_URL = "https://parseapi.back4app.com/classes/Job"
 
-# --- DEFINE THE JOB OBJECT ---
-class Job(Object):
-    pass
-
-# --- DATABASE FUNCTIONS ---
+HEADERS = {
+    "X-Parse-Application-Id": APP_ID,
+    "X-Parse-REST-API-Key": REST_KEY,
+    "Content-Type": "application/json"
+}
 
 def save_job(company, position, description):
-    try:
-        new_job = Job(
-            company=company,
-            position=position,
-            description=description,
-            status="Active"
-        )
-        new_job.save()
-        return True
-    except Exception as e:
-        st.error(f"Error saving: {e}")
-        return False
+    """Saves a job to the 'Job' class in Back4App using a POST request"""
+    payload = {
+        "company": company,
+        "position": position,
+        "description": description,
+        "status": "Active"
+    }
+    response = requests.post(BASE_URL, json=payload, headers=HEADERS)
+    return response.status_code == 201
 
 def load_jobs():
-    try:
-        # Fetches all records from your Back4App dashboard
-        return Job.Query.all().order_by("-createdAt")
-    except Exception as e:
-        st.error(f"Error loading: {e}")
-        return []
+    """Fetches all jobs using a GET request"""
+    # This grabs the data and sorts by newest first
+    response = requests.get(f"{BASE_URL}?order=-createdAt", headers=HEADERS)
+    if response.status_code == 200:
+        # Returns a list of dictionaries just like your old code expected
+        return response.json().get("results", [])
+    return []
 
-def delete_job(job_id):
-    try:
-        job_to_del = Job.Query.get(objectId=job_id)
-        job_to_del.delete()
-        return True
-    except Exception as e:
-        st.error(f"Error deleting: {e}")
-        return False
+def delete_job(object_id):
+    """Deletes a job using a DELETE request"""
+    url = f"{BASE_URL}/{object_id}"
+    response = requests.delete(url, headers=HEADERS)
+    return response.status_code == 200
