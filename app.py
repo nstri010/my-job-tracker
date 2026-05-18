@@ -1,7 +1,6 @@
 import streamlit as st
 import datetime
-from storage import load_jobs, save_job, build_job_record, update_job_status, update_job_details
-from utils import scrape_job_link
+from storage import load_jobs, save_job, update_job_status, delete_jobfrom utils import scrape_job_link
 
 # Page Config
 st.set_page_config(page_title="Job Tracker Portfolio", layout="wide")
