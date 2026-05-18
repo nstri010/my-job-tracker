@@ -35,12 +35,14 @@ if not st.session_state['logged_in']:
                     st.session_state['logged_in'] = True
                     st.session_state['username'] = u
                     st.rerun()
-                else: st.error("Invalid Login: Check username or password.")
+                else: 
+                    st.error("Invalid Login: Please check your username or password.")
         with tab2:
             nu = st.text_input("Choose Username", placeholder="Create username", key="su_u")
             np = st.text_input("Set Password", type="password", placeholder="Create password", key="su_p")
             if st.button("Create Account"):
-                if sign_up_user(nu, np): st.success("Created! Please Sign In.")
+                if sign_up_user(nu, np): 
+                    st.success("Account created! You can now sign in.")
 
 # --- DASHBOARD ---
 else:
@@ -57,9 +59,10 @@ else:
                 if url_input:
                     with st.spinner("Scraping..."):
                         st.session_state['auto_desc'] = scrape_job_link(url_input)
-                else: st.warning("Please paste a link first.")
+                else: 
+                    st.warning("Please paste a link first.")
         
-        # FILE UPLOADER FOR RESUME
+        # FILE UPLOADER
         uploaded_resume = st.file_uploader("Upload Resume (PDF or DOCX)", type=["pdf", "docx"])
         
         default_desc = st.session_state.get('auto_desc', "")
@@ -86,7 +89,7 @@ else:
                 <h4 style="margin:0; color: #94a3b8;">Example Position</h4>
                 <p style="color:#7d2ae8; margin:0; font-weight: bold;">Example Company Inc.</p>
                 <p style="color:#64748b; font-size: 0.9rem; margin-top: 5px;">
-                    Once you save your first real application, this card will disappear.
+                    This is an example. Once you save your first real application, this card will disappear.
                 </p>
             </div>
         """, unsafe_allow_html=True)
