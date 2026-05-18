@@ -71,41 +71,48 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR (Now Always Visible) ---
-with st.sidebar:
-    st.markdown("## 👤 Account")
+# --- TOP NAVIGATION MENU (REPLACES SIDEBAR) ---
+st.markdown("## 👤 Account Portal")
+
+if not st.session_state['logged_in']:
+    # We use columns to make the Sign In / Sign Up areas sit side-by-side on top
+    col_login, col_reg = st.columns(2)
     
-    # Removed st.expander so the login/signup is always visible
-    if not st.session_state['logged_in']:
-        tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
-        
-        with tab1:
-            u_in = st.text_input("Username", key="login_u")
-            p_in = st.text_input("Password", type="password", key="login_p")
-            if st.button("Access Dashboard"):
-                if login_user(u_in, p_in):
-                    st.session_state['logged_in'] = True
-                    st.session_state['username'] = u_in
-                    st.rerun()
-                else:
-                    st.error("Invalid Username or Password")
-        
-        with tab2:
-            new_u = st.text_input("Choose Username", key="reg_u")
-            new_p = st.text_input("Set Password", type="password", key="reg_p")
-            if st.button("Create My Account"):
-                if new_u and new_p:
-                    if sign_up_user(new_u, new_p):
-                        st.success("Account Ready! Please Sign In.")
-                else:
-                    st.warning("Please fill all fields.")
-    else:
+    with col_login:
+        st.markdown("### Sign In")
+        u_in = st.text_input("Username", key="login_u", placeholder="Enter username")
+        p_in = st.text_input("Password", type="password", key="login_p", placeholder="Enter password")
+        if st.button("Access Dashboard", use_container_width=True):
+            if login_user(u_in, p_in):
+                st.session_state['logged_in'] = True
+                st.session_state['username'] = u_in
+                st.rerun()
+            else:
+                st.error("Invalid Username or Password")
+    
+    with col_reg:
+        st.markdown("### New Account")
+        new_u = st.text_input("Choose Username", key="reg_u", placeholder="Create username")
+        new_p = st.text_input("Set Password", type="password", key="reg_p", placeholder="Create password")
+        if st.button("Create My Account", use_container_width=True):
+            if new_u and new_p:
+                if sign_up_user(new_u, new_p):
+                    st.success("Account Ready! Please Sign In.")
+            else:
+                st.warning("Please fill all fields.")
+else:
+    # Header for Logged In users
+    menu_col1, menu_col2 = st.columns([3, 1])
+    with menu_col1:
         st.markdown(f"### Welcome back, **{st.session_state['username']}**")
-        st.info("You are currently logged into your private application vault.")
-        if st.button("Log Out"):
+        st.caption("You are currently viewing your private application vault.")
+    with menu_col2:
+        if st.button("Log Out", use_container_width=True):
             st.session_state['logged_in'] = False
             st.session_state['username'] = None
             st.rerun()
+
+st.markdown("---") # Visual separator between menu and tracker
 
 # --- MAIN CONTENT AREA ---
 col_main, col_spacer = st.columns([3, 1])
