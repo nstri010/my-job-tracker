@@ -2,7 +2,6 @@ import streamlit as st
 from supabase import create_client, Client
 
 # --- CONNECT TO SUPABASE ---
-# This pulls the keys you saved in the Streamlit "Secrets" vault
 try:
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
@@ -13,44 +12,41 @@ except Exception as e:
 
 # --- AUTHENTICATION FUNCTIONS ---
 
-def sign_up_user(username, password, email):
+def sign_up_user(username, password):
     """
-    Matches the 3 arguments from your app.py line 96.
-    Stores the username in the user's metadata.
+    Treats the username as the unique identifier (email) for Supabase.
+    We append '@app.com' internally so Supabase accepts the format.
     """
+    fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_up({
-            "email": email,
+            "email": fake_email,
             "password": password,
             "options": {
-                "data": {
-                    "display_name": username
-                }
+                "data": {"display_name": username}
             }
         })
-        # If 'Confirm Email' is OFF in Supabase, this returns a user object immediately
         return response.user is not None
     except Exception as e:
         st.error(f"Sign Up Error: {e}")
         return False
 
-def login_user(email, password):
-    """Logs the user in and shows the specific error if it fails"""
+def login_user(username, password):
+    """Logs the user in by converting their username back to the internal email format."""
+    fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_in_with_password({
-            "email": email, 
+            "email": fake_email, 
             "password": password
         })
         return response.user is not None
     except Exception as e:
-        # This will tell you if it's 'Invalid credentials' or 'Email not confirmed'
-        st.error(f"Supabase says: {e}") 
+        st.error(f"Login Error: {e}")
         return False
 
 # --- JOB TRACKER DATABASE FUNCTIONS ---
 
 def save_job(company, position, description):
-    """Inserts a new job record into the 'jobs' table"""
     data = {
         "company": company,
         "position": position,
@@ -58,7 +54,6 @@ def save_job(company, position, description):
         "status": "Active"
     }
     try:
-        # Note: Ensure you created a table named 'jobs' in the Supabase Table Editor
         supabase.table("jobs").insert(data).execute()
         return True
     except Exception as e:
@@ -66,29 +61,16 @@ def save_job(company, position, description):
         return False
 
 def load_jobs():
-    """Fetches all jobs from the 'jobs' table"""
     try:
-        # We order by created_at so the newest applications appear at the top
         response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return response.data
     except Exception as e:
-        # Return empty list if there's an error or no jobs yet
         return []
 
 def update_job_status(job_id, new_status):
-    """Updates the status of a specific job (e.g., Active -> Interviewing)"""
     try:
         supabase.table("jobs").update({"status": new_status}).eq("id", job_id).execute()
         return True
     except Exception as e:
         st.error(f"Update Error: {e}")
-        return False
-
-def delete_job(job_id):
-    """Removes a job record from the database"""
-    try:
-        supabase.table("jobs").delete().eq("id", job_id).execute()
-        return True
-    except Exception as e:
-        st.error(f"Delete Error: {e}")
         return False
