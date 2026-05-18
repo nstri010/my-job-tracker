@@ -1,3 +1,4 @@
+
 import streamlit as st
 from supabase import create_client, Client
 
@@ -11,42 +12,29 @@ except Exception as e:
     st.stop()
 
 # --- AUTHENTICATION FUNCTIONS ---
-
-def sign_up_user(username, password):
-    """Appends an internal domain to the username to satisfy Supabase's email requirement."""
-    fake_email = f"{username}@app.com"
+def sign_up_user(email, password):
     try:
-        response = supabase.auth.sign_up({
-            "email": fake_email,
-            "password": password,
-            "options": {"data": {"display_name": username}}
-        })
+        response = supabase.auth.sign_up({"email": email, "password": password})
         return response.user is not None
     except Exception as e:
         st.error(f"Sign Up Error: {e}")
         return False
 
-def login_user(username, password):
-    fake_email = f"{username}@app.com"
+def login_user(email, password):
     try:
-        response = supabase.auth.sign_in_with_password({
-            "email": fake_email, 
-            "password": password
-        })
+        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         return response.user is not None
     except Exception as e:
         st.error(f"Login Error: {e}")
         return False
 
 # --- DATABASE FUNCTIONS ---
-
-def save_job(company, position, description, status):
-    """Saves application details including the current status."""
+def save_job(company, position, description):
     data = {
         "company": company,
         "position": position,
         "description": description,
-        "status": status
+        "status": "Active" 
     }
     try:
         supabase.table("jobs").insert(data).execute()
@@ -57,16 +45,15 @@ def save_job(company, position, description, status):
 
 def load_jobs():
     try:
-        # Fetches jobs and sorts them by most recently created
-        response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
+        response = supabase.table("jobs").select("*").execute()
         return response.data
     except Exception as e:
         return []
 
-def update_job_status(job_id, new_status):
+def delete_job(job_id):
     try:
-        supabase.table("jobs").update({"status": new_status}).eq("id", job_id).execute()
+        supabase.table("jobs").delete().eq("id", job_id).execute()
         return True
     except Exception as e:
-        st.error(f"Update Error: {e}")
+        st.error(f"Delete Error: {e}")
         return False
