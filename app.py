@@ -17,7 +17,6 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Collapses vertical spacing for a tighter layout */
     div[data-testid="stVerticalBlock"] > div {
         gap: 0rem !important;
     }
@@ -31,6 +30,25 @@ st.markdown("""
         width: 100% !important;
         margin-top: 10px;
     }
+
+    /* Styling for the Job Cards */
+    .job-card {
+        background: #1a1f2e; 
+        padding: 20px; 
+        border-radius: 10px; 
+        border-left: 4px solid #7d2ae8; 
+        margin-bottom: 15px;
+    }
+
+    /* Styling for the Empty State / Example Card */
+    .example-card {
+        background: #1a1f2e; 
+        padding: 20px; 
+        border-radius: 10px; 
+        border: 2px dashed #4a5568; 
+        opacity: 0.5;
+        margin-bottom: 15px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -40,16 +58,8 @@ if not st.session_state['logged_in']:
     
     with center_col:
         st.markdown("<h2 style='text-align: center; color: white; margin-top: 60px;'>Welcome!</h2>", unsafe_allow_html=True)
+        st.markdown('<p style="text-align: center; color: #94a3b8; font-size: 0.9rem;">A calm, organized space to track your career journey.</p>', unsafe_allow_html=True)
 
-        st.markdown("""
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">
-                    A calm, organized space created just for you to track your saved jobs and resumes.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-
-        # Tabs for Auth
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
         with tab1:
@@ -60,8 +70,7 @@ if not st.session_state['logged_in']:
                     st.session_state['logged_in'] = True
                     st.rerun()
                 else:
-                    # THE SINGLE USER-FRIENDLY ERROR MESSAGE
-                    st.error("Invalid Login: Please check your username or password and try again.")
+                    st.error("Invalid Login: Please check your username or password.")
         
         with tab2:
             new_user = st.text_input("Choose Username", placeholder="Create username", key="su_user", label_visibility="collapsed")
@@ -69,15 +78,8 @@ if not st.session_state['logged_in']:
             if st.button("Create Account", key="signup_btn"):
                 if sign_up_user(new_user, new_pass):
                     st.success("Account created! You can now sign in.")
-                else:
-                    st.error("Could not create account. This username might already be taken.")
 
-        # Text positioned under the menu
-        st.markdown("""
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="color: #94a3b8; font-size: 0.85rem; font-weight: bold;">Sign in to access your saved jobs and resumes.</p>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<p style="text-align: center; color: #94a3b8; font-size: 0.85rem; font-weight: bold; margin-top: 20px;">Sign in to access your saved jobs and resumes.</p>', unsafe_allow_html=True)
 
     st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 60px;'>Powered by Supabase</p>", unsafe_allow_html=True)
 
@@ -91,26 +93,45 @@ else:
             st.session_state['logged_in'] = False
             st.rerun()
 
+    # Form to add jobs
     with st.form("job_form", clear_on_submit=True):
+        st.markdown("<h3 style='color: white;'>Add New Application</h3>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
-        comp = c1.text_input("Company")
-        pos = c2.text_input("Position")
-        desc = st.text_area("Notes")
-        if st.form_submit_button("Save Application"):
+        comp = c1.text_input("Company Name", placeholder="e.g. Google")
+        pos = c2.text_input("Position Title", placeholder="e.g. Data Analyst")
+        desc = st.text_area("Application Notes", placeholder="Link to job post or resume version used...")
+        if st.form_submit_button("Save to Tracker"):
             if save_job(comp, pos, desc):
-                st.success("Saved!")
+                st.success("Application Saved!")
                 st.rerun()
 
     st.divider()
     
-    for job in load_jobs():
-        st.markdown(f"""
-            <div style="background: #1a1f2e; padding: 20px; border-radius: 10px; border-left: 4px solid #7d2ae8; margin-bottom: 10px;">
-                <h4 style="margin:0; color: white;">{job['position']}</h4>
-                <p style="color:#7d2ae8; margin:0; font-weight: bold;">{job['company']}</p>
-                <p style="color:#94a3b8; font-size: 0.9rem; margin-top: 5px;">{job['description']}</p>
+    # FETCH JOBS
+    jobs = load_jobs()
+
+    # IF NO JOBS: SHOW THE EXAMPLE CARD
+    if not jobs:
+        st.markdown("""
+            <div class="example-card">
+                <h4 style="margin:0; color: #94a3b8;">Example Position</h4>
+                <p style="color:#7d2ae8; margin:0; font-weight: bold;">Example Company Inc.</p>
+                <p style="color:#64748b; font-size: 0.9rem; margin-top: 5px;">
+                    This is what your tracker will look like. Once you add your first job, this example will disappear!
+                </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("Delete", key=f"del_{job['id']}"):
-            delete_job(job['id'])
-            st.rerun()
+    
+    # IF JOBS EXIST: LIST THEM
+    else:
+        for job in jobs:
+            st.markdown(f"""
+                <div class="job-card">
+                    <h4 style="margin:0; color: white;">{job['position']}</h4>
+                    <p style="color:#7d2ae8; margin:0; font-weight: bold;">{job['company']}</p>
+                    <p style="color:#94a3b8; font-size: 0.9rem; margin-top: 5px;">{job['description']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Delete Application", key=f"del_{job['id']}"):
+                delete_job(job['id'])
+                st.rerun()
