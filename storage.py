@@ -12,19 +12,20 @@ except Exception as e:
 
 # --- AUTHENTICATION FUNCTIONS ---
 def sign_up_user(username, password):
+    # Appends a dummy domain to satisfy Supabase's email validation
+    email_format = f"{username}@tracker.com"
     try:
-        # Note: If your Supabase settings require a real email format, 
-        # users may need to enter 'username@example.com' or you can 
-        # append a dummy domain like f"{username}@tracker.com"
-        response = supabase.auth.sign_up({"email": username, "password": password})
+        response = supabase.auth.sign_up({"email": email_format, "password": password})
         return response.user is not None
     except Exception as e:
         st.error(f"Sign Up Error: {e}")
         return False
 
 def login_user(username, password):
+    # Appends the same dummy domain for login matching
+    email_format = f"{username}@tracker.com"
     try:
-        response = supabase.auth.sign_in_with_password({"email": username, "password": password})
+        response = supabase.auth.sign_in_with_password({"email": email_format, "password": password})
         return response.user is not None
     except Exception as e:
         st.error(f"Login Error: {e}")
