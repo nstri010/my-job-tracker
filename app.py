@@ -1,180 +1,134 @@
 import streamlit as st
-from storage import load_jobs, save_job, update_job_status, sign_up_user, login_user
-from utils import scrape_job_link
+from storage import load_jobs, save_job, delete_job, sign_up_user, login_user
 
 # Page Config
-st.set_page_config(page_title="Job Tracker Portfolio", layout="wide")
+st.set_page_config(page_title="Job Tracker", layout="wide")
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-# --- IMPROVED GLASSMORHIC STYLING ---
+# --- PROFESSIONAL UI STYLING ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     
     .stApp {
         background-color: #0f1117;
-        font-family: 'Geist', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
 
-    /* Fixed Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #161b22 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    /* The Login Card Container */
+    .auth-card {
+        background-color: #1a1f2e;
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid #2d3748;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
-    /* Glass Cards for Jobs */
-    .glass-card {
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-left: 4px solid #6366f1;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 15px;
-        transition: transform 0.2s ease;
-    }
-    .glass-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(99, 102, 241, 0.4);
-    }
-
-    /* Status Badges */
-    .badge {
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 0.7rem;
+    /* Big Bold Header */
+    .auth-header {
+        font-size: 2rem;
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        color: white;
+        margin-bottom: 10px;
     }
-    .status-applied { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
-    .status-under-review { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-    .status-interview { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-    .status-offer { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
-    .status-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
-    /* Buttons */
+    /* Buttons - Matching your purple example */
     div.stButton > button {
-        background: #6366f1 !important;
+        background-color: #7d2ae8 !important;
         color: white !important;
-        border-radius: 8px !important;
+        font-weight: 600 !important;
+        padding: 12px 24px !important;
+        border-radius: 10px !important;
         border: none !important;
-        width: 100%;
-        transition: all 0.3s;
+        width: 100% !important;
+        transition: 0.3s;
     }
     div.stButton > button:hover {
-        background: #4f46e5 !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        background-color: #6a22c4 !important;
+        box-shadow: 0 4px 15px rgba(125, 42, 232, 0.4);
+    }
+
+    /* Input field styling */
+    input {
+        border-radius: 10px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- TOP NAVIGATION MENU (REPLACES SIDEBAR) ---
-st.markdown("## 👤 Account Portal")
-
+# --- CENTERED LOGIN INTERFACE ---
 if not st.session_state['logged_in']:
-    # We use columns to make the Sign In / Sign Up areas sit side-by-side on top
-    col_login, col_reg = st.columns(2)
+    # This creates the "centered" effect using empty columns
+    left_spacer, center_column, right_spacer = st.columns([1, 1.5, 1])
     
-    with col_login:
-        st.markdown("### Sign In")
-        u_in = st.text_input("Username", key="login_u", placeholder="Enter username")
-        p_in = st.text_input("Password", type="password", key="login_p", placeholder="Enter password")
-        if st.button("Access Dashboard", use_container_width=True):
-            if login_user(u_in, p_in):
-                st.session_state['logged_in'] = True
-                st.session_state['username'] = u_in
-                st.rerun()
-            else:
-                st.error("Invalid Username or Password")
-    
-    with col_reg:
-        st.markdown("### New Account")
-        new_u = st.text_input("Choose Username", key="reg_u", placeholder="Create username")
-        new_p = st.text_input("Set Password", type="password", key="reg_p", placeholder="Create password")
-        if st.button("Create My Account", use_container_width=True):
-            if new_u and new_p:
-                if sign_up_user(new_u, new_p):
-                    st.success("Account Ready! Please Sign In.")
-            else:
-                st.warning("Please fill all fields.")
+    with center_column:
+        st.markdown('<div class="auth-card">', unsafe_allow_html=True)
+        st.markdown('<p class="auth-header">Jump back in!</p>', unsafe_allow_html=True)
+        
+        tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
+        
+        with tab1:
+            email_in = st.text_input("Email Address", placeholder="e.g. name@email.com")
+            pass_in = st.text_input("Password", type="password", placeholder="••••••••")
+            if st.button("Continue", key="login_btn"):
+                if login_user(email_in, pass_in):
+                    st.session_state['logged_in'] = True
+                    st.session_state['user_email'] = email_in
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
+        
+        with tab2:
+            new_email = st.text_input("Choose Email", placeholder="yourname@email.com")
+            new_pass = st.text_input("Create Password", type="password", placeholder="Minimum 6 characters")
+            if st.button("Create My Account", key="signup_btn"):
+                if new_email and new_pass:
+                    if sign_up_user(new_email, new_pass):
+                        st.success("Account created! Please Sign In.")
+                else:
+                    st.warning("Please fill out all fields.")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 20px;'>By continuing, you agree to the Terms of Service.</p>", unsafe_allow_html=True)
+
+# --- MAIN DASHBOARD (Only visible after login) ---
 else:
-    # Header for Logged In users
-    menu_col1, menu_col2 = st.columns([3, 1])
-    with menu_col1:
-        st.markdown(f"### Welcome back, **{st.session_state['username']}**")
-        st.caption("You are currently viewing your private application vault.")
-    with menu_col2:
-        if st.button("Log Out", use_container_width=True):
+    col_title, col_logout = st.columns([5, 1])
+    with col_title:
+        st.title("📂 Job Application Tracker")
+    with col_logout:
+        if st.button("Log Out"):
             st.session_state['logged_in'] = False
-            st.session_state['username'] = None
             st.rerun()
 
-st.markdown("---") # Visual separator between menu and tracker
-
-# --- MAIN CONTENT AREA ---
-col_main, col_spacer = st.columns([3, 1])
-
-with col_main:
-    st.title("📂 Job Application Tracker")
-    st.markdown("<p style='color: #94a3b8; font-size: 1.1em;'>Organize and monitor your career journey</p>", unsafe_allow_html=True)
-
-    # ADD NEW FORM
-    with st.container():
-        st.markdown("### ➕ Add New Application")
-        with st.form("add_job_form", clear_on_submit=True):
+    # --- ADD NEW JOB FORM ---
+    with st.expander("➕ Track a New Application", expanded=True):
+        with st.form("job_form"):
             c1, c2 = st.columns(2)
-            with c1:
-                comp = st.text_input("Company Name", placeholder="e.g. Google")
-                pos = st.text_input("Position Title", placeholder="e.g. QA Analyst")
-            with c2:
-                link = st.text_input("Job Link", placeholder="https://linkedin.com/...")
-                stat = st.selectbox("Status", ["Applied", "Under Review", "Interview", "Offer", "Rejected"])
-            
-            desc = st.text_area("Notes / Resume Highlights", placeholder="Key skills or interview dates...")
-            
-            submit = st.form_submit_button("Save to My Tracker")
-            
-            if submit:
-                if st.session_state['logged_in']:
-                    if save_job(comp, pos, desc, stat):
-                        st.success(f"Successfully saved {pos} at {comp}!")
-                        st.rerun()
-                else:
-                    st.error("You must be logged in to save applications.")
+            comp = c1.text_input("Company Name")
+            pos = c2.text_input("Position Title")
+            desc = st.text_area("Job Description / Notes")
+            if st.form_submit_button("Save Application"):
+                if save_job(comp, pos, desc):
+                    st.success("Application tracked!")
+                    st.rerun()
 
-    st.markdown("---")
-    st.subheader("📋 Application History")
-
-    if st.session_state['logged_in']:
-        jobs = load_jobs()
-        active_jobs = [j for j in jobs if j.get('status') != "Hidden"]
-        
-        if not active_jobs:
-            st.info("Your vault is empty. Add an application above to get started!")
-        
-        for job in active_jobs:
-            # Format the status name for CSS classes
-            status_class = job.get('status').lower().replace(" ", "-")
-            
+    # --- DISPLAY JOBS ---
+    st.divider()
+    jobs = load_jobs()
+    if jobs:
+        for job in jobs:
             st.markdown(f"""
-                <div class="glass-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
-                            <h3 style="margin:0; color:#e2e8f0; font-size: 1.2em;">{job.get('position')}</h3>
-                            <p style="margin:0; color:#6366f1; font-weight: 600;">{job.get('company')}</p>
-                        </div>
-                        <span class="badge status-{status_class}">{job.get('status')}</span>
-                    </div>
+                <div style="background: #1a1f2e; padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #7d2ae8;">
+                    <h3 style="margin:0;">{job['position']}</h3>
+                    <p style="color:#7d2ae8; font-weight:bold;">{job['company']}</p>
+                    <p style="font-size:0.9rem; color:#94a3b8;">{job['description']}</p>
                 </div>
             """, unsafe_allow_html=True)
-            
-            with st.expander("Details & Actions"):
-                st.write(job.get('description'))
-                if st.button("🗑️ Archive Application", key=f"del_{job.get('id')}"):
-                    update_job_status(job.get('id'), "Hidden")
-                    st.rerun()
+            if st.button("🗑️ Delete", key=f"del_{job['id']}"):
+                delete_job(job['id'])
+                st.rerun()
     else:
-        st.markdown("<h4 style='text-align: center; color: #4a5568; margin-top: 50px;'>Sign in to view your past saved applications and track your progress.</h4>", unsafe_allow_html=True)
+        st.info("No applications found. Start by adding one above!")
