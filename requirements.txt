@@ -1,8 +1,7 @@
 streamlit
 pandas
-st-gsheets-connection
 requests
 beautifulsoup4
 pypdf
 docx2txt
-parse-stack
+parse-rest-python3
