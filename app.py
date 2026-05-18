@@ -63,8 +63,8 @@ if not st.session_state['logged_in']:
         
         with tab2:
             # Updated to Username
-            new_user = st.text_input("Choose Username", placeholder="Create username", key="su_user", label_visibility="collapsed")
-            new_pass = st.text_input("Set Password", type="password", placeholder="Create password", key="su_pass", label_visibility="collapsed")
+            new_user = st.text_input("Choose Username", placeholder="Username", key="su_user", label_visibility="collapsed")
+            new_pass = st.text_input("Set Password", type="password", placeholder="Password", key="su_pass", label_visibility="collapsed")
             if st.button("Create Account", key="signup_btn"):
                 if sign_up_user(new_user, new_pass):
                     st.success("Account created!")
