@@ -1,6 +1,7 @@
 streamlit
 pandas
 requests
+supabase
 beautifulsoup4
 pypdf
 docx2txt
