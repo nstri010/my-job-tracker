@@ -35,15 +35,16 @@ def sign_up_user(username, password, email):
         return False
 
 def login_user(email, password):
-    """Logs the user in using Supabase Auth"""
+    """Logs the user in and shows the specific error if it fails"""
     try:
         response = supabase.auth.sign_in_with_password({
-            "email": email,
+            "email": email, 
             "password": password
         })
         return response.user is not None
     except Exception as e:
-        st.error(f"Login Error: {e}")
+        # This will tell you if it's 'Invalid credentials' or 'Email not confirmed'
+        st.error(f"Supabase says: {e}") 
         return False
 
 # --- JOB TRACKER DATABASE FUNCTIONS ---
