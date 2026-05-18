@@ -17,7 +17,7 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Collapses the vertical spacing that creates the "block" look */
+    /* Collapses vertical spacing to remove the "block" effect */
     div[data-testid="stVerticalBlock"] > div {
         gap: 0rem !important;
     }
@@ -29,14 +29,15 @@ st.markdown("""
         border: none !important;
         font-weight: 600 !important;
         width: 100% !important;
+        margin-top: 10px;
     }
 
-    .custom-subtext {
+    .instruction-text {
         text-align: center;
         color: #94a3b8;
         font-size: 0.85rem;
-        margin-top: 15px;
-        line-height: 1.4;
+        margin-top: 20px;
+        line-height: 1.5;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -46,10 +47,10 @@ if not st.session_state['logged_in']:
     _, center_col, _ = st.columns([1.2, 1, 1.2])
     
     with center_col:
-        # Minimal Header
-        st.markdown("<h2 style='text-align: center; color: white; margin-top: 50px; margin-bottom: 20px;'>Welcome!</h2>", unsafe_allow_html=True)
+        # Minimalist Header
+        st.markdown("<h2 style='text-align: center; color: white; margin-top: 60px;'>Welcome!</h2>", unsafe_allow_html=True)
 
-        # Sign In / Sign Up Tabs
+        # Tabs for Auth
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
         with tab1:
@@ -69,15 +70,11 @@ if not st.session_state['logged_in']:
                 if sign_up_user(new_email, new_pass):
                     st.success("Account created!")
 
-        # --- YOUR CUSTOM TEXT MOVED HERE ---
-        st.markdown("""
-            <div class="custom-subtext">
-                A calm, organized space created just for you to track your saved jobs and resumes.<br>
-                <b>Sign in to access your saved jobs and resumes.</b>
-            </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 50px;'>Powered by Supabase</p>", unsafe_allow_html=True)
+        # --- TEXT POSITIONED UNDER THE MENU ---
+        st.markdown('<p class="instruction-text">Sign in to access your saved jobs and resumes.</p>', unsafe_allow_html=True)
+
+    # Footer
+    st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 60px;'>Powered by Supabase</p>", unsafe_allow_html=True)
 
 # --- MAIN DASHBOARD ---
 else:
