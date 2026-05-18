@@ -157,7 +157,7 @@ else:
         <div style="text-align: center; padding: 40px 20px;">
             <h2 style="color: #ffffff; margin-bottom: 10px;">✨ Try it out!</h2>
             <p style="color: #94a3b8; font-size: 1.2em;">
-                Guests are welcome to try the <b>"Add New Application"</b> tool above!
+                This website is currently in development. More features coming soon!
             </p>
             <p style="color: #64748b; font-size: 1.1em; max-width: 600px; margin: 0 auto;">
                 If you would like to save your applications and track your progress, 
