@@ -11,8 +11,9 @@ except Exception as e:
     st.stop()
 
 # --- AUTHENTICATION FUNCTIONS ---
+
 def sign_up_user(username, password):
-    # Appending internal domain to satisfy Supabase email requirements
+    """Appends an internal domain to the username to satisfy Supabase's email requirement."""
     fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_up({
@@ -38,7 +39,9 @@ def login_user(username, password):
         return False
 
 # --- DATABASE FUNCTIONS ---
+
 def save_job(company, position, description, status):
+    """Saves application details including the current status."""
     data = {
         "company": company,
         "position": position,
@@ -54,6 +57,7 @@ def save_job(company, position, description, status):
 
 def load_jobs():
     try:
+        # Fetches jobs and sorts them by most recently created
         response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return response.data
     except Exception as e:
