@@ -8,91 +8,74 @@ import streamlit as st
 import json
 
 # --- AI CONFIGURATION ---
-# Uses the key saved in your Streamlit Cloud Secrets
-try:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-pro')
-except Exception as e:
-    st.error(f"AI Configuration Error: {e}")
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+# Using Gemini 1.5 Flash - it's faster and better at handling messy data
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def extract_text_from_upload(uploaded_file):
-    """Extracts raw text from an uploaded PDF or DOCX file."""
     ext = uploaded_file.name.split('.')[-1].lower()
     try:
         if ext == 'pdf':
             reader = pypdf.PdfReader(uploaded_file)
             return " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
         elif ext in ['docx', 'doc']:
-            # Reads docx into memory and extracts text
             return docx2txt.process(io.BytesIO(uploaded_file.getvalue()))
     except Exception as e:
-        return f"Error reading resume file: {e}"
+        return ""
     return ""
 
 def scrape_job_link(url):
-    """Scrapes the webpage and prepares it for AI analysis."""
+    """Enhanced scraper with real-user headers to bypass basic blocks."""
     try:
+        # These headers make the script look like a real Chrome browser
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.google.com/'
         }
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=15)
+        
+        if response.status_code != 200:
+            return f"Error: Received status {response.status_code} from site."
+
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Strip out code and navigation junk to save AI tokens
-        for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
-            element.extract()
+        # Focus on the 'main' content areas where job descriptions usually live
+        for junk in soup(["script", "style", "nav", "footer", "header"]):
+            junk.extract()
             
-        # Using a newline separator helps the AI distinguish between sections
-        raw_text = soup.get_text(separator='\n')
-        lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
-        return '\n'.join(lines)
+        return soup.get_text(separator=' ', strip=True)
     except Exception as e:
-        return f"Scraping Error: {e}"
+        return str(e)
 
 def analyze_job_with_ai(raw_job_text, resume_text=None):
-    """
-    Uses Gemini AI to:
-    1. Reformat messy text into clean bullet points.
-    2. Compare the job to the resume for a 0/10 score.
-    """
-    # Truncate inputs to prevent "Context Window" errors (max ~3000 chars each)
-    job_snippet = raw_job_text[:4000]
-    resume_snippet = resume_text[:4000] if resume_text else "No resume provided."
+    """Uses Gemini's JSON mode to ensure the app never gets a 'formatting error'."""
+    
+    # If the scraper failed and returned an error message, we tell the AI
+    job_input = raw_job_text[:5000] if len(raw_job_text) > 100 else "The scraper failed to find text. Please ask the user to paste the description."
+    resume_input = resume_text[:5000] if resume_text else "No resume provided."
 
     prompt = f"""
-    You are an expert Career Coach.
+    Act as a Career Consultant. 
+    1. Clean the JOB TEXT into professional bullet points. 
+    2. Score the RESUME against the job from 0/10.
     
-    TASKS:
-    1. Clean the following raw job text into a professional, well-spaced format using bullet points.
-    2. Use headers like 'Core Responsibilities', 'Required Skills', and 'Benefits'.
-    3. If a resume is provided, analyze the fit and provide a match score out of 10 (e.g., '8/10').
+    JOB TEXT: {job_input}
+    RESUME TEXT: {resume_input}
 
-    JOB TEXT:
-    {job_snippet}
-
-    RESUME TEXT:
-    {resume_snippet}
-
-    RESPONSE FORMAT (Return ONLY valid JSON):
-    {{
-        "formatted_desc": "The cleaned, bulleted job description here",
-        "match_score": "X/10"
-    }}
+    IMPORTANT: You MUST return a valid JSON object with 'formatted_desc' and 'match_score' keys. 
+    If the JOB TEXT is empty or looks like an error, set 'formatted_desc' to 'Scraper blocked. Please paste description manually.'
     """
-    
+
     try:
-        response = model.generate_content(prompt)
-        text_content = response.text.strip()
-        
-        # Logic to strip away extra AI chatter (like ```json ... ```)
-        if "{" in text_content:
-            text_content = text_content[text_content.find("{"):text_content.rfind("}")+1]
-        
-        return json.loads(text_content)
-        
+        # response_mime_type forces the AI to output ONLY JSON
+        response = model.generate_content(
+            prompt, 
+            generation_config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
     except Exception as e:
-        # If AI fails, we return a graceful fallback so the app doesn't crash
         return {
-            "formatted_desc": f"The AI had trouble formatting this specific link. Please try again or paste the text manually.\n\nRaw Snippet: {raw_job_text[:500]}...",
+            "formatted_desc": "AI was unable to process. Please paste the description manually.",
             "match_score": "N/A"
         }
