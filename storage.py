@@ -12,6 +12,7 @@ except Exception as e:
 
 # --- AUTHENTICATION FUNCTIONS ---
 def sign_up_user(username, password):
+    # Appending internal domain to satisfy Supabase email requirements
     fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_up({
@@ -36,14 +37,13 @@ def login_user(username, password):
         st.error(f"Login Error: {e}")
         return False
 
-# --- DATABASE FUNCTIONS (Now with Status) ---
+# --- DATABASE FUNCTIONS ---
 def save_job(company, position, description, status):
-    """Saves the job with the specific status selected by the user"""
     data = {
         "company": company,
         "position": position,
         "description": description,
-        "status": status  # Now dynamic!
+        "status": status
     }
     try:
         supabase.table("jobs").insert(data).execute()
