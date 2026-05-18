@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
-# FIXED: Separated the imports correctly onto new lines
-from storage import load_jobs, save_job, update_job_status, delete_job
+# These imports must match the functions inside your storage.py
+from storage import load_jobs, save_job, update_job_status, delete_job, sign_up_user
 from utils import scrape_job_link
 
 # Page Config
@@ -11,13 +11,15 @@ st.set_page_config(page_title="Job Tracker Portfolio", layout="wide")
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-# --- STYLING ---
+# --- STYLING (The Hope Aesthetic) ---
 st.markdown("""
     <style>
     .stApp {
         background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
         color: #f8fafc;
     }
+
+    /* Gradient Buttons */
     div.stButton > button {
         border-radius: 50px !important;
         background: linear-gradient(90deg, #f97316 0%, #faa05a 100%) !important;
@@ -27,10 +29,13 @@ st.markdown("""
         padding: 10px 25px !important;
         transition: all 0.3s ease;
     }
+    
     div.stButton > button:hover {
         transform: scale(1.03);
         box-shadow: 0px 0px 20px rgba(249, 115, 22, 0.4);
     }
+
+    /* Glass Cards */
     .job-header {
         background: rgba(30, 41, 59, 0.6);
         backdrop-filter: blur(12px);
@@ -38,6 +43,7 @@ st.markdown("""
         border-radius: 15px 15px 0 0;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
     .button-tray {
         background: rgba(15, 23, 42, 0.7);
         padding: 15px;
@@ -46,6 +52,13 @@ st.markdown("""
         border-top: none;
         margin-bottom: 25px;
     }
+
+    .stExpander {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
     [data-testid="stSidebarNav"] {display: none;}
     </style>
     """, unsafe_allow_html=True)
@@ -64,14 +77,28 @@ with head_col2:
                 u_in = st.text_input("Username", key="login_user")
                 p_in = st.text_input("Password", type="password", key="login_pw")
                 if st.button("Login", use_container_width=True):
-                    # Admin credentials
+                    # Admin access check
                     if u_in == "Nakisha" and p_in == "Password123":
                         st.session_state['logged_in'] = True
                         st.rerun()
                     else:
                         st.error("Invalid credentials.")
+            
             with tab2:
-                st.info("Public registration is in development.")
+                # NEW: Working Registration Form
+                st.write("### Create an Account")
+                new_user = st.text_input("New Username", key="reg_user")
+                new_email = st.text_input("Email", key="reg_email")
+                new_pw = st.text_input("New Password", type="password", key="reg_pw")
+                
+                if st.button("Register Account", use_container_width=True):
+                    if new_user and new_pw and new_email:
+                        if sign_up_user(new_user, new_pw, new_email):
+                            st.success("Account created! You can now Sign In.")
+                        else:
+                            st.error("Registration failed. Username might be taken.")
+                    else:
+                        st.warning("Please fill in all fields.")
         else:
             st.write(f"Logged in as **Administrator**")
             if st.button("Logout", use_container_width=True):
@@ -94,28 +121,33 @@ with st.expander("➕ Add New Application"):
     
     if st.button("💾 Save to Tracker"):
         if st.session_state.get('logged_in'):
-            # UPDATED: Matches the new save_job function signature
+            # Calls the REST API function in storage.py
             if save_job(company, position, description):
-                st.success("Saved to Back4App!"); st.rerun()
+                st.success("Successfully saved to Back4App!")
+                st.rerun()
         else:
             st.balloons()
-            st.warning("Administrative access required to save to the database.")
+            st.warning("Administrative access is required to modify the database.")
 
 # --- DISPLAY SECTION ---
 st.header("📋 Your Applications")
 
 if st.session_state.get('logged_in'):
     all_jobs = load_jobs()
-    # UPDATED: Filter jobs where status is not 'Hidden'
+    # Filter out archived jobs
     active_jobs = [j for j in all_jobs if j.get('status') != "Hidden"]
     
     if not active_jobs:
         st.info("Your application vault is currently empty.")
     
     for job in active_jobs:
-        # UPDATED: Using 'objectId' from Back4App instead of 'id'
         obj_id = job.get('objectId')
-        st.markdown(f'<div class="job-header"><div><b>{job.get("company")}</b> | {job.get("position")}</div></div>', unsafe_allow_html=True)
+        st.markdown(f'''
+            <div class="job-header">
+                <div><b>{job.get("company")}</b> | {job.get("position")}</div>
+            </div>
+        ''', unsafe_allow_html=True)
+        
         with st.container():
             st.markdown('<div class="button-tray">', unsafe_allow_html=True)
             c1, c2 = st.columns([3, 1])
@@ -123,16 +155,21 @@ if st.session_state.get('logged_in'):
                 with st.expander("📝 View Details"):
                     st.write(job.get('description'))
             with c2:
-                # UPDATED: Use objectId for the archive function
                 if st.button("🗑️ Archive", key=f"h_{obj_id}"):
                     update_job_status(obj_id, "Hidden")
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 else:
+    # --- FOOTER FOR GUESTS ---
     st.divider()
     st.markdown("""
         <div style="text-align: center; padding: 40px 20px;">
-            <h2 style="color: #ffffff;">🚧 This website is still in development</h2>
-            <p style="color: #94a3b8;">Building private tracking and account management systems.</p>
+            <h2 style="color: #ffffff; margin-bottom: 10px;">🚧 This website is still in development</h2>
+            <p style="color: #94a3b8; font-size: 1.2em;">
+                We are currently building out the <b>private tracking</b> and <b>account management</b> systems.
+            </p>
+            <p style="color: #64748b; font-size: 1.1em; max-width: 700px; margin: 0 auto;">
+                In the meantime, use the <b>Sign Up</b> tab above to create a test account and explore the interface!
+            </p>
         </div>
     """, unsafe_allow_html=True)
