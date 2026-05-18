@@ -29,7 +29,7 @@ if st.session_state['logged_in']:
         with row2_col2:
             # Added a little vertical padding with markdown to align button better
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("✨ Auto-Fill"):
+            if st.button("✨ Auto-Fill Job Description"):
                 if url_in:
                     with st.spinner("Generating full listing..."):
                         raw = scrape_job_link(url_in)
