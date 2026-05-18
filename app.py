@@ -50,6 +50,8 @@ if not st.session_state['logged_in']:
         # Minimalist Header
         st.markdown("<h2 style='text-align: center; color: white; margin-top: 60px;'>Welcome!</h2>", unsafe_allow_html=True)
 
+        <p style="color: #94a3b8; font-size: 0.9rem;"> A calm, organized space created just for you to track your saved jobs and resumes.</p>
+
         # Tabs for Auth
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
