@@ -7,7 +7,7 @@ st.set_page_config(page_title="Job Tracker", layout="wide")
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-# --- CSS OVERRIDE TO REMOVE THE "BLOCK" AND EXTRA PADDING ---
+# --- CSS OVERRIDE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -17,18 +17,9 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* This collapses the vertical spacing that creates the "block" look */
+    /* Collapses the vertical spacing that creates the "block" look */
     div[data-testid="stVerticalBlock"] > div {
         gap: 0rem !important;
-    }
-
-    /* Style for the centered login card */
-    .login-container {
-        background-color: #1a1f2e;
-        padding: 30px;
-        border-radius: 15px;
-        border: 1px solid #2d3748;
-        margin-top: 50px;
     }
 
     div.stButton > button {
@@ -39,24 +30,26 @@ st.markdown("""
         font-weight: 600 !important;
         width: 100% !important;
     }
+
+    .custom-subtext {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 15px;
+        line-height: 1.4;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # --- CLEAN LOGIN SCREEN ---
 if not st.session_state['logged_in']:
-    # Using columns to create a tight center lane
     _, center_col, _ = st.columns([1.2, 1, 1.2])
     
     with center_col:
-        # Added a clean, minimal header (No "Jump back in")
-        st.markdown("""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: white; margin-bottom: 0;">Welcome!</h2>
-              <p style="color: #94a3b8; font-size: 0.9rem;"> A calm, organized space created just for you to track your saved jobs and resumes.</p>
-                <p style="color: #94a3b8; font-size: 0.9rem;">Sign in to access your saved jobs and resumes.</p>
-            </div>
-        """, unsafe_allow_html=True)
+        # Minimal Header
+        st.markdown("<h2 style='text-align: center; color: white; margin-top: 50px; margin-bottom: 20px;'>Welcome!</h2>", unsafe_allow_html=True)
 
+        # Sign In / Sign Up Tabs
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
         with tab1:
@@ -75,6 +68,14 @@ if not st.session_state['logged_in']:
             if st.button("Create Account", key="signup_btn"):
                 if sign_up_user(new_email, new_pass):
                     st.success("Account created!")
+
+        # --- YOUR CUSTOM TEXT MOVED HERE ---
+        st.markdown("""
+            <div class="custom-subtext">
+                A calm, organized space created just for you to track your saved jobs and resumes.<br>
+                <b>Sign in to access your saved jobs and resumes.</b>
+            </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 50px;'>Powered by Supabase</p>", unsafe_allow_html=True)
 
@@ -105,8 +106,9 @@ else:
     for job in load_jobs():
         st.markdown(f"""
             <div style="background: #1a1f2e; padding: 20px; border-radius: 10px; border-left: 4px solid #7d2ae8; margin-bottom: 10px;">
-                <h4 style="margin:0;">{job['position']}</h4>
-                <p style="color:#7d2ae8; margin:0;">{job['company']}</p>
+                <h4 style="margin:0; color: white;">{job['position']}</h4>
+                <p style="color:#7d2ae8; margin:0; font-weight: bold;">{job['company']}</p>
+                <p style="color:#94a3b8; font-size: 0.9rem; margin-top: 5px;">{job['description']}</p>
             </div>
         """, unsafe_allow_html=True)
         if st.button("Delete", key=f"del_{job['id']}"):
