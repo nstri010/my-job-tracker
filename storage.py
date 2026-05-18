@@ -52,12 +52,24 @@ def update_job_status(object_id, new_status):
 
 def sign_up_user(username, password, email):
     """Creates a new user record in Back4App's built-in User system"""
+    # Try the explicit Parse API URL
     user_url = "https://parseapi.back4app.com/users"
+    
     payload = {
         "username": username,
         "password": password,
         "email": email
     }
-    # We use the same HEADERS because the App ID and REST Key are the same
-    response = requests.post(user_url, json=payload, headers=HEADERS)
-    return response.status_code == 201
+    
+    try:
+        response = requests.post(user_url, json=payload, headers=HEADERS)
+        
+        # If it fails, this will print the reason to your Streamlit screen
+        if response.status_code != 201:
+            st.error(f"Backend Error: {response.json().get('error', 'Unknown Error')}")
+            return False
+            
+        return True
+    except Exception as e:
+        st.error(f"Connection Error: {e}")
+        return False
