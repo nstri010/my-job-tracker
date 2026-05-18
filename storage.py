@@ -11,20 +11,13 @@ except Exception as e:
     st.stop()
 
 # --- AUTHENTICATION FUNCTIONS ---
-
 def sign_up_user(username, password):
-    """
-    Treats the username as the unique identifier (email) for Supabase.
-    We append '@app.com' internally so Supabase accepts the format.
-    """
     fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_up({
             "email": fake_email,
             "password": password,
-            "options": {
-                "data": {"display_name": username}
-            }
+            "options": {"data": {"display_name": username}}
         })
         return response.user is not None
     except Exception as e:
@@ -32,7 +25,6 @@ def sign_up_user(username, password):
         return False
 
 def login_user(username, password):
-    """Logs the user in by converting their username back to the internal email format."""
     fake_email = f"{username}@app.com"
     try:
         response = supabase.auth.sign_in_with_password({
@@ -44,14 +36,14 @@ def login_user(username, password):
         st.error(f"Login Error: {e}")
         return False
 
-# --- JOB TRACKER DATABASE FUNCTIONS ---
-
-def save_job(company, position, description):
+# --- DATABASE FUNCTIONS (Now with Status) ---
+def save_job(company, position, description, status):
+    """Saves the job with the specific status selected by the user"""
     data = {
         "company": company,
         "position": position,
         "description": description,
-        "status": "Active"
+        "status": status  # Now dynamic!
     }
     try:
         supabase.table("jobs").insert(data).execute()
