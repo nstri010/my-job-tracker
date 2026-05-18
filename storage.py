@@ -3,15 +3,15 @@ from parse_rest.datatypes import Object
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
-# These keys are from your JobTracker dashboard screenshot
+# Your specific credentials from the Back4App dashboard screenshot
 APPLICATION_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
 CLIENT_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
 
-# This registers the connection so Python can talk to Back4App
+# Initialize the connection to your Back4App backend
 register(APPLICATION_ID, CLIENT_KEY)
 
 # --- DEFINE THE JOB OBJECT ---
-# This acts as the blueprint for the 'Job' class you created in Step 1
+# This matches the 'Job' class you created in the Back4App database
 class Job(Object):
     pass
 
@@ -19,8 +19,7 @@ class Job(Object):
 
 def save_job(company, position, description):
     """
-    Saves a new job application to your Back4App database.
-    This replaces the old 'append_row' logic from Google Sheets.
+    Saves a new job application to Back4App.
     """
     try:
         new_job = Job(
@@ -37,11 +36,11 @@ def save_job(company, position, description):
 
 def load_jobs():
     """
-    Fetches all jobs stored in Back4App to display them on your site.
-    Equivalent to a 'Query' in your BeReal Swift project.
+    Fetches all jobs from Back4App. 
+    Equivalent to the Query logic in your Swift BeReal project.
     """
     try:
-        # Fetching all records and sorting by the date they were created
+        # Fetches all records and sorts by newest first
         return Job.Query.all().order_by("-createdAt")
     except Exception as e:
         st.error(f"Error loading from Back4App: {e}")
@@ -49,7 +48,7 @@ def load_jobs():
 
 def delete_job(job_id):
     """
-    Deletes a specific job application using its unique Back4App objectId.
+    Deletes a job using its unique objectId.
     """
     try:
         job_to_del = Job.Query.get(objectId=job_id)
@@ -61,7 +60,7 @@ def delete_job(job_id):
 
 def update_job_status(job_id, new_status):
     """
-    Updates the status of a job (e.g., changing it to 'Hidden' or 'Applied').
+    Updates the status column (e.g., changing 'Active' to 'Hidden').
     """
     try:
         job_to_update = Job.Query.get(objectId=job_id)
