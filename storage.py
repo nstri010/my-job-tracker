@@ -10,33 +10,31 @@ except Exception as e:
     st.error("Secrets Error: Please check your Streamlit Cloud Settings.")
     st.stop()
 
-# --- AUTHENTICATION FUNCTIONS ---
+# --- AUTHENTICATION ---
 def sign_up_user(username, password):
-    # Transforms username to satisfy Supabase email requirements
     email_format = f"{username}@tracker.com"
     try:
         response = supabase.auth.sign_up({"email": email_format, "password": password})
         return response.user is not None
     except Exception:
-        # Returns False silently so app.py can show a custom error
         return False
 
 def login_user(username, password):
-    # Matches the dummy domain used during signup
     email_format = f"{username}@tracker.com"
     try:
         response = supabase.auth.sign_in_with_password({"email": email_format, "password": password})
         return response.user is not None
     except Exception:
-        # Returns False silently so app.py can show a custom error
         return False
 
 # --- DATABASE FUNCTIONS ---
-def save_job(company, position, description):
+def save_job(company, position, description, job_url=None, resume_link=None):
     data = {
         "company": company,
         "position": position,
         "description": description,
+        "job_url": job_url,
+        "resume_link": resume_link,
         "status": "Active" 
     }
     try:
