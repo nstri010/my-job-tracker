@@ -3,10 +3,11 @@ from bs4 import BeautifulSoup
 import pypdf
 import docx2txt
 import io
-import google.generativeai as genai # Or use openai
+import google.generativeai as genai
 import streamlit as st
+import json
 
-# Configure your AI (Example using Google Gemini, which has a free tier)
+# Configure AI (Ensure GOOGLE_API_KEY is in your Streamlit Secrets)
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 model = genai.GenerativeModel('gemini-pro')
 
@@ -34,11 +35,10 @@ def scrape_job_link(url):
         return f"Error: {e}"
 
 def analyze_job_with_ai(raw_job_text, resume_text=None):
-    """Uses AI to format the job description and score the resume match."""
     prompt = f"""
-    You are a career assistant. I will provide raw text from a job posting.
-    1. Reformat the job description into clean, professional bullet points with proper spacing.
-    2. If a resume is provided, compare it to the job and give a 'Match Score' out of 10.
+    You are an expert career coach. 
+    1. Clean up the following raw job description text. Reformat it into professional bullet points with clear headers (Responsibilities, Requirements, Benefits). Fix all spacing issues.
+    2. If a resume is provided, analyze the match and provide a score from 0 to 10.
     
     JOB TEXT:
     {raw_job_text[:4000]}
@@ -46,12 +46,21 @@ def analyze_job_with_ai(raw_job_text, resume_text=None):
     RESUME TEXT:
     {resume_text if resume_text else "No resume provided."}
     
-    RETURN ONLY A JSON OBJECT with these keys: 
-    'formatted_desc' (string), 'match_score' (string like "8/10"), 'analysis' (short 2-sentence summary).
+    Return the result in this exact JSON format:
+    {{
+        "formatted_desc": "the cleaned text here",
+        "match_score": "X/10",
+        "brief_reasoning": "one sentence why"
+    }}
     """
     try:
         response = model.generate_content(prompt)
-        # In a real app, use json.loads(response.text). For simplicity here:
-        return response.text 
+        # Clean the response text to ensure it's valid JSON
+        json_data = response.text.strip().replace('```json', '').replace('```', '')
+        return json.loads(json_data)
     except Exception as e:
-        return f"AI Error: {e}"
+        return {
+            "formatted_desc": "Error formatting text. Please paste manually.",
+            "match_score": "N/A",
+            "brief_reasoning": str(e)
+        }
