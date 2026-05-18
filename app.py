@@ -7,7 +7,7 @@ st.set_page_config(page_title="Job Tracker", layout="wide")
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-# --- PROFESSIONAL UI STYLING ---
+# --- CSS OVERRIDE TO REMOVE THE "BLOCK" AND EXTRA PADDING ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -17,118 +17,97 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* The Login Card Container */
-    .auth-card {
+    /* This collapses the vertical spacing that creates the "block" look */
+    div[data-testid="stVerticalBlock"] > div {
+        gap: 0rem !important;
+    }
+
+    /* Style for the centered login card */
+    .login-container {
         background-color: #1a1f2e;
-        padding: 40px;
-        border-radius: 20px;
+        padding: 30px;
+        border-radius: 15px;
         border: 1px solid #2d3748;
-        text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        margin-top: 50px;
     }
 
-    /* Big Bold Header */
-    .auth-header {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 10px;
-    }
-
-    /* Buttons - Matching your purple example */
     div.stButton > button {
         background-color: #7d2ae8 !important;
         color: white !important;
-        font-weight: 600 !important;
-        padding: 12px 24px !important;
         border-radius: 10px !important;
         border: none !important;
+        font-weight: 600 !important;
         width: 100% !important;
-        transition: 0.3s;
-    }
-    div.stButton > button:hover {
-        background-color: #6a22c4 !important;
-        box-shadow: 0 4px 15px rgba(125, 42, 232, 0.4);
-    }
-
-    /* Input field styling */
-    input {
-        border-radius: 10px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CENTERED LOGIN INTERFACE ---
+# --- CLEAN LOGIN SCREEN ---
 if not st.session_state['logged_in']:
-    # This creates the "centered" effect using empty columns
-    left_spacer, center_column, right_spacer = st.columns([1, 1.5, 1])
+    # Using columns to create a tight center lane
+    _, center_col, _ = st.columns([1.2, 1, 1.2])
     
-    with center_column:
-        st.markdown('<div class="auth-card">', unsafe_allow_html=True)
-        st.markdown('<p class="auth-header">Jump back in!</p>', unsafe_allow_html=True)
-        
+    with center_col:
+        # Added a clean, minimal header (No "Jump back in")
+        st.markdown("""
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: white; margin-bottom: 0;">Welcome</h2>
+                <p style="color: #94a3b8; font-size: 0.9rem;">Sign in to your dashboard</p>
+            </div>
+        """, unsafe_allow_html=True)
+
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
         with tab1:
-            email_in = st.text_input("Email Address", placeholder="e.g. name@email.com")
-            pass_in = st.text_input("Password", type="password", placeholder="••••••••")
+            email_in = st.text_input("Email", placeholder="email@address.com", key="li_email", label_visibility="collapsed")
+            pass_in = st.text_input("Password", type="password", placeholder="Password", key="li_pass", label_visibility="collapsed")
             if st.button("Continue", key="login_btn"):
                 if login_user(email_in, pass_in):
                     st.session_state['logged_in'] = True
-                    st.session_state['user_email'] = email_in
                     st.rerun()
                 else:
-                    st.error("Invalid credentials.")
+                    st.error("Invalid Login")
         
         with tab2:
-            new_email = st.text_input("Choose Email", placeholder="yourname@email.com")
-            new_pass = st.text_input("Create Password", type="password", placeholder="Minimum 6 characters")
-            if st.button("Create My Account", key="signup_btn"):
-                if new_email and new_pass:
-                    if sign_up_user(new_email, new_pass):
-                        st.success("Account created! Please Sign In.")
-                else:
-                    st.warning("Please fill out all fields.")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 20px;'>By continuing, you agree to the Terms of Service.</p>", unsafe_allow_html=True)
+            new_email = st.text_input("New Email", placeholder="email@address.com", key="su_email", label_visibility="collapsed")
+            new_pass = st.text_input("New Password", type="password", placeholder="Password", key="su_pass", label_visibility="collapsed")
+            if st.button("Create Account", key="signup_btn"):
+                if sign_up_user(new_email, new_pass):
+                    st.success("Account created!")
+    
+    st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 50px;'>Powered by Supabase</p>", unsafe_allow_html=True)
 
-# --- MAIN DASHBOARD (Only visible after login) ---
+# --- MAIN DASHBOARD ---
 else:
-    col_title, col_logout = st.columns([5, 1])
-    with col_title:
-        st.title("📂 Job Application Tracker")
-    with col_logout:
+    header_col, logout_col = st.columns([5, 1])
+    with header_col:
+        st.title("📂 Job Tracker")
+    with logout_col:
         if st.button("Log Out"):
             st.session_state['logged_in'] = False
             st.rerun()
 
-    # --- ADD NEW JOB FORM ---
-    with st.expander("➕ Track a New Application", expanded=True):
-        with st.form("job_form"):
-            c1, c2 = st.columns(2)
-            comp = c1.text_input("Company Name")
-            pos = c2.text_input("Position Title")
-            desc = st.text_area("Job Description / Notes")
-            if st.form_submit_button("Save Application"):
-                if save_job(comp, pos, desc):
-                    st.success("Application tracked!")
-                    st.rerun()
-
-    # --- DISPLAY JOBS ---
-    st.divider()
-    jobs = load_jobs()
-    if jobs:
-        for job in jobs:
-            st.markdown(f"""
-                <div style="background: #1a1f2e; padding: 20px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #7d2ae8;">
-                    <h3 style="margin:0;">{job['position']}</h3>
-                    <p style="color:#7d2ae8; font-weight:bold;">{job['company']}</p>
-                    <p style="font-size:0.9rem; color:#94a3b8;">{job['description']}</p>
-                </div>
-            """, unsafe_allow_html=True)
-            if st.button("🗑️ Delete", key=f"del_{job['id']}"):
-                delete_job(job['id'])
+    # Form to add jobs
+    with st.form("job_form", clear_on_submit=True):
+        c1, c2 = st.columns(2)
+        comp = c1.text_input("Company")
+        pos = c2.text_input("Position")
+        desc = st.text_area("Notes")
+        if st.form_submit_button("Save Application"):
+            if save_job(comp, pos, desc):
+                st.success("Saved!")
                 st.rerun()
-    else:
-        st.info("No applications found. Start by adding one above!")
+
+    st.divider()
+    
+    # List jobs
+    for job in load_jobs():
+        st.markdown(f"""
+            <div style="background: #1a1f2e; padding: 20px; border-radius: 10px; border-left: 4px solid #7d2ae8; margin-bottom: 10px;">
+                <h4 style="margin:0;">{job['position']}</h4>
+                <p style="color:#7d2ae8; margin:0;">{job['company']}</p>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Delete", key=f"del_{job['id']}"):
+            delete_job(job['id'])
+            st.rerun()
