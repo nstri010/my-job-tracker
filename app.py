@@ -50,8 +50,6 @@ if not st.session_state['logged_in']:
         # Minimalist Header
         st.markdown("<h2 style='text-align: center; color: white; margin-top: 60px;'>Welcome!</h2>", unsafe_allow_html=True)
 
-        <p style="color: #94a3b8; font-size: 0.9rem;"> A calm, organized space created just for you to track your saved jobs and resumes.</p>
-
         # Tabs for Auth
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
@@ -73,7 +71,12 @@ if not st.session_state['logged_in']:
                     st.success("Account created!")
 
         # --- TEXT POSITIONED UNDER THE MENU ---
-        st.markdown('<p class="instruction-text">Sign in to access your saved jobs and resumes.</p>', unsafe_allow_html=True)
+        st.markdown("""
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 5px;">A calm, organized space created just for you to track your saved jobs and resumes.</p>
+                <p style="color: #94a3b8; font-size: 0.85rem; font-weight: bold;">Sign in to access your saved jobs and resumes.</p>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Footer
     st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 60px;'>Powered by Supabase</p>", unsafe_allow_html=True)
