@@ -2,14 +2,16 @@ import requests
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
+# Your unique keys from the Back4App dashboard
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
-# ENSURE THIS IS THE MASTER KEY (The longest one in your settings)
+# Using the Master Key here is our "Skeleton Key" for the database
 MASTER_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
 
-# Using the generic users endpoint
-USER_URL = "https://parseapi.back4app.com/users"
+# URLs for your classes
+# We use 'Member' instead of the restricted 'User' to bypass Free Plan limits
+MEMBER_URL = "https://parseapi.back4app.com/classes/Member"
+JOB_URL = "https://parseapi.back4app.com/classes/Job"
 
-# We are strictly using the Master Key header here
 HEADERS = {
     "X-Parse-Application-Id": APP_ID,
     "X-Parse-Master-Key": MASTER_KEY,
@@ -17,45 +19,60 @@ HEADERS = {
 }
 
 # --- JOB DATABASE FUNCTIONS ---
-# (Keeping these the same so your tracker doesn't break)
-BASE_URL = "https://parseapi.back4app.com/classes/Job"
 
 def save_job(company, position, description):
-    payload = {"company": company, "position": position, "description": description, "status": "Active"}
-    return requests.post(BASE_URL, json=payload, headers=HEADERS).status_code == 201
+    """Saves a new job application to the Job class"""
+    payload = {
+        "company": company,
+        "position": position,
+        "description": description,
+        "status": "Active"
+    }
+    response = requests.post(JOB_URL, json=payload, headers=HEADERS)
+    return response.status_code == 201
 
 def load_jobs():
-    response = requests.get(f"{BASE_URL}?order=-createdAt", headers=HEADERS)
-    return response.json().get("results", []) if response.status_code == 200 else []
-
-def update_job_status(object_id, new_status):
-    url = f"{BASE_URL}/{object_id}"
-    return requests.put(url, json={"status": new_status}, headers=HEADERS).status_code == 200
+    """Fetches all jobs to display in the UI"""
+    response = requests.get(f"{JOB_URL}?order=-createdAt", headers=HEADERS)
+    if response.status_code == 200:
+        return response.json().get("results", [])
+    return []
 
 def delete_job(object_id):
-    return requests.delete(f"{BASE_URL}/{object_id}", headers=HEADERS).status_code == 200
+    """Permanently deletes a job using its objectId"""
+    url = f"{JOB_URL}/{object_id}"
+    response = requests.delete(url, headers=HEADERS)
+    return response.status_code == 200
 
-# --- THE NEW USER SIGN UP FUNCTION ---
+def update_job_status(object_id, new_status):
+    """Changes the status of a job (e.g., to 'Hidden')"""
+    url = f"{JOB_URL}/{object_id}"
+    payload = {"status": new_status}
+    response = requests.put(url, json=payload, headers=HEADERS)
+    return response.status_code == 200
+
+# --- USER AUTHENTICATION FUNCTIONS ---
 
 def sign_up_user(username, password, email):
-    """Attempting a direct POST to the users table"""
-    data = {
+    """Creates a new record in our custom Member class"""
+    payload = {
         "username": username,
         "password": password,
         "email": email
     }
     
     try:
-        # We are forcing the request to ignore cached sessions
-        response = requests.post(USER_URL, json=data, headers=HEADERS)
+        # Posting to MEMBER_URL instead of the restricted /users endpoint
+        response = requests.post(MEMBER_URL, json=payload, headers=HEADERS)
         
         if response.status_code == 201:
             return True
         else:
-            # This will show the RAW error from the server so we can see the 'Real' problem
-            raw_error = response.json()
-            st.error(f"Server Error {response.status_code}: {raw_error}")
+            # If it still fails, this will show the exact reason from the server
+            error_data = response.json()
+            st.error(f"Database Error: {error_data.get('error', 'Unknown Error')}")
             return False
+            
     except Exception as e:
         st.error(f"Connection Error: {e}")
         return False
