@@ -17,7 +17,7 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Collapses vertical spacing to remove the "block" effect */
+    /* Collapses vertical spacing for a tighter layout */
     div[data-testid="stVerticalBlock"] > div {
         gap: 0rem !important;
     }
@@ -31,14 +31,6 @@ st.markdown("""
         width: 100% !important;
         margin-top: 10px;
     }
-
-    .instruction-text {
-        text-align: center;
-        color: #94a3b8;
-        font-size: 0.85rem;
-        margin-top: 20px;
-        line-height: 1.5;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -47,7 +39,6 @@ if not st.session_state['logged_in']:
     _, center_col, _ = st.columns([1.2, 1, 1.2])
     
     with center_col:
-        # Minimalist Header
         st.markdown("<h2 style='text-align: center; color: white; margin-top: 60px;'>Welcome!</h2>", unsafe_allow_html=True)
 
         st.markdown("""
@@ -69,23 +60,25 @@ if not st.session_state['logged_in']:
                     st.session_state['logged_in'] = True
                     st.rerun()
                 else:
-                    st.error("Invalid Login")
+                    # THE SINGLE USER-FRIENDLY ERROR MESSAGE
+                    st.error("Invalid Login: Please check your username or password and try again.")
         
         with tab2:
             new_user = st.text_input("Choose Username", placeholder="Create username", key="su_user", label_visibility="collapsed")
             new_pass = st.text_input("Set Password", type="password", placeholder="Create password", key="su_pass", label_visibility="collapsed")
             if st.button("Create Account", key="signup_btn"):
                 if sign_up_user(new_user, new_pass):
-                    st.success("Account created!")
+                    st.success("Account created! You can now sign in.")
+                else:
+                    st.error("Could not create account. This username might already be taken.")
 
-        # --- TEXT POSITIONED UNDER THE MENU ---
+        # Text positioned under the menu
         st.markdown("""
             <div style="text-align: center; margin-top: 20px;">
                 <p style="color: #94a3b8; font-size: 0.85rem; font-weight: bold;">Sign in to access your saved jobs and resumes.</p>
             </div>
         """, unsafe_allow_html=True)
 
-    # Footer
     st.markdown("<p style='text-align: center; color: #4a5568; font-size: 0.7rem; margin-top: 60px;'>Powered by Supabase</p>", unsafe_allow_html=True)
 
 # --- MAIN DASHBOARD ---
@@ -98,7 +91,6 @@ else:
             st.session_state['logged_in'] = False
             st.rerun()
 
-    # Form to add jobs
     with st.form("job_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         comp = c1.text_input("Company")
@@ -111,7 +103,6 @@ else:
 
     st.divider()
     
-    # List jobs
     for job in load_jobs():
         st.markdown(f"""
             <div style="background: #1a1f2e; padding: 20px; border-radius: 10px; border-left: 4px solid #7d2ae8; margin-bottom: 10px;">
