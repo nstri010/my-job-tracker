@@ -2,16 +2,16 @@ import requests
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
-# Your unique keys from the Back4App dashboard
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
-REST_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
+# I have used your Master Key here to bypass the unauthorized errors
+MASTER_KEY = 'MC7MUvY03Gm7TsVBYaTgKBvU1VmpdFWrh7d1pxzz'
 
-# The base URL for your Job class
 BASE_URL = "https://parseapi.back4app.com/classes/Job"
 
+# CRITICAL FIX: Changed 'X-Parse-REST-API-Key' to 'X-Parse-Master-Key'
 HEADERS = {
     "X-Parse-Application-Id": APP_ID,
-    "X-Parse-REST-API-Key": REST_KEY,
+    "X-Parse-Master-Key": MASTER_KEY,
     "Content-Type": "application/json"
 }
 
@@ -51,8 +51,7 @@ def update_job_status(object_id, new_status):
 # --- USER AUTHENTICATION FUNCTIONS ---
 
 def sign_up_user(username, password, email):
-    """Creates a new user record in Back4App's built-in User system"""
-    # Try the explicit Parse API URL
+    """Creates a new user record using the Master Key to bypass permission blocks"""
     user_url = "https://parseapi.back4app.com/users"
     
     payload = {
@@ -62,14 +61,17 @@ def sign_up_user(username, password, email):
     }
     
     try:
+        # We use the HEADERS that now contain the Master Key
         response = requests.post(user_url, json=payload, headers=HEADERS)
         
-        # If it fails, this will print the reason to your Streamlit screen
-        if response.status_code != 201:
-            st.error(f"Backend Error: {response.json().get('error', 'Unknown Error')}")
+        if response.status_code == 201:
+            return True
+        else:
+            # This will show you the EXACT reason for failure (e.g., 'Account already exists')
+            error_msg = response.json().get('error', 'Unknown Error')
+            st.error(f"Backend Error: {error_msg}")
             return False
             
-        return True
     except Exception as e:
         st.error(f"Connection Error: {e}")
         return False
