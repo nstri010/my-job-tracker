@@ -13,6 +13,7 @@ if 'match_data' not in st.session_state: st.session_state['match_data'] = None
 
 if st.session_state['logged_in']:
     st.title("📂 Job Tracker")
+    st.caption("⚠️ This website uses AI results. Always make sure to verify information for accuracy.")
     
     with st.expander("➕ Add New Application", expanded=True):
         # First Row: Basic Info
