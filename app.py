@@ -38,7 +38,7 @@ if st.session_state['logged_in']:
                     st.warning("Please enter a URL first.")
 
         # Display the formatted description
-        final_desc = st.text_area("Job Description", value=st.session_state['formatted_desc'], height=300)
+        final_desc = st.text_area("Job Description (click to edit text)", value=st.session_state['formatted_desc'], height=300)
 
         st.divider()
 
