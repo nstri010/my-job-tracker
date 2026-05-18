@@ -2,7 +2,6 @@ import requests
 import streamlit as st
 
 # --- CONNECT TO BACK4APP ---
-# Using your keys from the screenshot
 APP_ID = 'qloRSo1QY0KMANAydrd3kIRJw2d3JyigbBeyn5tC'
 REST_KEY = 'OxKhu8kEcoTOlyN2JQ6bF8eghCcySfoVnbHSLEda'
 
@@ -15,7 +14,7 @@ HEADERS = {
 }
 
 def save_job(company, position, description):
-    """Saves a job to the 'Job' class in Back4App using a POST request"""
+    """Saves a job to the 'Job' class in Back4App"""
     payload = {
         "company": company,
         "position": position,
@@ -26,16 +25,21 @@ def save_job(company, position, description):
     return response.status_code == 201
 
 def load_jobs():
-    """Fetches all jobs using a GET request"""
-    # This grabs the data and sorts by newest first
+    """Fetches all jobs from Back4App"""
     response = requests.get(f"{BASE_URL}?order=-createdAt", headers=HEADERS)
     if response.status_code == 200:
-        # Returns a list of dictionaries just like your old code expected
         return response.json().get("results", [])
     return []
 
 def delete_job(object_id):
-    """Deletes a job using a DELETE request"""
+    """Deletes a job using its objectId"""
     url = f"{BASE_URL}/{object_id}"
     response = requests.delete(url, headers=HEADERS)
+    return response.status_code == 200
+
+def update_job_status(object_id, new_status):
+    """Updates the status (like Archive/Hidden) for a specific job"""
+    url = f"{BASE_URL}/{object_id}"
+    payload = {"status": new_status}
+    response = requests.put(url, json=payload, headers=HEADERS)
     return response.status_code == 200
