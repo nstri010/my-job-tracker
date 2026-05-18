@@ -1,5 +1,5 @@
 import streamlit as st
-from storage import load_jobs, save_job, delete_job, sign_up_user, login_user
+from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume
 from utils import scrape_job_link
 
 # Page Config
@@ -7,6 +7,8 @@ st.set_page_config(page_title="Job Tracker", layout="wide")
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
+if 'username' not in st.session_state:
+    st.session_state['username'] = ""
 
 # --- CSS ---
 st.markdown("""
@@ -31,8 +33,9 @@ if not st.session_state['logged_in']:
             if st.button("Continue"):
                 if login_user(u, p):
                     st.session_state['logged_in'] = True
+                    st.session_state['username'] = u
                     st.rerun()
-                else: st.error("Invalid Login: Please check your credentials.")
+                else: st.error("Invalid Login: Check username or password.")
         with tab2:
             nu = st.text_input("Choose Username", placeholder="Create username", key="su_u")
             np = st.text_input("Set Password", type="password", placeholder="Create password", key="su_p")
@@ -46,7 +49,6 @@ else:
     with st.expander("➕ Add New Application", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            # Placeholders with "e.g."
             comp = st.text_input("Company Name", placeholder="e.g. Google")
             pos = st.text_input("Position Title", placeholder="e.g. Data Analyst")
         with col2:
@@ -57,14 +59,19 @@ else:
                         st.session_state['auto_desc'] = scrape_job_link(url_input)
                 else: st.warning("Please paste a link first.")
         
-        resume_url = st.text_input("Resume Link", placeholder="e.g. Link to your Google Drive or Dropbox PDF")
+        # FILE UPLOADER FOR RESUME
+        uploaded_resume = st.file_uploader("Upload Resume (PDF or DOCX)", type=["pdf", "docx"])
         
-        # Prefill description if scraped
         default_desc = st.session_state.get('auto_desc', "")
         desc = st.text_area("Job Description / Notes", value=default_desc, height=150, placeholder="Details about the role...")
         
         if st.button("Save Application"):
-            if save_job(comp, pos, desc, url_input, resume_url):
+            res_url = None
+            if uploaded_resume:
+                with st.spinner("Uploading resume..."):
+                    res_url = upload_resume(uploaded_resume, st.session_state['username'])
+            
+            if save_job(comp, pos, desc, url_input, res_url):
                 st.session_state['auto_desc'] = "" 
                 st.success("Saved!")
                 st.rerun()
@@ -73,14 +80,13 @@ else:
     
     jobs = load_jobs()
 
-    # SHOW EXAMPLE CARD IF EMPTY
     if not jobs:
         st.markdown("""
             <div class="example-card">
                 <h4 style="margin:0; color: #94a3b8;">Example Position</h4>
                 <p style="color:#7d2ae8; margin:0; font-weight: bold;">Example Company Inc.</p>
                 <p style="color:#64748b; font-size: 0.9rem; margin-top: 5px;">
-                    This is an example. Once you save your first real application, this card will disappear.
+                    Once you save your first real application, this card will disappear.
                 </p>
             </div>
         """, unsafe_allow_html=True)
