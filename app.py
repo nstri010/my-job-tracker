@@ -9,25 +9,33 @@ if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 if 'formatted_desc' not in st.session_state: st.session_state['formatted_desc'] = ""
 if 'match_data' not in st.session_state: st.session_state['match_data'] = None
 
-# --- [Login Logic remains the same as before] ---
+# --- [Login Logic remains here] ---
 
 if st.session_state['logged_in']:
     st.title("📂 Job Tracker")
     
     with st.expander("➕ Add New Application", expanded=True):
-        c1, c2 = st.columns([3, 1])
-        comp = st.text_input("Company Name", placeholder="e.g. Google")
-        pos = st.text_input("Position Title", placeholder="e.g. Data Analyst")
-        url_in = c1.text_input("Job Posting URL", placeholder="Paste link here...")
-        
-        # STEP 1: AUTO-FILL
-        if c2.button("✨ Auto-Fill"):
-            if url_in:
-                with st.spinner("Generating full listing..."):
-                    raw = scrape_job_link(url_in)
-                    st.session_state['formatted_desc'] = clean_description_with_ai(raw)
-            else:
-                st.warning("Please enter a URL first.")
+        # First Row: Basic Info
+        row1_col1, row1_col2 = st.columns(2)
+        with row1_col1:
+            comp = st.text_input("Company Name", placeholder="e.g. Google")
+        with row1_col2:
+            pos = st.text_input("Position Title", placeholder="e.g. Data Analyst")
+
+        # Second Row: URL and Auto-Fill (Placed right under the first row)
+        row2_col1, row2_col2 = st.columns([3, 1])
+        with row2_col1:
+            url_in = st.text_input("Job Posting URL", placeholder="Paste link here...")
+        with row2_col2:
+            # Added a little vertical padding with markdown to align button better
+            st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨ Auto-Fill"):
+                if url_in:
+                    with st.spinner("Generating full listing..."):
+                        raw = scrape_job_link(url_in)
+                        st.session_state['formatted_desc'] = clean_description_with_ai(raw)
+                else:
+                    st.warning("Please enter a URL first.")
 
         # Display the formatted description
         final_desc = st.text_area("Job Description", value=st.session_state['formatted_desc'], height=300)
@@ -62,4 +70,4 @@ if st.session_state['logged_in']:
                 st.success("Saved!")
                 st.rerun()
 
-    # --- [Dashboard/Load Jobs section remains the same] ---
+    # --- [Dashboard/Load Jobs section follows] ---
