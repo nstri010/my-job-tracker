@@ -1,35 +1,21 @@
 import os
 import requests
-import pypdf
-import docx2txt
 from bs4 import BeautifulSoup
 
-def extract_text_from_file(file_path):
-    ext = os.path.splitext(file_path)[1].lower()
-    try:
-        if ext == '.pdf':
-            with open(file_path, 'rb') as f:
-                reader = pypdf.PdfReader(f)
-                return " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
-        elif ext in ['.docx', '.doc']:
-            return docx2txt.process(file_path)
-    except Exception as e:
-        print(f"Error: {e}")
-    return ""
-
 def scrape_job_link(url):
+    """Fetches the webpage and extracts the main text for the job description."""
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
-        for element in soup(["script", "style", "nav", "footer", "header"]):
+        
+        # Remove clutter like scripts and footers
+        for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
             element.extract()
+            
         text = soup.get_text(separator='\n')
         lines = [line.strip() for line in text.splitlines() if line.strip()]
-        return '\n'.join(lines)[:5000]
+        # Return first 2000 characters to keep it clean
+        return '\n'.join(lines)[:2000]
     except Exception as e:
-        return f"Could not fetch: {e}"
-
-def generate_pdf_snapshot(url, filename):
-    # We are disabling this for the cloud version to prevent errors
-    return False
+        return f"Could not fetch description automatically: {e}"
