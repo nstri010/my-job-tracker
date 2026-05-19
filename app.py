@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as s
 from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
