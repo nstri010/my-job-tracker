@@ -39,16 +39,26 @@ if not st.session_state['logged_in']:
 
 # --- MAIN APPLICATION ---
 if st.session_state['logged_in']:
-    # Sidebar for Navigation and Logout
-    with st.sidebar:
-        st.write(f"👤 Logged in as: **{st.session_state['username']}**")
-        if st.button("Logout"):
+    # Top Header Row with Logout Button in the Right Corner
+    # [5, 1, 1] ratio pushes the user info and button to the far right
+    col_title, col_user, col_logout = st.columns([5, 1.5, 1])
+    
+    with col_title:
+        st.title("📂 Job Tracker")
+        
+    with col_user:
+        # Adds a little vertical padding to align with the title
+        st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
+        st.write(f"👤 **{st.session_state['username']}**")
+        
+    with col_logout:
+        st.markdown("<div style='margin-top: 18px;'></div>", unsafe_allow_html=True)
+        if st.button("Sign Out", type="secondary", use_container_width=True):
             st.session_state['logged_in'] = False
             st.session_state['username'] = None
             st.rerun()
             
-    st.title("📂 Job Tracker")
-    st.caption("⚠️ This website uses AI results. Always make sure to verify information for accuracy.")
+    st.caption("⚠️ This website uses AI results. Always verify for accuracy.")
     
     with st.expander("➕ Add New Application", expanded=True):
         row1_col1, row1_col2 = st.columns(2)
