@@ -8,18 +8,22 @@ import streamlit as st
 import json
 import asyncio
 import subprocess
-import os
+import sys
 from playwright.async_api import async_playwright
 
-# --- PLAYWRIGHT INSTALLATION LOGIC ---
-# This ensures the browser is downloaded on the Streamlit Cloud server
-def install_playwright():
+# --- CRITICAL STARTUP SCRIPT ---
+# This forces the Streamlit server to download Chromium if it's missing
+def try_install_playwright():
     try:
-        subprocess.run(["playwright", "install", "chromium"])
-    except Exception as e:
-        print(f"Browser installation error: {e}")
+        # Check if playwright is already installed/working
+        subprocess.run(["playwright", "--version"], capture_output=True, check=True)
+    except:
+        # If not, install the browser and its dependencies
+        subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
+        subprocess.run([sys.executable, "-m", "playwright", "install-deps"])
 
-install_playwright()
+# Run the installation check immediately on app startup
+try_install_playwright()
 
 # AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -62,14 +66,18 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 def generate_pdf_snapshot(url, filename):
-    """Uses Playwright to take a PDF snapshot in headless mode."""
+    """Uses Playwright to take a PDF snapshot of the job website."""
     async def run():
         async with async_playwright() as p:
-            # Headless=True is required for Streamlit Cloud
-            browser = await p.chromium.launch(headless=True)
+            # We use chromium.launch() with specific flags for Cloud stability
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox"]
+            )
             page = await browser.new_page()
             try:
-                await page.goto(url, wait_until="networkidle", timeout=30000)
+                # networkidle waits for the page to finish loading images/scripts
+                await page.goto(url, wait_until="networkidle", timeout=45000)
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
