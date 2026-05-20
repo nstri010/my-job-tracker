@@ -122,15 +122,15 @@ if st.session_state['logged_in']:
     st.header("📋 My Applied Jobs")
     jobs_list = load_jobs()
     
-    if jobs_list:
+if jobs_list:
         df = pd.DataFrame(jobs_list)
-        # Configuration to make PDF and Resume URLs clickable in the table
+        # Use the specific keys from your database
         st.dataframe(
             df, 
             use_container_width=True,
             column_config={
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
-                "resume_url": st.column_config.LinkColumn("My Resume"),
+                "resume_link": st.column_config.LinkColumn("My Resume"), # Match your storage.py key
                 "job_url": st.column_config.LinkColumn("Original Link")
             }
         )
