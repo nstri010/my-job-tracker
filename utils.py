@@ -9,20 +9,21 @@ import json
 import asyncio
 import subprocess
 import sys
+import os
 from playwright.async_api import async_playwright
 
-# --- CRITICAL STARTUP SCRIPT ---
-# This forces the Streamlit server to download Chromium if it's missing
+# --- OPTIMIZED STARTUP SCRIPT ---
+@st.cache_resource
 def try_install_playwright():
+    """Runs once per session to ensure browser exists without crashing."""
     try:
-        # Check if playwright is already installed/working
+        # Check if already installed
         subprocess.run(["playwright", "--version"], capture_output=True, check=True)
     except:
-        # If not, install the browser and its dependencies
+        # Install only if missing
         subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
         subprocess.run([sys.executable, "-m", "playwright", "install-deps"])
 
-# Run the installation check immediately on app startup
 try_install_playwright()
 
 # AI Setup
@@ -65,24 +66,32 @@ def get_ai_match_feedback(job_desc, resume_text):
         return json.loads(response.text.strip('`json \n'))
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
+async def run_snapshot(url, filename):
+    async with async_playwright() as p:
+        # Launch with additional flags for low-memory environments
+        browser = await p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox", 
+                "--disable-setuid-sandbox", 
+                "--disable-dev-shm-usage", 
+                "--disable-gpu"
+            ]
+        )
+        context = await browser.new_context(viewport={'width': 1280, 'height': 800})
+        page = await context.new_page()
+        try:
+            # Increase timeout to 60s for slow sites
+            await page.goto(url, wait_until="load", timeout=60000)
+            await asyncio.sleep(2) # Give it a moment to settle
+            await page.pdf(path=filename, format="A4")
+            return True
+        except Exception as e:
+            st.error(f"Snapshot Failed: {e}")
+            return False
+        finally:
+            await browser.close()
+
 def generate_pdf_snapshot(url, filename):
-    """Uses Playwright to take a PDF snapshot of the job website."""
-    async def run():
-        async with async_playwright() as p:
-            # We use chromium.launch() with specific flags for Cloud stability
-            browser = await p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox"]
-            )
-            page = await browser.new_page()
-            try:
-                # networkidle waits for the page to finish loading images/scripts
-                await page.goto(url, wait_until="networkidle", timeout=45000)
-                await page.pdf(path=filename, format="A4")
-                await browser.close()
-                return True
-            except Exception as e:
-                print(f"Snapshot Error: {e}")
-                await browser.close()
-                return False
-    return asyncio.run(run())
+    """Wrapper to run the async function correctly."""
+    return asyncio.run(run_snapshot(url, filename))
