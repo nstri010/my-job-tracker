@@ -1,10 +1,9 @@
 streamlit
 pandas
 requests
-supabase==2.4.0
+supabase
 beautifulsoup4
 pypdf
 docx2txt
 google-generativeai
-playwright
 fpdf2
