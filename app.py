@@ -39,15 +39,13 @@ if not st.session_state['logged_in']:
 
 # --- MAIN APPLICATION ---
 if st.session_state['logged_in']:
-    # Top Header Row with Logout Button in the Right Corner
-    # [5, 1, 1] ratio pushes the user info and button to the far right
-    col_title, col_user, col_logout = st.columns([5, 1.5, 1])
+    # Top Header Row with User Info and Sign Out in Right Corner
+    col_title, col_user, col_logout = st.columns([4, 1.5, 1])
     
     with col_title:
         st.title("📂 Job Tracker")
         
     with col_user:
-        # Adds a little vertical padding to align with the title
         st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
         st.write(f"👤 **{st.session_state['username']}**")
         
@@ -60,6 +58,7 @@ if st.session_state['logged_in']:
             
     st.caption("⚠️ This website uses AI results. Always verify for accuracy.")
     
+    # STEP 1: ADD NEW APPLICATION
     with st.expander("➕ Add New Application", expanded=True):
         row1_col1, row1_col2 = st.columns(2)
         with row1_col1:
@@ -84,12 +83,13 @@ if st.session_state['logged_in']:
 
         st.divider()
 
+        # STEP 2: RESUME SCAN
         st.subheader("🎯 AI Resume Match Scan")
         up_file = st.file_uploader("Upload Resume for Feedback", type=['pdf', 'docx'])
         
         if st.button("🔍 Scan for Match"):
             if final_desc and up_file:
-                with st.spinner("Analyzing..."):
+                with st.spinner("Analyzing match..."):
                     resume_txt = extract_text_from_upload(up_file)
                     st.session_state['match_data'] = get_ai_match_feedback(final_desc, resume_txt)
             else:
@@ -101,24 +101,38 @@ if st.session_state['logged_in']:
             for f in m.get('feedback', []):
                 st.write(f"✅ {f}")
 
+        # STEP 3: SAVE AND GENERATE PDF
         if st.button("💾 Save Application"):
             if comp and pos:
-                score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
-                res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
-                if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
-                    st.session_state['formatted_desc'] = ""
-                    st.session_state['match_data'] = None
-                    st.success("Saved!")
-                    st.rerun()
+                with st.spinner("Saving data and generating PDF record..."):
+                    score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
+                    res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
+                    
+                    # save_job triggers the background PDF rendering of url_in
+                    if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
+                        st.session_state['formatted_desc'] = ""
+                        st.session_state['match_data'] = None
+                        st.success("Application and Job PDF saved successfully!")
+                        st.rerun()
             else:
                 st.warning("Please provide a Company Name and Position.")
 
-    # Section for Viewing Saved Jobs
+    # STEP 4: VIEW SAVED JOBS
     st.divider()
     st.header("📋 My Applied Jobs")
     jobs_list = load_jobs()
+    
     if jobs_list:
         df = pd.DataFrame(jobs_list)
-        st.dataframe(df, use_container_width=True)
+        # Configuration to make PDF and Resume URLs clickable in the table
+        st.dataframe(
+            df, 
+            use_container_width=True,
+            column_config={
+                "pdf_url": st.column_config.LinkColumn("Job PDF"),
+                "resume_url": st.column_config.LinkColumn("My Resume"),
+                "job_url": st.column_config.LinkColumn("Original Link")
+            }
+        )
     else:
         st.write("No applications saved yet.")
