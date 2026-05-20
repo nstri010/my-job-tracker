@@ -1,15 +1,9 @@
 import streamlit as st
-
-# --- DEBUG CHECKPOINT 1 ---
-st.write("🔍 Debug: Starting Imports...")
-
 import pandas as pd
 from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
-# --- DEBUG CHECKPOINT 2 ---
-st.write("🔍 Debug: Imports Finished. Setting Config...")
-
+# Page Configuration
 st.set_page_config(page_title="Job Tracker", layout="wide")
 
 # Session State Initialization
@@ -17,8 +11,7 @@ if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 if 'formatted_desc' not in st.session_state: st.session_state['formatted_desc'] = ""
 if 'match_data' not in st.session_state: st.session_state['match_data'] = None
 
-# --- [Login Logic] ---
-# Note: Ensure these functions exist in your 'storage.py'
+# --- AUTHENTICATION ---
 if not st.session_state['logged_in']:
     st.title("🔐 Job Tracker Login")
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
@@ -43,7 +36,7 @@ if not st.session_state['logged_in']:
             else:
                 st.error("Username already exists.")
 
-# --- [Main App Logic] ---
+# --- MAIN APPLICATION ---
 if st.session_state['logged_in']:
     st.title("📂 Job Tracker")
     st.caption("⚠️ This website uses AI results. Always make sure to verify information for accuracy.")
@@ -60,24 +53,24 @@ if st.session_state['logged_in']:
             url_in = st.text_input("Job Posting URL", placeholder="Paste link here...")
         with row2_col2:
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("✨ Auto-Fill Job Description"):
+            if st.button("✨ Auto-Fill Description"):
                 if url_in:
-                    with st.spinner("Generating full listing..."):
+                    with st.spinner("Generating listing..."):
                         raw = scrape_job_link(url_in)
                         st.session_state['formatted_desc'] = clean_description_with_ai(raw)
                 else:
                     st.warning("Please enter a URL first.")
 
-        final_desc = st.text_area("Job Description (click to edit text)", value=st.session_state['formatted_desc'], height=300)
+        final_desc = st.text_area("Job Description (editable)", value=st.session_state['formatted_desc'], height=300)
 
         st.divider()
 
         st.subheader("🎯 AI Resume Match Scan")
         up_file = st.file_uploader("Upload Resume for Feedback", type=['pdf', 'docx'])
         
-        if st.button("🔍 Scan for Match & Feedback"):
+        if st.button("🔍 Scan for Match"):
             if final_desc and up_file:
-                with st.spinner("Analyzing match..."):
+                with st.spinner("Analyzing..."):
                     resume_txt = extract_text_from_upload(up_file)
                     st.session_state['match_data'] = get_ai_match_feedback(final_desc, resume_txt)
             else:
