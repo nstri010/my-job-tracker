@@ -10,6 +10,7 @@ st.set_page_config(page_title="Job Tracker", layout="wide")
 if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 if 'formatted_desc' not in st.session_state: st.session_state['formatted_desc'] = ""
 if 'match_data' not in st.session_state: st.session_state['match_data'] = None
+if 'username' not in st.session_state: st.session_state['username'] = None
 
 # --- AUTHENTICATION ---
 if not st.session_state['logged_in']:
@@ -38,6 +39,14 @@ if not st.session_state['logged_in']:
 
 # --- MAIN APPLICATION ---
 if st.session_state['logged_in']:
+    # Sidebar for Navigation and Logout
+    with st.sidebar:
+        st.write(f"👤 Logged in as: **{st.session_state['username']}**")
+        if st.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.session_state['username'] = None
+            st.rerun()
+            
     st.title("📂 Job Tracker")
     st.caption("⚠️ This website uses AI results. Always make sure to verify information for accuracy.")
     
@@ -83,10 +92,23 @@ if st.session_state['logged_in']:
                 st.write(f"✅ {f}")
 
         if st.button("💾 Save Application"):
-            score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
-            res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
-            if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
-                st.session_state['formatted_desc'] = ""
-                st.session_state['match_data'] = None
-                st.success("Saved!")
-                st.rerun()
+            if comp and pos:
+                score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
+                res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
+                if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
+                    st.session_state['formatted_desc'] = ""
+                    st.session_state['match_data'] = None
+                    st.success("Saved!")
+                    st.rerun()
+            else:
+                st.warning("Please provide a Company Name and Position.")
+
+    # Section for Viewing Saved Jobs
+    st.divider()
+    st.header("📋 My Applied Jobs")
+    jobs_list = load_jobs()
+    if jobs_list:
+        df = pd.DataFrame(jobs_list)
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.write("No applications saved yet.")
