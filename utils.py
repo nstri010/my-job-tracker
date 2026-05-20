@@ -6,6 +6,8 @@ import io
 import google.generativeai as genai
 import streamlit as st
 import json
+import asyncio
+from playwright.async_api import async_playwright
 
 # AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -23,53 +25,44 @@ def extract_text_from_upload(uploaded_file):
     return ""
 
 def scrape_job_link(url):
-    """Restored the double-newline separator for perfect spacing."""
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        
-        for junk in soup(["script", "style", "nav", "footer", "header", "aside"]):
-            junk.extract()
-            
-        # The key for spacing: separator='\n\n'
+        for junk in soup(["script", "style", "nav", "footer", "header"]):
+            junk.decompose()
         return soup.get_text(separator='\n\n', strip=True)
     except Exception as e:
         return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    """Restores the full, non-summarized formatting logic."""
-    prompt = f"""
-    Act as a professional document editor. 
-    Take the following job text and reformat it into a beautiful, easy-to-read job listing.
-    
-    RULES:
-    1. Use clear bold headers (e.g., **Responsibilities**, **Requirements**).
-    2. Use bullet points for all lists.
-    3. Ensure there is a double space between sections.
-    4. DO NOT summarize. Keep the full details of the job.
-    
-    TEXT:
-    {raw_text[:5000]}
-    """
+    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
     try:
         response = model.generate_content(prompt)
         return response.text
-    except:
-        return raw_text
+    except: return raw_text
 
 def get_ai_match_feedback(job_desc, resume_text):
-    """New separate function for the Match Score and Feedback."""
-    prompt = f"""
-    Compare this Job and Resume. 
-    Return a Match Score (0-10) and 3 bullet points of feedback for the candidate.
-    Return ONLY JSON: {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
-    
-    JOB: {job_desc[:2500]}
-    RESUME: {resume_text[:2500]}
-    """
+    prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
     try:
-        response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-        return json.loads(response.text)
-    except:
-        return {"score": "N/A", "feedback": ["Analysis currently unavailable."]}
+        response = model.generate_content(prompt)
+        return json.loads(response.text.strip('`json \n'))
+    except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
+
+def generate_pdf_snapshot(url, filename):
+    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
+    async def run():
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            try:
+                # networkidle waits for the page to finish loading images/scripts
+                await page.goto(url, wait_until="networkidle", timeout=30000)
+                await page.pdf(path=filename, format="A4")
+                await browser.close()
+                return True
+            except Exception as e:
+                print(f"Snapshot Error: {e}")
+                await browser.close()
+                return False
+    return asyncio.run(run())
