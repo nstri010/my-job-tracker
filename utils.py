@@ -12,18 +12,17 @@ import sys
 import os
 from playwright.async_api import async_playwright
 
-# --- OPTIMIZED STARTUP SCRIPT ---
-# This ensures the browser is installed only once when the app boots up
+# --- OPTIMIZED STARTUP ---
 @st.cache_resource
 def try_install_playwright():
     try:
-        # Check if playwright is already functional
+        # Try to check version; if it fails, install
         subprocess.run(["playwright", "--version"], capture_output=True, check=True)
-    except:
-        # Install chromium and required linux system dependencies
+    except Exception:
         subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
         subprocess.run([sys.executable, "-m", "playwright", "install-deps"])
 
+# Run installation
 try_install_playwright()
 
 # AI Setup
@@ -63,19 +62,33 @@ def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
     try:
         response = model.generate_content(prompt)
-        # Handle cases where AI might wrap JSON in markdown blocks
         clean_json = response.text.replace('```json', '').replace('```', '').strip()
         return json.loads(clean_json)
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 async def run_snapshot(url, filename):
-    """Internal async function to handle the browser logic."""
     async with async_playwright() as p:
-        # Critical flags for running inside a container (Streamlit Cloud)
         browser = await p.chromium.launch(
             headless=True,
-            args=[
-                "--no-sandbox", 
-                "--disable-setuid-sandbox", 
-                "--disable-dev-shm-usage", 
-                "--disable-gpu"
+            args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+        )
+        page = await browser.new_page()
+        try:
+            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            await asyncio.sleep(2)
+            await page.pdf(path=filename, format="A4")
+            return True
+        except Exception:
+            return False
+        finally:
+            await browser.close()
+
+def generate_pdf_snapshot(url, filename):
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(run_snapshot(url, filename))
+        loop.close()
+        return result
+    except Exception:
+        return False
