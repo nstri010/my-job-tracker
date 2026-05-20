@@ -13,14 +13,14 @@ import os
 from playwright.async_api import async_playwright
 
 # --- OPTIMIZED STARTUP SCRIPT ---
+# This ensures the browser is installed only once when the app boots up
 @st.cache_resource
 def try_install_playwright():
-    """Runs once per session to ensure browser exists without crashing."""
     try:
-        # Check if already installed
+        # Check if playwright is already functional
         subprocess.run(["playwright", "--version"], capture_output=True, check=True)
     except:
-        # Install only if missing
+        # Install chromium and required linux system dependencies
         subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
         subprocess.run([sys.executable, "-m", "playwright", "install-deps"])
 
@@ -63,12 +63,15 @@ def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
     try:
         response = model.generate_content(prompt)
-        return json.loads(response.text.strip('`json \n'))
+        # Handle cases where AI might wrap JSON in markdown blocks
+        clean_json = response.text.replace('```json', '').replace('```', '').strip()
+        return json.loads(clean_json)
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 async def run_snapshot(url, filename):
+    """Internal async function to handle the browser logic."""
     async with async_playwright() as p:
-        # Launch with additional flags for low-memory environments
+        # Critical flags for running inside a container (Streamlit Cloud)
         browser = await p.chromium.launch(
             headless=True,
             args=[
@@ -76,22 +79,3 @@ async def run_snapshot(url, filename):
                 "--disable-setuid-sandbox", 
                 "--disable-dev-shm-usage", 
                 "--disable-gpu"
-            ]
-        )
-        context = await browser.new_context(viewport={'width': 1280, 'height': 800})
-        page = await context.new_page()
-        try:
-            # Increase timeout to 60s for slow sites
-            await page.goto(url, wait_until="load", timeout=60000)
-            await asyncio.sleep(2) # Give it a moment to settle
-            await page.pdf(path=filename, format="A4")
-            return True
-        except Exception as e:
-            st.error(f"Snapshot Failed: {e}")
-            return False
-        finally:
-            await browser.close()
-
-def generate_pdf_snapshot(url, filename):
-    """Wrapper to run the async function correctly."""
-    return asyncio.run(run_snapshot(url, filename))
