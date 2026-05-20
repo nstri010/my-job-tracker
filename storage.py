@@ -1,7 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
 import os
-import time
 
 try:
     url = st.secrets["SUPABASE_URL"]
@@ -11,34 +10,15 @@ except Exception as e:
     st.error("Secrets Error: Check Streamlit Secrets.")
     st.stop()
 
-def sign_up_user(username, password):
-    email = f"{username}@tracker.com"
-    try:
-        supabase.auth.sign_up({"email": email, "password": password})
-        return True
-    except: return False
-
-def login_user(username, password):
-    email = f"{username}@tracker.com"
-    try:
-        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        return response.user is not None
-    except: return False
-
-def upload_resume(file_obj, username):
-    try:
-        file_path = f"{username}/{file_obj.name}"
-        supabase.storage.from_("resumes").upload(path=file_path, file=file_obj.getvalue(), file_options={"upsert": "true"})
-        return supabase.storage.from_("resumes").get_public_url(file_path)
-    except: return None
+# ... (keep sign_up_user, login_user, and upload_resume as they are)
 
 def save_job(company, position, description, job_url, resume_url, match_score):
     pdf_url = None
     
-    # Trigger the browser snapshot if a URL is provided
-    if job_url:
-        ts = int(time.time())
-        snap_name = f"LISTING_{company}_{ts}.pdf".replace(" ", "_")
+    if job_url and job_url.startswith("http"):
+        # Clean filename for local storage
+        safe_name = f"{company}_{position}".replace(" ", "_").replace("/", "-")
+        snap_name = f"{safe_name}.pdf"
         
         from utils import generate_pdf_snapshot
         if generate_pdf_snapshot(job_url, snap_name):
@@ -50,7 +30,8 @@ def save_job(company, position, description, job_url, resume_url, match_score):
                         file_options={"content-type": "application/pdf", "upsert": "true"}
                     )
                 pdf_url = supabase.storage.from_("job_previews").get_public_url(snap_name)
-                os.remove(snap_name) # Clean up local file after upload
+                if os.path.exists(snap_name):
+                    os.remove(snap_name)
             except Exception as e:
                 st.warning(f"Snapshot upload failed: {e}")
 
@@ -76,9 +57,3 @@ def load_jobs():
         response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return response.data
     except: return []
-
-def delete_job(job_id):
-    try:
-        supabase.table("jobs").delete().eq("id", job_id).execute()
-        return True
-    except: return False
