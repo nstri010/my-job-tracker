@@ -39,21 +39,33 @@ if st.session_state['logged_in']:
         c1, c2 = st.columns(2)
         comp, pos = c1.text_input("Company"), c2.text_input("Position")
         url_in = st.text_input("Job URL")
+        
         if st.button("✨ Auto-Fill"):
-            with st.spinner("Scraping..."):
-                raw = scrape_job_link(url_in)
-                st.session_state['formatted_desc'] = clean_description_with_ai(raw)
+            # URL Validation Check
+            if url_in and url_in.startswith("http"):
+                with st.spinner("Scraping..."):
+                    raw = scrape_job_link(url_in)
+                    if "Scraper Error" not in raw:
+                        st.session_state['formatted_desc'] = clean_description_with_ai(raw)
+                    else:
+                        st.error(f"Could not reach site: {raw}")
+            else:
+                st.warning("Please enter a valid URL starting with https://")
         
         final_desc = st.text_area("Description", value=st.session_state['formatted_desc'], height=200)
         up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
         
         if st.button("💾 Save Application"):
-            with st.spinner("Taking Snapshot & Saving..."):
-                score = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
-                res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
-                if save_job(comp, pos, final_desc, url_in, res_url, score):
-                    st.success("Saved!")
-                    st.rerun()
+            if comp and pos:
+                with st.spinner("Taking Snapshot & Saving..."):
+                    # Use provided match score or default to N/A
+                    score = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
+                    res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
+                    if save_job(comp, pos, final_desc, url_in, res_url, score):
+                        st.success("Saved!")
+                        st.rerun()
+            else:
+                st.warning("Company and Position are required.")
 
     st.divider()
     st.header("📋 My Applied Jobs")
