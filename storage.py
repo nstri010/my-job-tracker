@@ -35,10 +35,10 @@ def upload_resume(file_obj, username):
 def save_job(company, position, description, job_url, resume_url, match_score):
     pdf_url = None
     
-    # Restored: Trigger the browser snapshot if a URL is provided
+    # Trigger the browser snapshot if a URL is provided
     if job_url:
         ts = int(time.time())
-        snap_name = f"SNAPSHOT_{company}_{ts}.pdf".replace(" ", "_")
+        snap_name = f"LISTING_{company}_{ts}.pdf".replace(" ", "_")
         
         from utils import generate_pdf_snapshot
         if generate_pdf_snapshot(job_url, snap_name):
