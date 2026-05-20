@@ -1,7 +1,7 @@
 streamlit
 pandas
 requests
-supabase
+supabase==2.4.0
 beautifulsoup4
 pypdf
 docx2txt
