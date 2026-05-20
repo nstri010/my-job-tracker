@@ -6,11 +6,6 @@ import io
 import google.generativeai as genai
 import streamlit as st
 import json
-import asyncio
-import subprocess
-import sys
-import os
-from playwright.async_api import async_playwright
 
 # AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -28,61 +23,54 @@ def extract_text_from_upload(uploaded_file):
     return ""
 
 def scrape_job_link(url):
+    """Restored the double-newline separator for perfect spacing."""
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        for junk in soup(["script", "style", "nav", "footer", "header"]):
-            junk.decompose()
+        
+        for junk in soup(["script", "style", "nav", "footer", "header", "aside"]):
+            junk.extract()
+            
+        # The key for spacing: separator='\n\n'
         return soup.get_text(separator='\n\n', strip=True)
     except Exception as e:
         return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
+    """Restores the full, non-summarized formatting logic."""
+    prompt = f"""
+    Act as a professional document editor. 
+    Take the following job text and reformat it into a beautiful, easy-to-read job listing.
+    
+    RULES:
+    1. Use clear bold headers (e.g., **Responsibilities**, **Requirements**).
+    2. Use bullet points for all lists.
+    3. Ensure there is a double space between sections.
+    4. DO NOT summarize. Keep the full details of the job.
+    
+    TEXT:
+    {raw_text[:5000]}
+    """
     try:
         response = model.generate_content(prompt)
         return response.text
-    except: return raw_text
+    except:
+        return raw_text
 
 def get_ai_match_feedback(job_desc, resume_text):
-    prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
+    """New separate function for the Match Score and Feedback."""
+    prompt = f"""
+    Compare this Job and Resume. 
+    Return a Match Score (0-10) and 3 bullet points of feedback for the candidate.
+    Return ONLY JSON: {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
+    
+    JOB: {job_desc[:2500]}
+    RESUME: {resume_text[:2500]}
+    """
     try:
-        response = model.generate_content(prompt)
-        clean_json = response.text.replace('```json', '').replace('```', '').strip()
-        return json.loads(clean_json)
-    except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
+        response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        return json.loads(response.text)
+    except:
+        return {"score": "N/A", "feedback": ["Analysis currently unavailable."]}
 
-async def run_snapshot(url, filename):
-    # This is the only place where we check for the browser
-    async with async_playwright() as p:
-        try:
-            browser = await p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
-            )
-        except Exception:
-            # If browser isn't found, try to install it once and try again
-            subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
-            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
-            
-        page = await browser.new_page()
-        try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            await asyncio.sleep(2)
-            await page.pdf(path=filename, format="A4")
-            return True
-        except:
-            return False
-        finally:
-            await browser.close()
-
-def generate_pdf_snapshot(url, filename):
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(run_snapshot(url, filename))
-        loop.close()
-        return result
-    except Exception:
-        return False
