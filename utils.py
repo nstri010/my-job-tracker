@@ -12,19 +12,6 @@ import sys
 import os
 from playwright.async_api import async_playwright
 
-# --- OPTIMIZED STARTUP ---
-@st.cache_resource
-def try_install_playwright():
-    try:
-        # Try to check version; if it fails, install
-        subprocess.run(["playwright", "--version"], capture_output=True, check=True)
-    except Exception:
-        subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
-        subprocess.run([sys.executable, "-m", "playwright", "install-deps"])
-
-# Run installation
-try_install_playwright()
-
 # AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 model = genai.GenerativeModel('gemini-1.5-flash')
@@ -67,18 +54,25 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 async def run_snapshot(url, filename):
+    # This is the only place where we check for the browser
     async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
-        )
+        try:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+            )
+        except Exception:
+            # If browser isn't found, try to install it once and try again
+            subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            
         page = await browser.new_page()
         try:
             await page.goto(url, wait_until="domcontentloaded", timeout=60000)
             await asyncio.sleep(2)
             await page.pdf(path=filename, format="A4")
             return True
-        except Exception:
+        except:
             return False
         finally:
             await browser.close()
