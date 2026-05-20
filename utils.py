@@ -7,7 +7,19 @@ import google.generativeai as genai
 import streamlit as st
 import json
 import asyncio
+import subprocess
+import os
 from playwright.async_api import async_playwright
+
+# --- PLAYWRIGHT INSTALLATION LOGIC ---
+# This ensures the browser is downloaded on the Streamlit Cloud server
+def install_playwright():
+    try:
+        subprocess.run(["playwright", "install", "chromium"])
+    except Exception as e:
+        print(f"Browser installation error: {e}")
+
+install_playwright()
 
 # AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -50,13 +62,13 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 def generate_pdf_snapshot(url, filename):
-    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
+    """Uses Playwright to take a PDF snapshot in headless mode."""
     async def run():
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
+            # Headless=True is required for Streamlit Cloud
+            browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
             try:
-                # networkidle waits for the page to finish loading images/scripts
                 await page.goto(url, wait_until="networkidle", timeout=30000)
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
