@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume
+from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_status
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
 # Page Configuration
@@ -43,111 +43,102 @@ if st.session_state['logged_in']:
     
     with col_title:
         st.title("📂 Job Tracker")
-        
     with col_user:
         st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
         st.write(f"👤 **{st.session_state['username']}**")
-        
     with col_logout:
         st.markdown("<div style='margin-top: 18px;'></div>", unsafe_allow_html=True)
         if st.button("Sign Out", type="secondary", use_container_width=True):
             st.session_state['logged_in'] = False
-            st.session_state['username'] = None
+            st.session_state.clear()
             st.rerun()
-            
-    st.caption("⚠️ This website uses AI results. Always verify for accuracy.")
-    
+
     # STEP 1: ADD JOB
     with st.expander("➕ Add New Application", expanded=True):
-        row1_col1, row1_col2 = st.columns(2)
-        with row1_col1:
-            comp = st.text_input("Company Name", placeholder="e.g. Amazon")
-        with row1_col2:
-            pos = st.text_input("Position Title", placeholder="e.g. Systems Analyst")
+        c1, c2 = st.columns(2)
+        with c1: comp = st.text_input("Company Name")
+        with c2: pos = st.text_input("Position Title")
 
-        row2_col1, row2_col2 = st.columns([3, 1])
-        with row2_col1:
-            url_in = st.text_input("Job Posting URL", placeholder="Paste link here...")
-        with row2_col2:
+        row2_c1, row2_c2 = st.columns([3, 1])
+        with row2_c1: url_in = st.text_input("Job Posting URL")
+        with row2_c2:
             st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("✨ Auto-Fill Description"):
+            if st.button("✨ Auto-Fill"):
                 if url_in:
-                    with st.spinner("Generating listing..."):
+                    with st.spinner("Scraping..."):
                         raw = scrape_job_link(url_in)
                         st.session_state['formatted_desc'] = clean_description_with_ai(raw)
-                else:
-                    st.warning("Please enter a URL first.")
+                else: st.warning("Enter URL first.")
 
-        final_desc = st.text_area("Job Description (editable)", value=st.session_state['formatted_desc'], height=300)
+        final_desc = st.text_area("Job Description", value=st.session_state['formatted_desc'], height=200)
 
-        st.divider()
-
-        # STEP 2: RESUME SCAN
-        st.subheader("🎯 AI Resume Match Scan")
-        up_file = st.file_uploader("Upload Resume for Feedback", type=['pdf', 'docx'])
-        
-        if st.button("🔍 Scan for Match"):
+        st.subheader("🎯 AI Match Scan")
+        up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
+        if st.button("🔍 Scan"):
             if final_desc and up_file:
-                with st.spinner("Analyzing match..."):
+                with st.spinner("Analyzing..."):
                     resume_txt = extract_text_from_upload(up_file)
                     st.session_state['match_data'] = get_ai_match_feedback(final_desc, resume_txt)
-            else:
-                st.warning("Ensure description is filled and resume is uploaded.")
+            else: st.warning("Need description and resume.")
 
         if st.session_state['match_data']:
             m = st.session_state['match_data']
-            st.info(f"**AI Match Score:** {m.get('score', 'N/A')}")
-            for f in m.get('feedback', []):
-                st.write(f"✅ {f}")
+            st.info(f"**Score:** {m.get('score', 'N/A')}")
 
-        # STEP 3: SAVE
         if st.button("💾 Save Application"):
             if comp and pos:
-                with st.spinner("Saving data and generating PDF record..."):
-                    score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
+                with st.spinner("Saving..."):
+                    score = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
                     res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
-                    
-                    if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
+                    if save_job(comp, pos, final_desc, url_in, res_url, score):
                         st.session_state['formatted_desc'] = ""
                         st.session_state['match_data'] = None
-                        st.success("Application and Job PDF saved successfully!")
+                        st.success("Saved!")
                         st.rerun()
-            else:
-                st.warning("Please provide a Company Name and Position.")
 
-    # STEP 4: VIEW SAVED JOBS (UPDATED WITH TIMEZONE LOGIC)
+    # STEP 4: VIEW & EDIT SAVED JOBS
     st.divider()
     st.header("📋 My Applied Jobs")
-
     jobs_list = load_jobs()
 
     if jobs_list:
         df = pd.DataFrame(jobs_list)
-
-        # 1. Convert created_at to Miami/Local Time
+        
+        # Time Formatting (Miami/Local)
         df['created_at'] = pd.to_datetime(df['created_at'])
-        # .dt.tz_convert(None) makes it 'naive' so it displays relative to the server/system time
         df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y, %I:%M %p')
 
-        # Reordering columns to put "Created At" in a prominent spot
-        cols = ['created_at', 'company', 'position', 'match_score', 'status', 'job_url', 'resume_link', 'pdf_url']
-        df = df[cols]
+        # Status Options
+        status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Declined"]
 
-        st.dataframe(
+        # Editable Data Table
+        edited_df = st.data_editor(
             df,
             use_container_width=True,
             column_config={
-                "created_at": st.column_config.TextColumn("Created At"),
-                "company": "Company",
-                "position": "Position",
-                "match_score": "Score",
-                "status": "Status",
+                "created_at": st.column_config.TextColumn("Created At", disabled=True),
+                "company": st.column_config.TextColumn("Company", disabled=True),
+                "position": st.column_config.TextColumn("Position", disabled=True),
+                "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
+                "match_score": st.column_config.TextColumn("Score", disabled=True),
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
-                "job_url": st.column_config.LinkColumn("Original Link")
+                "job_url": st.column_config.LinkColumn("Original Link"),
+                "id": None, "description": None # Hide internal columns
             },
-            hide_index=True
+            hide_index=True,
+            key="jobs_editor"
         )
+
+        # Trigger update if status changes
+        if st.session_state.get("jobs_editor") and st.session_state["jobs_editor"]["edited_rows"]:
+            updates = st.session_state["jobs_editor"]["edited_rows"]
+            for index, changes in updates.items():
+                if "status" in changes:
+                    job_id = df.iloc[index]["id"]
+                    new_status = changes["status"]
+                    if update_job_status(job_id, new_status):
+                        st.toast(f"Status updated to {new_status}!", icon="✅")
     else:
-        st.write("No applications saved yet.")
+        st.write("No applications yet.")
 
