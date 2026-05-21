@@ -37,9 +37,8 @@ if not st.session_state['logged_in']:
             else:
                 st.error("Username already exists.")
 
-# --- MAIN APPLICATION ---
+# --- MAIN APP INTERFACE ---
 if st.session_state['logged_in']:
-    # Top Header Row with User Info and Sign Out in Right Corner
     col_title, col_user, col_logout = st.columns([4, 1.5, 1])
     
     with col_title:
@@ -58,7 +57,7 @@ if st.session_state['logged_in']:
             
     st.caption("⚠️ This website uses AI results. Always verify for accuracy.")
     
-    # STEP 1: ADD NEW APPLICATION
+    # STEP 1: ADD JOB
     with st.expander("➕ Add New Application", expanded=True):
         row1_col1, row1_col2 = st.columns(2)
         with row1_col1:
@@ -101,14 +100,13 @@ if st.session_state['logged_in']:
             for f in m.get('feedback', []):
                 st.write(f"✅ {f}")
 
-        # STEP 3: SAVE AND GENERATE PDF
+        # STEP 3: SAVE
         if st.button("💾 Save Application"):
             if comp and pos:
                 with st.spinner("Saving data and generating PDF record..."):
                     score_to_save = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
                     res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
                     
-                    # save_job triggers the background PDF rendering of url_in
                     if save_job(comp, pos, final_desc, url_in, res_url, score_to_save):
                         st.session_state['formatted_desc'] = ""
                         st.session_state['match_data'] = None
@@ -117,8 +115,7 @@ if st.session_state['logged_in']:
             else:
                 st.warning("Please provide a Company Name and Position.")
 
-    # STEP 4: VIEW SAVED JOBS
-       # STEP 4: VIEW SAVED JOBS
+    # STEP 4: VIEW SAVED JOBS (UPDATED WITH TIMEZONE LOGIC)
     st.divider()
     st.header("📋 My Applied Jobs")
 
@@ -127,17 +124,30 @@ if st.session_state['logged_in']:
     if jobs_list:
         df = pd.DataFrame(jobs_list)
 
-        # Use the specific keys from your database
+        # 1. Convert created_at to Miami/Local Time
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        # .dt.tz_convert(None) makes it 'naive' so it displays relative to the server/system time
+        df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y, %I:%M %p')
+
+        # Reordering columns to put "Created At" in a prominent spot
+        cols = ['created_at', 'company', 'position', 'match_score', 'status', 'job_url', 'resume_link', 'pdf_url']
+        df = df[cols]
+
         st.dataframe(
             df,
             use_container_width=True,
             column_config={
+                "created_at": st.column_config.TextColumn("Created At"),
+                "company": "Company",
+                "position": "Position",
+                "match_score": "Score",
+                "status": "Status",
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
                 "job_url": st.column_config.LinkColumn("Original Link")
-            }
+            },
+            hide_index=True
         )
-
     else:
         st.write("No applications saved yet.")
 
