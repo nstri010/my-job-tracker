@@ -8,7 +8,6 @@ import streamlit as st
 import json
 import asyncio
 import subprocess
-import os
 from playwright.async_api import async_playwright
 
 # AI Setup
@@ -37,10 +36,17 @@ def scrape_job_link(url):
     except: return ""
 
 def clean_description_with_ai(raw_text):
-    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
+    # Improved prompt to fix parsing/spacing issues
+    prompt = (
+        "Reformat the following raw job description text into a professional, "
+        "well-structured format. Use clear bold headers for sections like 'Responsibilities' "
+        "and 'Requirements'. Use standard bullet points. Ensure there is only a single "
+        "empty line between sections and no extra indentation. "
+        f"Text:\n\n{raw_text[:5000]}"
+    )
     try:
         response = model.generate_content(prompt)
-        return response.text
+        return response.text.strip()
     except: return raw_text
 
 def get_ai_match_feedback(job_desc, resume_text):
@@ -51,22 +57,12 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 def generate_pdf_snapshot(url, filename):
-    """Uses Playwright to take a PDF snapshot with auto-install for Streamlit Cloud."""
-    
     async def run():
         async with async_playwright() as p:
             try:
-                # Attempt to launch. If it fails, install the browser.
-                try:
-                    browser = await p.chromium.launch()
-                except Exception:
-                    st.info("First-run setup: Downloading browser components...")
-                    subprocess.run(["playwright", "install", "chromium"], check=True)
-                    subprocess.run(["playwright", "install-deps"], check=True)
-                    browser = await p.chromium.launch()
-
+                # Add headless=True and args for better cloud rendering
+                browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"])
                 page = await browser.new_page()
-                # networkidle waits for the page to finish loading images/scripts
                 await page.goto(url, wait_until="networkidle", timeout=60000)
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
@@ -74,5 +70,4 @@ def generate_pdf_snapshot(url, filename):
             except Exception as e:
                 print(f"Snapshot Error: {e}")
                 return False
-
     return asyncio.run(run())
