@@ -82,3 +82,4 @@ def delete_job(job_id):
         supabase.table("jobs").delete().eq("id", job_id).execute()
         return True
     except: return False
+
