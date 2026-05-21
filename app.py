@@ -99,19 +99,21 @@ if st.session_state['logged_in']:
     # STEP 4: VIEW & EDIT SAVED JOBS
     st.divider()
     st.header("📋 My Applied Jobs")
+    st.info("💡 **Tip:** Click on the **Status** cell to open the dropdown menu and update your progress.")
+
     jobs_list = load_jobs()
 
     if jobs_list:
         df = pd.DataFrame(jobs_list)
         
-        # Time Formatting (Miami/Local)
+        # Time Formatting (Converted for local display)
         df['created_at'] = pd.to_datetime(df['created_at'])
         df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y, %I:%M %p')
 
-        # Status Options
-        status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Declined"]
+        # Friendly Status Options
+        status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Moving On"]
 
-        # Editable Data Table
+        # The Data Editor with Dropdown UI
         edited_df = st.data_editor(
             df,
             use_container_width=True,
@@ -119,18 +121,23 @@ if st.session_state['logged_in']:
                 "created_at": st.column_config.TextColumn("Created At", disabled=True),
                 "company": st.column_config.TextColumn("Company", disabled=True),
                 "position": st.column_config.TextColumn("Position", disabled=True),
-                "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
+                "status": st.column_config.SelectboxColumn(
+                    "Status", 
+                    help="Click to select a new status",
+                    options=status_options, 
+                    required=True
+                ),
                 "match_score": st.column_config.TextColumn("Score", disabled=True),
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
                 "job_url": st.column_config.LinkColumn("Original Link"),
-                "id": None, "description": None # Hide internal columns
+                "id": None, "description": None # Hide internal ID and long description
             },
             hide_index=True,
             key="jobs_editor"
         )
 
-        # Trigger update if status changes
+        # Trigger update if a row was edited
         if st.session_state.get("jobs_editor") and st.session_state["jobs_editor"]["edited_rows"]:
             updates = st.session_state["jobs_editor"]["edited_rows"]
             for index, changes in updates.items():
@@ -141,4 +148,3 @@ if st.session_state['logged_in']:
                         st.toast(f"Status updated to {new_status}!", icon="✅")
     else:
         st.write("No applications yet.")
-
