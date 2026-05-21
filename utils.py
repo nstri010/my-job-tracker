@@ -7,6 +7,8 @@ import google.generativeai as genai
 import streamlit as st
 import json
 import asyncio
+import subprocess
+import os
 from playwright.async_api import async_playwright
 
 # AI Setup
@@ -29,11 +31,10 @@ def scrape_job_link(url):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        for junk in soup(["script", "style", "nav", "footer", "header"]):
+        for junk in soup(["script", "style"]):
             junk.decompose()
-        return soup.get_text(separator='\n\n', strip=True)
-    except Exception as e:
-        return f"Scraper Error: {e}"
+        return soup.get_text(separator=' ', strip=True)
+    except: return ""
 
 def clean_description_with_ai(raw_text):
     prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
@@ -50,20 +51,28 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 def generate_pdf_snapshot(url, filename):
-    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
+    """Uses Playwright to take a PDF snapshot with auto-install for Streamlit Cloud."""
+    
     async def run():
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
-            page = await browser.new_page()
             try:
+                # Attempt to launch. If it fails, install the browser.
+                try:
+                    browser = await p.chromium.launch()
+                except Exception:
+                    st.info("First-run setup: Downloading browser components...")
+                    subprocess.run(["playwright", "install", "chromium"], check=True)
+                    subprocess.run(["playwright", "install-deps"], check=True)
+                    browser = await p.chromium.launch()
+
+                page = await browser.new_page()
                 # networkidle waits for the page to finish loading images/scripts
-                await page.goto(url, wait_until="networkidle", timeout=30000)
+                await page.goto(url, wait_until="networkidle", timeout=60000)
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
             except Exception as e:
                 print(f"Snapshot Error: {e}")
-                await browser.close()
                 return False
-    return asyncio.run(run())
 
+    return asyncio.run(run())
