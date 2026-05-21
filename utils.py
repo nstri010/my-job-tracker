@@ -7,7 +7,6 @@ import google.generativeai as genai
 import streamlit as st
 import json
 import asyncio
-import subprocess
 from playwright.async_api import async_playwright
 
 # AI Setup
@@ -30,23 +29,17 @@ def scrape_job_link(url):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        for junk in soup(["script", "style"]):
+        for junk in soup(["script", "style", "nav", "footer", "header"]):
             junk.decompose()
-        return soup.get_text(separator=' ', strip=True)
-    except: return ""
+        return soup.get_text(separator='\n\n', strip=True)
+    except Exception as e:
+        return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    # Improved prompt to fix parsing/spacing issues
-    prompt = (
-        "Reformat the following raw job description text into a professional, "
-        "well-structured format. Use clear bold headers for sections like 'Responsibilities' "
-        "and 'Requirements'. Use standard bullet points. Ensure there is only a single "
-        "empty line between sections and no extra indentation. "
-        f"Text:\n\n{raw_text[:5000]}"
-    )
+    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
     try:
         response = model.generate_content(prompt)
-        return response.text.strip()
+        return response.text
     except: return raw_text
 
 def get_ai_match_feedback(job_desc, resume_text):
@@ -57,17 +50,20 @@ def get_ai_match_feedback(job_desc, resume_text):
     except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
 def generate_pdf_snapshot(url, filename):
+    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
     async def run():
         async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
             try:
-                # Add headless=True and args for better cloud rendering
-                browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"])
-                page = await browser.new_page()
-                await page.goto(url, wait_until="networkidle", timeout=60000)
+                # networkidle waits for the page to finish loading images/scripts
+                await page.goto(url, wait_until="networkidle", timeout=30000)
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
             except Exception as e:
                 print(f"Snapshot Error: {e}")
+                await browser.close()
                 return False
     return asyncio.run(run())
+
