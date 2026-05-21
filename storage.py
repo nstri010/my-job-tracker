@@ -7,8 +7,8 @@ try:
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
     supabase: Client = create_client(url, key)
-except Exception as e:
-    st.error("Secrets Error: Check Streamlit Secrets.")
+except:
+    st.error("Secrets Error.")
     st.stop()
 
 def sign_up_user(username, password):
@@ -34,48 +34,38 @@ def upload_resume(file_obj, username):
 
 def save_job(company, position, description, job_url, resume_url, match_score):
     pdf_url = None
-    
-    # Trigger the browser snapshot if a URL is provided
     if job_url:
-        ts = int(time.time())
-        snap_name = f"LISTING_{company}_{ts}.pdf".replace(" ", "_")
-        
         from utils import generate_pdf_snapshot
+        snap_name = f"JOB_{company}_{int(time.time())}.pdf".replace(" ", "_")
         if generate_pdf_snapshot(job_url, snap_name):
             try:
                 with open(snap_name, "rb") as f:
-                    supabase.storage.from_("job_previews").upload(
-                        path=snap_name, 
-                        file=f, 
-                        file_options={"content-type": "application/pdf", "upsert": "true"}
-                    )
+                    supabase.storage.from_("job_previews").upload(path=snap_name, file=f, file_options={"content-type": "application/pdf"})
                 pdf_url = supabase.storage.from_("job_previews").get_public_url(snap_name)
-                os.remove(snap_name) # Clean up local file after upload
-            except Exception as e:
-                st.warning(f"Snapshot upload failed: {e}")
+                os.remove(snap_name)
+            except: pass
 
     data = {
-        "company": company,
-        "position": position,
-        "description": description,
-        "job_url": job_url,
-        "resume_link": resume_url,
-        "pdf_url": pdf_url,
-        "match_score": match_score,
-        "status": "Active" 
+        "company": company, "position": position, "description": description,
+        "job_url": job_url, "resume_link": resume_url, "pdf_url": pdf_url,
+        "match_score": str(match_score), "status": "Active"
     }
     try:
         supabase.table("jobs").insert(data).execute()
         return True
-    except Exception as e:
-        st.error(f"Save Error: {e}")
-        return False
+    except: return False
 
 def load_jobs():
     try:
-        response = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
-        return response.data
+        res = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
+        return res.data
     except: return []
+
+def update_job_status(job_id, new_status):
+    try:
+        supabase.table("jobs").update({"status": new_status}).eq("id", job_id).execute()
+        return True
+    except: return False
 
 def delete_job(job_id):
     try:
