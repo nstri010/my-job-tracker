@@ -4,83 +4,121 @@ import fitz
 import docx
 import re
 import requests
+
 from bs4 import BeautifulSoup
+
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
     Spacer
 )
-from reportlab.lib.styles import getSampleStyleSheet
+
+from reportlab.lib.styles import (
+    getSampleStyleSheet
+)
 
 # GEMINI CONFIG
 genai.configure(
-    api_key=st.secrets["GOOGLE_API_KEY"]
+    api_key=st.secrets[
+        "GOOGLE_API_KEY"
+    ]
 )
 
 
-# PDF SNAPSHOT GENERATOR
+# PDF SNAPSHOT
 def generate_pdf_snapshot(
-    company,
-    position,
-    description
+    job_url,
+    output_file
 ):
 
-    filename = (
-        f"{company}_{position}.pdf"
-        .replace(
-            " ",
-            "_"
+    try:
+
+        response = requests.get(
+            job_url,
+
+            headers={
+                "User-Agent":
+                "Mozilla/5.0"
+            },
+
+            timeout=10
         )
-    )
 
-    doc = SimpleDocTemplate(
-        filename
-    )
-
-    styles = getSampleStyleSheet()
-
-    story = []
-
-    story.append(
-        Paragraph(
-            f"<b>Company:</b> {company}",
-            styles["Normal"]
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
         )
-    )
 
-    story.append(
-        Spacer(
-            1,
-            12
+        text = soup.get_text(
+            separator="\n"
         )
-    )
 
-    story.append(
-        Paragraph(
-            f"<b>Position:</b> {position}",
-            styles["Normal"]
+        doc = SimpleDocTemplate(
+            output_file
         )
-    )
 
-    story.append(
-        Spacer(
-            1,
-            12
+        styles = getSampleStyleSheet()
+
+        story = []
+
+        story.append(
+
+            Paragraph(
+                "Job Snapshot",
+                styles["Title"]
+            )
+
         )
-    )
 
-    story.append(
-        Paragraph(
-            description,
-            styles["BodyText"]
+        story.append(
+
+            Spacer(
+                1,
+                12
+            )
+
         )
-    )
 
-    doc.build(
-        story
-    )
+        story.append(
 
-    return filename
+            Paragraph(
+                f"<b>Source:</b> {job_url}",
+                styles["Normal"]
+            )
+
+        )
+
+        story.append(
+
+            Spacer(
+                1,
+                12
+            )
+
+        )
+
+        story.append(
+
+            Paragraph(
+                text[:10000],
+                styles["BodyText"]
+            )
+
+        )
+
+        doc.build(
+            story
+        )
+
+        return True
+
+    except Exception as e:
+
+        print(
+            f"Snapshot error: {e}"
+        )
+
+        return False
 
 
 # SCRAPE JOB PAGE
@@ -90,14 +128,15 @@ def scrape_job_link(
 
     try:
 
-        headers = {
-            "User-Agent":
-            "Mozilla/5.0"
-        }
-
         response = requests.get(
+
             url,
-            headers=headers,
+
+            headers={
+                "User-Agent":
+                "Mozilla/5.0"
+            },
+
             timeout=10
         )
 
@@ -106,9 +145,11 @@ def scrape_job_link(
             "html.parser"
         )
 
-        return soup.get_text(
+        text = soup.get_text(
             separator="\n"
         )
+
+        return text
 
     except Exception as e:
 
@@ -117,7 +158,7 @@ def scrape_job_link(
         )
 
 
-# RESUME EXTRACT
+# EXTRACT RESUME TEXT
 def extract_text_from_upload(
     uploaded_file
 ):
@@ -129,7 +170,9 @@ def extract_text_from_upload(
     ):
 
         pdf = fitz.open(
+
             stream=uploaded_file.read(),
+
             filetype="pdf"
         )
 
@@ -155,29 +198,34 @@ def extract_text_from_upload(
     return text
 
 
-# DESCRIPTION CLEANER
+# CLEAN DESCRIPTION
 def clean_description_with_ai(
     raw_text
 ):
 
     try:
 
-        model = genai.GenerativeModel(
-            "gemini-2.5-flash"
-        )
-
         prompt = f"""
-Organize this job description.
+Organize this job posting.
 
-Sections:
+Create sections:
 
 Responsibilities
+
 Requirements
+
 Preferred Skills
+
 Benefits
+
+Job Text:
 
 {raw_text}
 """
+
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
 
         response = model.generate_content(
             prompt
@@ -187,10 +235,12 @@ Benefits
 
     except Exception as e:
 
-        return str(e)
+        return (
+            f"Formatting error: {e}"
+        )
 
 
-# MATCH SCORING
+# RESUME MATCH
 def get_ai_match_feedback(
     job_desc,
     resume_text
@@ -199,19 +249,22 @@ def get_ai_match_feedback(
     try:
 
         prompt = f"""
-Compare resume to job.
+Compare resume against job.
 
-Return:
+Return EXACTLY:
 
 Rating: X/10
 
 Strengths:
 - item
+- item
 
 Missing Skills:
 - item
+- item
 
 Suggestions:
+- item
 - item
 
 Resume:
@@ -233,16 +286,16 @@ Job:
 
         result = response.text
 
-        score = "N/A"
+        rating = "N/A"
 
         match = re.search(
-            r'(\d+)/10',
+            r'(\d+)\s*/\s*10',
             result
         )
 
         if match:
 
-            score = (
+            rating = (
                 match.group(1)
                 + "/10"
             )
@@ -262,21 +315,25 @@ Job:
                 )
 
         return {
+
             "score":
-            score,
+            rating,
 
             "feedback":
             feedback
+
         }
 
     except Exception as e:
 
         return {
+
             "score":
             "Error",
 
             "feedback":
             [
-                str(e)
+                f"Technical error: {e}"
             ]
+
         }
