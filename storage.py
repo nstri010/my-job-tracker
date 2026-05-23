@@ -36,11 +36,13 @@ def save_job(company, position, description, job_url, resume_url, match_score, a
     pdf_url = None
     if job_url:
         from utils import generate_pdf_snapshot
-        snap_name = f"JOB_{company}_{int(time.time())}.pdf".replace(" ", "_")
+        # Clean filename for the snapshot
+        snap_name = f"SNAPSHOT_{company}_{int(time.time())}.pdf".replace(" ", "_")
+        
         if generate_pdf_snapshot(job_url, snap_name):
             try:
                 with open(snap_name, "rb") as f:
-                    # Upload with specific content-type so it displays in browser
+                    # IMPORTANT: content-type ensures it opens visually in the browser
                     supabase.storage.from_("job_previews").upload(
                         path=snap_name, 
                         file=f, 
@@ -49,7 +51,7 @@ def save_job(company, position, description, job_url, resume_url, match_score, a
                 pdf_url = supabase.storage.from_("job_previews").get_public_url(snap_name)
                 os.remove(snap_name)
             except Exception as e: 
-                print(f"Supabase upload error: {e}")
+                print(f"Supabase error: {e}")
 
     data = {
         "company": company, "position": position, "description": description,
