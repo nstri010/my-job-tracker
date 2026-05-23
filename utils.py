@@ -6,7 +6,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-# GEMINI CONFIG
+# GEMINI
 genai.configure(
     api_key=st.secrets["GOOGLE_API_KEY"]
 )
@@ -41,12 +41,10 @@ def scrape_job_link(url):
 
     except Exception as e:
 
-        return (
-            f"Scrape error: {e}"
-        )
+        return f"Scrape error: {e}"
 
 
-# PDF / DOCX EXTRACTION
+# EXTRACT RESUME TEXT
 def extract_text_from_upload(
     uploaded_file
 ):
@@ -84,7 +82,7 @@ def extract_text_from_upload(
     return text
 
 
-# CLEAN DESCRIPTION
+# CLEAN JOB DESCRIPTION
 def clean_description_with_ai(
     raw_text
 ):
@@ -92,9 +90,9 @@ def clean_description_with_ai(
     try:
 
         prompt = f"""
-Clean and organize this job description.
+Clean and organize this job posting.
 
-Create:
+Create sections:
 
 Responsibilities
 Requirements
@@ -110,10 +108,8 @@ Text:
             "gemini-2.5-flash"
         )
 
-        response = (
-            model.generate_content(
-                prompt
-            )
+        response = model.generate_content(
+            prompt
         )
 
         return response.text
@@ -121,11 +117,11 @@ Text:
     except Exception as e:
 
         return (
-            f"AI formatting error: {e}"
+            f"Formatting error: {e}"
         )
 
 
-# RESUME SCORING
+# AI RESUME MATCH
 def get_ai_match_feedback(
     job_desc,
     resume_text
@@ -134,11 +130,11 @@ def get_ai_match_feedback(
     try:
 
         prompt = f"""
-Compare resume vs job.
+Compare resume against job.
 
-Return:
+Return EXACTLY:
 
-Score: XX%
+Rating: X/10
 
 Strengths:
 - item
@@ -148,11 +144,15 @@ Missing Skills:
 - item
 - item
 
+Suggestions:
+- item
+- item
+
 Resume:
 
 {resume_text}
 
-Job Description:
+Job:
 
 {job_desc}
 """
@@ -161,26 +161,24 @@ Job Description:
             "gemini-2.5-flash"
         )
 
-        response = (
-            model.generate_content(
-                prompt
-            )
+        response = model.generate_content(
+            prompt
         )
 
         result = response.text
 
-        score = "N/A"
+        rating = "N/A"
 
         match = re.search(
-            r"(\\d+)%",
+            r'(\d+)\s*/\s*10',
             result
         )
 
         if match:
 
-            score = (
+            rating = (
                 match.group(1)
-                + "%"
+                + "/10"
             )
 
         feedback = []
@@ -198,16 +196,19 @@ Job Description:
                 )
 
         return {
+
             "score":
-            score,
+            rating,
 
             "feedback":
             feedback
+
         }
 
     except Exception as e:
 
         return {
+
             "score":
             "Error",
 
@@ -215,4 +216,5 @@ Job Description:
             [
                 f"Technical error: {e}"
             ]
+
         }
