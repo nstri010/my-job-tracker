@@ -288,7 +288,9 @@ if st.session_state["logged_in"]:
         if st.button(
             "💾 Save Application"
         ):
-
+            with st.spinner(
+        "Saving application... Catching opportunities ✨"
+    ):
             score = "N/A"
 
             if st.session_state[
