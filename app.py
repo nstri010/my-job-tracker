@@ -62,7 +62,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN
+# LOGIN SCREEN
 if not st.session_state["logged_in"]:
 
     st.title(
@@ -76,7 +76,6 @@ if not st.session_state["logged_in"]:
         ]
     )
 
-    # LOGIN TAB
     with tab1:
 
         username = st.text_input(
@@ -113,7 +112,6 @@ if not st.session_state["logged_in"]:
                     "Invalid login"
                 )
 
-    # SIGNUP TAB
     with tab2:
 
         new_user = st.text_input(
@@ -165,7 +163,6 @@ if st.session_state["logged_in"]:
         ):
 
             st.session_state.clear()
-
             st.rerun()
 
     # ADD JOB
@@ -269,7 +266,6 @@ if st.session_state["logged_in"]:
                     resume_txt
                 )
 
-        # RESULTS
         if st.session_state[
             "match_data"
         ]:
@@ -295,12 +291,9 @@ if st.session_state["logged_in"]:
                     item
                 )
 
-        # SAVE
         if st.button(
             "💾 Save Application"
         ):
-
-            resume_url = None
 
             score = "N/A"
 
@@ -316,6 +309,8 @@ if st.session_state["logged_in"]:
                         "N/A"
                     )
                 )
+
+            resume_url = None
 
             if up_file:
 
@@ -390,7 +385,6 @@ if st.session_state["logged_in"]:
             "💡 Use the dropdown beside status to update progress"
         )
 
-        # HEADER
         h1,h2,h3,h4,h5,h6 = st.columns(
             [2,2,2,2,1,1]
         )
@@ -429,55 +423,44 @@ if st.session_state["logged_in"]:
 
             with c1:
 
-    st.markdown(
-        "<div style='padding-top:14px'>"
-        + str(
-            row.get(
-                "company",
-                ""
-            )
-        )
-        + "</div>",
+                st.markdown(
+                    f"""
+<div style='padding-top:14px'>
+{row.get("company","")}
+</div>
+""",
+                    unsafe_allow_html=True
+                )
 
-        unsafe_allow_html=True
-    )
+            with c2:
 
-with c2:
+                st.markdown(
+                    f"""
+<div style='padding-top:14px'>
+{row.get("position","")}
+</div>
+""",
+                    unsafe_allow_html=True
+                )
 
-    st.markdown(
-        "<div style='padding-top:14px'>"
-        + str(
-            row.get(
-                "position",
-                ""
-            )
-        )
-        + "</div>",
+            with c3:
 
-        unsafe_allow_html=True
-    )
+                st.markdown(
+                    f"""
+<div style='padding-top:14px'>
+{row.get("score","N/A")}
+</div>
+""",
+                    unsafe_allow_html=True
+                )
 
-with c3:
+            with c4:
 
-    st.markdown(
-        "<div style='padding-top:14px'>"
-        + str(
-            row.get(
-                "score",
-                "N/A"
-            )
-        )
-        + "</div>",
+                current = row.get(
+                    "status",
+                    "📝 Applied"
+                )
 
-        unsafe_allow_html=True
-    )
-
-with c4:
-
-    current = row.get(
-        "status",
-        "📝 Applied"
-    )
                 if current not in status_options:
 
                     current = (
@@ -525,7 +508,8 @@ with c4:
 
                     st.link_button(
                         "📄",
-                        resume
+                        resume,
+                        width="stretch"
                     )
 
             with c6:
@@ -535,7 +519,9 @@ with c4:
                     "🗑️",
 
                     key=
-                    f"delete_{row['id']}"
+                    f"delete_{row['id']}",
+
+                    width="stretch"
 
                 ):
 
