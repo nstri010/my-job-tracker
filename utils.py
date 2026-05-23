@@ -9,17 +9,32 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from PIL import Image
 
+# GEMINI CONFIG
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 def generate_pdf_snapshot(job_url, output_file):
+    """Creates a real webpage screenshot and saves as PDF."""
     try:
         screenshot_file = "job_snapshot.png"
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1440, "height": 2200})
+            # Standard user-agent to avoid being blocked by job boards
+            context = browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            page = context.new_page()
+            page.set_viewport_size({"width": 1280, "height": 1600})
+            
+            # Increase timeout to 60s for slow-loading job boards
             page.goto(job_url, wait_until="networkidle", timeout=60000)
-            time.sleep(3)
-            page.evaluate("() => { document.querySelectorAll('[role=\"dialog\"], .popup, .modal').forEach(x => x.remove()); }")
+            time.sleep(3) # Wait for dynamic elements
+
+            # Remove common modal/popup overlays that block the view
+            page.evaluate("""
+                () => {
+                    document.querySelectorAll('[role="dialog"], .popup, .modal, #cookie-banner')
+                            .forEach(x => x.remove());
+                }
+            """)
+
             page.screenshot(path=screenshot_file, full_page=True)
             browser.close()
 
@@ -27,7 +42,7 @@ def generate_pdf_snapshot(job_url, output_file):
         img.convert("RGB").save(output_file)
         return True
     except Exception as e:
-        print(f"Snapshot error: {e}")
+        print(f"Snapshot technical error: {e}")
         return False
 
 def scrape_job_link(url):
@@ -53,7 +68,7 @@ def extract_text_from_upload(uploaded_file):
 def clean_description_with_ai(raw_text):
     try:
         prompt = f"Organize this job posting into Responsibilities, Requirements, Preferred Skills, and Benefits: {raw_text}"
-        model = genai.GenerativeModel("gemini-1.5-flash") # UPDATED MODEL
+        model = genai.GenerativeModel("gemini-1.5-flash") # UPDATED MODEL STRING
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
@@ -62,13 +77,15 @@ def clean_description_with_ai(raw_text):
 def get_ai_match_feedback(job_desc, resume_text):
     try:
         prompt = f"Compare resume against job. Return Rating: X/10, Strengths, Missing Skills, and Suggestions. Resume: {resume_text} Job: {job_desc}"
-        model = genai.GenerativeModel("gemini-1.5-flash") # UPDATED MODEL
+        model = genai.GenerativeModel("gemini-1.5-flash") # UPDATED MODEL STRING
         response = model.generate_content(prompt)
         result = response.text
+        
         rating = "N/A"
         match = re.search(r"(\d+)\s*/\s*10", result)
         if match:
             rating = match.group(1) + "/10"
+        
         feedback = [line.strip() for line in result.split("\n") if line.strip()]
         return {"score": rating, "feedback": feedback}
     except Exception as e:
