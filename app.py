@@ -231,7 +231,7 @@ if st.session_state["logged_in"]:
                 if url_in:
 
                     with st.spinner(
-                        "Scraping..."
+                        "✨ Filling out description... Just a few moments"
                     ):
 
                         raw = scrape_job_link(
@@ -342,7 +342,7 @@ if st.session_state["logged_in"]:
             ]
 
             st.success(
-                f"🎯 Match Score: {m.get('score','N/A')}"
+                f"🎯 Resume Match: {m.get('score','N/A')}"
             )
 
             st.subheader(
