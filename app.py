@@ -20,18 +20,29 @@ from utils import (
     extract_text_from_upload
 )
 
-# Install Playwright browser if missing
-if not os.path.exists("/home/appuser/.cache/ms-playwright"):
+# Install Playwright browser if needed
+if not os.path.exists(
+    "/home/appuser/.cache/ms-playwright"
+):
+
     try:
+
         subprocess.run(
-            ["playwright", "install", "chromium"],
+            [
+                "playwright",
+                "install",
+                "chromium"
+            ],
             check=True
         )
 
     except Exception as e:
-        st.error(f"Browser install error: {e}")
 
-# PAGE CONFIG
+        st.error(
+            f"Browser install error: {e}"
+        )
+
+# PAGE SETTINGS
 st.set_page_config(
     page_title="Job Tracker",
     layout="wide"
@@ -51,15 +62,19 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN PAGE
+# LOGIN
 if not st.session_state["logged_in"]:
 
-    st.title("🔐 Job Tracker Login")
+    st.title(
+        "🔐 Job Tracker Login"
+    )
 
-    tab1, tab2 = st.tabs([
-        "Login",
-        "Sign Up"
-    ])
+    tab1, tab2 = st.tabs(
+        [
+            "Login",
+            "Sign Up"
+        ]
+    )
 
     with tab1:
 
@@ -74,17 +89,30 @@ if not st.session_state["logged_in"]:
             key="login_pass"
         )
 
-        if st.button("Login"):
+        if st.button(
+            "Login"
+        ):
 
-            if login_user(u, p):
+            if login_user(
+                u,
+                p
+            ):
 
-                st.session_state["logged_in"] = True
-                st.session_state["username"] = u
+                st.session_state[
+                    "logged_in"
+                ] = True
+
+                st.session_state[
+                    "username"
+                ] = u
 
                 st.rerun()
 
             else:
-                st.error("Invalid credentials")
+
+                st.error(
+                    "Invalid credentials"
+                )
 
     with tab2:
 
@@ -99,7 +127,9 @@ if not st.session_state["logged_in"]:
             key="reg_pass"
         )
 
-        if st.button("Create Account"):
+        if st.button(
+            "Create Account"
+        ):
 
             if sign_up_user(
                 new_u,
@@ -107,12 +137,13 @@ if not st.session_state["logged_in"]:
             ):
 
                 st.success(
-                    "Account created! Please login."
+                    "Account created!"
                 )
 
             else:
+
                 st.error(
-                    "Username already exists."
+                    "Username already exists"
                 )
 
 
@@ -124,7 +155,10 @@ if st.session_state["logged_in"]:
     )
 
     with col_title:
-        st.title("📂 Job Tracker")
+
+        st.title(
+            "📂 Job Tracker"
+        )
 
     with col_user:
 
@@ -162,26 +196,28 @@ if st.session_state["logged_in"]:
         c1, c2 = st.columns(2)
 
         with c1:
+
             comp = st.text_input(
                 "Company Name"
             )
 
         with c2:
+
             pos = st.text_input(
                 "Position Title"
             )
 
-        row2_c1, row2_c2 = st.columns(
+        row1, row2 = st.columns(
             [3, 1]
         )
 
-        with row2_c1:
+        with row1:
 
             url_in = st.text_input(
                 "Job Posting URL"
             )
 
-        with row2_c2:
+        with row2:
 
             st.markdown(
                 "<div style='margin-top:28px'></div>",
@@ -209,6 +245,7 @@ if st.session_state["logged_in"]:
                         )
 
                 else:
+
                     st.warning(
                         "Enter URL first"
                     )
@@ -246,7 +283,7 @@ if st.session_state["logged_in"]:
                 value=pd.Timestamp.today()
             )
 
-        # SCAN BUTTON
+        # SCAN
         if st.button(
             "🔍 Scan Resume"
         ):
@@ -254,28 +291,24 @@ if st.session_state["logged_in"]:
             if final_desc and up_file:
 
                 with st.spinner(
-                    "Analyzing..."
+                    "Analyzing Resume..."
                 ):
 
                     try:
 
-                        resume_txt = extract_text_from_upload(
-                            up_file
-                        )
-
-                        st.write(
-                            "Resume preview:"
-                        )
-
-                        st.text(
-                            resume_txt[:500]
+                        resume_txt = (
+                            extract_text_from_upload(
+                                up_file
+                            )
                         )
 
                         st.session_state[
                             "match_data"
-                        ] = get_ai_match_feedback(
-                            final_desc,
-                            resume_txt
+                        ] = (
+                            get_ai_match_feedback(
+                                final_desc,
+                                resume_txt
+                            )
                         )
 
                     except Exception as e:
@@ -283,6 +316,7 @@ if st.session_state["logged_in"]:
                         st.session_state[
                             "match_data"
                         ] = {
+
                             "score":
                             "Error",
 
@@ -295,7 +329,7 @@ if st.session_state["logged_in"]:
             else:
 
                 st.warning(
-                    "Need description and resume"
+                    "Upload resume and job description first"
                 )
 
         # RESULTS
@@ -307,22 +341,23 @@ if st.session_state["logged_in"]:
                 "match_data"
             ]
 
-            st.info(
-                f"Score: {m.get('score','N/A')}"
+            st.success(
+                f"🎯 Match Score: {m.get('score','N/A')}"
             )
 
-            if "feedback" in m:
+            st.subheader(
+                "AI Feedback"
+            )
 
-                st.subheader(
-                    "Feedback"
-                )
+            for item in m.get(
+                "feedback",
+                []
+            ):
 
-                for item in m[
-                    "feedback"
-                ]:
+                if item.strip():
 
                     st.write(
-                        f"- {item}"
+                        item
                     )
 
         # SAVE
@@ -347,31 +382,33 @@ if st.session_state["logged_in"]:
                         )
                     )
 
-                res_url = None
+                resume_url = None
 
                 if up_file:
 
-                    res_url = upload_resume(
-                        up_file,
-                        st.session_state[
-                            "username"
-                        ]
+                    resume_url = (
+                        upload_resume(
+                            up_file,
+                            st.session_state[
+                                "username"
+                            ]
+                        )
                     )
 
-                ok = save_job(
+                success = save_job(
                     comp,
                     pos,
                     final_desc,
                     url_in,
-                    res_url,
+                    resume_url,
                     score,
                     applied_date=applied_date
                 )
 
-                if ok:
+                if success:
 
                     st.success(
-                        "Saved!"
+                        "Application saved!"
                     )
 
                     st.session_state[
@@ -384,6 +421,7 @@ if st.session_state["logged_in"]:
 
                     st.rerun()
 
+    # SAVED JOBS
     st.divider()
 
     st.header(
@@ -398,12 +436,18 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        df["created_at"] = pd.to_datetime(
+        df[
+            "created_at"
+        ] = pd.to_datetime(
             df["created_at"]
         )
 
-        df["created_at"] = (
-            df["created_at"]
+        df[
+            "created_at"
+        ] = (
+            df[
+                "created_at"
+            ]
             .dt.tz_convert(None)
             .dt.strftime(
                 "%m/%d/%Y"
@@ -419,15 +463,16 @@ if st.session_state["logged_in"]:
         ]
 
         edited_df = st.data_editor(
+
             df,
 
             width="stretch",
 
-            num_rows="dynamic",
-
             hide_index=True,
 
             key="jobs_editor",
+
+            num_rows="dynamic",
 
             column_config={
 
@@ -450,13 +495,13 @@ if st.session_state["logged_in"]:
 
                 "resume_link":
                 st.column_config.LinkColumn(
-                    "Resume",
+                    "My Resume",
                     display_text="Download"
                 ),
 
                 "job_url":
                 st.column_config.LinkColumn(
-                    "Posting",
+                    "Original Posting",
                     display_text="Open Link"
                 ),
 
@@ -464,6 +509,47 @@ if st.session_state["logged_in"]:
                 "description": None
             }
         )
+
+        # DELETE
+        if st.session_state[
+            "jobs_editor"
+        ][
+            "deleted_rows"
+        ]:
+
+            for row in st.session_state[
+                "jobs_editor"
+            ][
+                "deleted_rows"
+            ]:
+
+                delete_job(
+                    df.iloc[row]["id"]
+                )
+
+            st.rerun()
+
+        # EDIT
+        if st.session_state[
+            "jobs_editor"
+        ][
+            "edited_rows"
+        ]:
+
+            updates = st.session_state[
+                "jobs_editor"
+            ][
+                "edited_rows"
+            ]
+
+            for row, changes in updates.items():
+
+                update_job_full(
+                    df.iloc[row]["id"],
+                    changes
+                )
+
+            st.rerun()
 
     else:
 
