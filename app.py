@@ -231,7 +231,7 @@ if st.session_state["logged_in"]:
                 if url_in:
 
                     with st.spinner(
-                        "✨ Filling out description... Just a few moments"
+                        "Filling out description... Just a few moments"
                     ):
 
                         raw = scrape_job_link(
