@@ -1,4 +1,4 @@
-import google.generativeai as genai
+ import google.generativeai as genai
 import streamlit as st
 import fitz
 import docx
@@ -110,8 +110,8 @@ def generate_pdf_snapshot(
 
     except Exception as e:
 
-        print(
-            f"Snapshot error: {e}"
+        st.warning(
+            f"⚠️ Snapshot error: {e}"
         )
 
         return False
@@ -294,7 +294,7 @@ Job:
         rating = "N/A"
 
         match = re.search(
-            r"(\\d+)\\s*/\\s*10",
+            r"(\d+)\s*/\s*10",
             result
         )
 
@@ -342,4 +342,3 @@ Job:
             ]
 
         }
-
