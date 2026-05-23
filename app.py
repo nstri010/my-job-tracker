@@ -512,7 +512,7 @@ with c3:
 
                     st.rerun()
 
-            st.divider()
+    st.divider()
 
     else:
 
