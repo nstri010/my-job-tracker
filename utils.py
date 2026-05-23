@@ -4,18 +4,16 @@ import fitz
 import docx
 import re
 import requests
+import time
+
+from playwright.sync_api import (
+    sync_playwright
+)
 
 from bs4 import BeautifulSoup
 
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer
-)
+from PIL import Image
 
-from reportlab.lib.styles import (
-    getSampleStyleSheet
-)
 
 # GEMINI CONFIG
 genai.configure(
@@ -26,6 +24,9 @@ genai.configure(
 
 
 # PDF SNAPSHOT
+# Creates REAL webpage screenshot
+# then converts to PDF
+
 def generate_pdf_snapshot(
     job_url,
     output_file
@@ -33,81 +34,76 @@ def generate_pdf_snapshot(
 
     try:
 
-        response = requests.get(
-            job_url,
-
-            headers={
-                "User-Agent":
-                "Mozilla/5.0"
-            },
-
-            timeout=10
+        screenshot_file = (
+            "job_snapshot.png"
         )
 
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser"
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(
+                headless=True
+            )
+
+            page = browser.new_page(
+
+                viewport={
+                    "width": 1440,
+                    "height": 2200
+                }
+
+            )
+
+            page.goto(
+
+                job_url,
+
+                wait_until=
+                "networkidle",
+
+                timeout=60000
+
+            )
+
+            time.sleep(3)
+
+            # remove popups/modals
+
+            page.evaluate(
+                """
+                () => {
+
+                    document
+                    .querySelectorAll(
+                    '[role="dialog"], .popup, .modal'
+                    )
+
+                    .forEach(
+                    x => x.remove()
+                    );
+
+                }
+                """
+            )
+
+            page.screenshot(
+
+                path=
+                screenshot_file,
+
+                full_page=True
+
+            )
+
+            browser.close()
+
+        img = Image.open(
+            screenshot_file
         )
 
-        text = soup.get_text(
-            separator="\n"
-        )
-
-        doc = SimpleDocTemplate(
+        img.convert(
+            "RGB"
+        ).save(
             output_file
-        )
-
-        styles = getSampleStyleSheet()
-
-        story = []
-
-        story.append(
-
-            Paragraph(
-                "Job Snapshot",
-                styles["Title"]
-            )
-
-        )
-
-        story.append(
-
-            Spacer(
-                1,
-                12
-            )
-
-        )
-
-        story.append(
-
-            Paragraph(
-                f"<b>Source:</b> {job_url}",
-                styles["Normal"]
-            )
-
-        )
-
-        story.append(
-
-            Spacer(
-                1,
-                12
-            )
-
-        )
-
-        story.append(
-
-            Paragraph(
-                text[:10000],
-                styles["BodyText"]
-            )
-
-        )
-
-        doc.build(
-            story
         )
 
         return True
@@ -122,6 +118,7 @@ def generate_pdf_snapshot(
 
 
 # SCRAPE JOB PAGE
+
 def scrape_job_link(
     url
 ):
@@ -133,16 +130,22 @@ def scrape_job_link(
             url,
 
             headers={
+
                 "User-Agent":
                 "Mozilla/5.0"
+
             },
 
             timeout=10
+
         )
 
         soup = BeautifulSoup(
+
             response.text,
+
             "html.parser"
+
         )
 
         text = soup.get_text(
@@ -159,6 +162,7 @@ def scrape_job_link(
 
 
 # EXTRACT RESUME TEXT
+
 def extract_text_from_upload(
     uploaded_file
 ):
@@ -171,9 +175,11 @@ def extract_text_from_upload(
 
         pdf = fitz.open(
 
-            stream=uploaded_file.read(),
+            stream=
+            uploaded_file.read(),
 
             filetype="pdf"
+
         )
 
         for page in pdf:
@@ -199,6 +205,7 @@ def extract_text_from_upload(
 
 
 # CLEAN DESCRIPTION
+
 def clean_description_with_ai(
     raw_text
 ):
@@ -241,6 +248,7 @@ Job Text:
 
 
 # RESUME MATCH
+
 def get_ai_match_feedback(
     job_desc,
     resume_text
@@ -257,14 +265,11 @@ Rating: X/10
 
 Strengths:
 - item
-- item
 
 Missing Skills:
 - item
-- item
 
 Suggestions:
-- item
 - item
 
 Resume:
@@ -289,7 +294,7 @@ Job:
         rating = "N/A"
 
         match = re.search(
-            r'(\d+)\s*/\s*10',
+            r"(\\d+)\\s*/\\s*10",
             result
         )
 
