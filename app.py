@@ -479,7 +479,7 @@ with c3:
 
                     st.rerun()
 
-            with c5:
+    with c5:
 
                 resume = row.get(
                     "resume_link"
