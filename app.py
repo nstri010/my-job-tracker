@@ -48,7 +48,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# SESSION
+# SESSION STATE
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
@@ -62,7 +62,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN
+# LOGIN SCREEN
 if not st.session_state["logged_in"]:
 
     st.title(
@@ -139,23 +139,212 @@ if not st.session_state["logged_in"]:
             else:
 
                 st.error(
-                    "Username exists"
+                    "Username already exists"
                 )
 
 
 # MAIN APP
 if st.session_state["logged_in"]:
 
-    st.title(
-        "📂 Job Tracker"
+    top1, top2 = st.columns(
+        [5,1]
     )
 
-    if st.button(
-        "Sign Out"
+    with top1:
+
+        st.title(
+            "📂 Job Tracker"
+        )
+
+    with top2:
+
+        if st.button(
+            "Sign Out"
+        ):
+
+            st.session_state.clear()
+            st.rerun()
+
+    # ADD JOB
+    with st.expander(
+        "➕ Add New Application"
     ):
 
-        st.session_state.clear()
-        st.rerun()
+        c1, c2 = st.columns(
+            2
+        )
+
+        with c1:
+
+            comp = st.text_input(
+                "Company Name"
+            )
+
+        with c2:
+
+            pos = st.text_input(
+                "Position Title"
+            )
+
+        url_in = st.text_input(
+            "Job Posting URL"
+        )
+
+        if st.button(
+            "✨ Auto-Fill"
+        ):
+
+            if url_in:
+
+                with st.spinner(
+                    "Filling out description... Just a few moments"
+                ):
+
+                    raw = scrape_job_link(
+                        url_in
+                    )
+
+                    st.session_state[
+                        "formatted_desc"
+                    ] = clean_description_with_ai(
+                        raw
+                    )
+
+        final_desc = st.text_area(
+
+            "Job Description",
+
+            value=
+            st.session_state[
+                "formatted_desc"
+            ],
+
+            height=220
+
+        )
+
+        st.subheader(
+            "🎯 Resume Match"
+        )
+
+        col1, col2 = st.columns(
+            2
+        )
+
+        with col1:
+
+            up_file = st.file_uploader(
+                "Upload Resume",
+                type=[
+                    "pdf",
+                    "docx"
+                ]
+            )
+
+        with col2:
+
+            applied_date = st.date_input(
+                "Date Applied"
+            )
+
+        if st.button(
+            "🔍 Scan Resume"
+        ):
+
+            if final_desc and up_file:
+
+                resume_txt = (
+                    extract_text_from_upload(
+                        up_file
+                    )
+                )
+
+                st.session_state[
+                    "match_data"
+                ] = get_ai_match_feedback(
+                    final_desc,
+                    resume_txt
+                )
+
+        if st.session_state[
+            "match_data"
+        ]:
+
+            m = st.session_state[
+                "match_data"
+            ]
+
+            st.success(
+                f"🎯 Resume Match: {m.get('score','N/A')}"
+            )
+
+            st.subheader(
+                "AI Feedback"
+            )
+
+            for item in m.get(
+                "feedback",
+                []
+            ):
+
+                st.write(
+                    item
+                )
+
+        if st.button(
+            "💾 Save Application"
+        ):
+
+            score = "N/A"
+
+            if st.session_state[
+                "match_data"
+            ]:
+
+                score = (
+                    st.session_state[
+                        "match_data"
+                    ].get(
+                        "score",
+                        "N/A"
+                    )
+                )
+
+            resume_url = None
+
+            if up_file:
+
+                resume_url = upload_resume(
+                    up_file,
+                    st.session_state[
+                        "username"
+                    ]
+                )
+
+            save_job(
+
+                comp,
+
+                pos,
+
+                final_desc,
+
+                url_in,
+
+                resume_url,
+
+                score,
+
+                applied_date=
+                applied_date
+
+            )
+
+            st.success(
+                "Application saved"
+            )
+
+            st.rerun()
 
     # SAVED JOBS
     st.divider()
@@ -190,6 +379,10 @@ if st.session_state["logged_in"]:
 
         df = pd.DataFrame(
             jobs_list
+        )
+
+        st.info(
+            "💡 Use the dropdown beside status to update progress"
         )
 
         h1,h2,h3,h4,h5,h6 = st.columns(
@@ -228,43 +421,40 @@ if st.session_state["logged_in"]:
                 [2,2,2,2,1,1]
             )
 
-            # COMPANY
             with c1:
 
-                st.write(
-                    row.get(
-                        "company",
-                        ""
-                    )
-                )
-
-            # POSITION
-            with c2:
-
-                st.write(
-                    row.get(
-                        "position",
-                        ""
-                    )
-                )
-
-            # MATCH
-            with c3:
-
-                st.write(
-                    row.get(
-                        "score",
-                        "N/A"
-                    )
-                )
-
-            # STATUS
-            with c4:
-
                 st.markdown(
-                    "<div style='margin-top:10px'></div>",
+                    f"""
+<div style='padding-top:14px'>
+{row.get("company","")}
+</div>
+""",
                     unsafe_allow_html=True
                 )
+
+            with c2:
+
+                st.markdown(
+                    f"""
+<div style='padding-top:14px'>
+{row.get("position","")}
+</div>
+""",
+                    unsafe_allow_html=True
+                )
+
+            with c3:
+
+                st.markdown(
+                    f"""
+<div style='padding-top:14px'>
+{row.get("score","N/A")}
+</div>
+""",
+                    unsafe_allow_html=True
+                )
+
+            with c4:
 
                 current = row.get(
                     "status",
@@ -308,13 +498,7 @@ if st.session_state["logged_in"]:
 
                     st.rerun()
 
-            # RESUME
             with c5:
-
-                st.markdown(
-                    "<div style='margin-top:10px'></div>",
-                    unsafe_allow_html=True
-                )
 
                 resume = row.get(
                     "resume_link"
@@ -323,22 +507,12 @@ if st.session_state["logged_in"]:
                 if resume:
 
                     st.link_button(
-
                         "📄",
-
                         resume,
-
                         width="stretch"
-
                     )
 
-            # DELETE
             with c6:
-
-                st.markdown(
-                    "<div style='margin-top:10px'></div>",
-                    unsafe_allow_html=True
-                )
 
                 if st.button(
 
