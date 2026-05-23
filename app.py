@@ -3,16 +3,16 @@ import pandas as pd
 from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_full
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
-# Page Configuration
+# Page Configuration [cite: 4]
 st.set_page_config(page_title="Job Tracker", layout="wide")
 
-# Session State Initialization
+# Session State Initialization [cite: 4]
 if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 if 'formatted_desc' not in st.session_state: st.session_state['formatted_desc'] = ""
 if 'match_data' not in st.session_state: st.session_state['match_data'] = None
 if 'username' not in st.session_state: st.session_state['username'] = None
 
-# --- AUTHENTICATION ---
+# --- AUTHENTICATION --- [cite: 4]
 if not st.session_state['logged_in']:
     st.title("🔐 Job Tracker Login")
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
@@ -53,7 +53,7 @@ if st.session_state['logged_in']:
             st.session_state.clear()
             st.rerun()
 
-    # STEP 1: ADD JOB
+    # STEP 1: ADD JOB [cite: 4]
     with st.expander("➕ Add New Application", expanded=False):
         c1, c2 = st.columns(2)
         with c1: comp = st.text_input("Company Name")
@@ -77,6 +77,7 @@ if st.session_state['logged_in']:
         with col_file:
             up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
         with col_date:
+            # Calendar for selecting application date [cite: 4]
             applied_date = st.date_input("Date Applied", value="today")
 
         if st.button("🔍 Scan Resume"):
@@ -95,6 +96,7 @@ if st.session_state['logged_in']:
                 with st.spinner("Saving..."):
                     score = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
                     res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
+                    # Pass the selected date to the storage function [cite: 4]
                     if save_job(comp, pos, final_desc, url_in, res_url, score, applied_date=applied_date):
                         st.session_state['formatted_desc'] = ""
                         st.session_state['match_data'] = None
@@ -110,16 +112,17 @@ if st.session_state['logged_in']:
     if jobs_list:
         df = pd.DataFrame(jobs_list)
         
-        # Format the display date
+        # Format the display date [cite: 4]
         df['created_at'] = pd.to_datetime(df['created_at'])
         df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y')
 
         status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Moving On"]
 
+        # Data Editor Configuration [cite: 4]
         edited_df = st.data_editor(
             df,
             use_container_width=True,
-            num_rows="dynamic",
+            num_rows="dynamic", # Enables deletion
             column_config={
                 "created_at": st.column_config.TextColumn("Date Applied", disabled=True),
                 "company": st.column_config.TextColumn("Company", disabled=False),
@@ -129,13 +132,13 @@ if st.session_state['logged_in']:
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
                 "job_url": st.column_config.LinkColumn("Original Link"),
-                "id": None, "description": None # Hide internal ID and long text
+                "id": None, "description": None # Hide internal data
             },
             hide_index=True,
             key="jobs_editor"
         )
 
-        # Handle Deletions
+        # Handle row deletions [cite: 4]
         if st.session_state["jobs_editor"]["deleted_rows"]:
             for index in st.session_state["jobs_editor"]["deleted_rows"]:
                 job_id = df.iloc[index]["id"]
@@ -143,7 +146,7 @@ if st.session_state['logged_in']:
                     st.toast("Application deleted.", icon="🗑️")
             st.rerun()
 
-        # Handle Edits
+        # Handle field edits [cite: 4]
         if st.session_state["jobs_editor"]["edited_rows"]:
             updates = st.session_state["jobs_editor"]["edited_rows"]
             for index, changes in updates.items():
