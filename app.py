@@ -77,7 +77,7 @@ if st.session_state['logged_in']:
         with col_file:
             up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
         with col_date:
-            applied_date = st.date_input("Application Date", value="today")
+            applied_date = st.date_input("Date Applied", value="today")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and up_file:
