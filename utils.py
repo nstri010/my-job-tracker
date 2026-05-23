@@ -3,19 +3,59 @@ import streamlit as st
 import fitz
 import docx
 import re
+import requests
+from bs4 import BeautifulSoup
 
-# Configure Gemini API
+# GEMINI CONFIG
 genai.configure(
     api_key=st.secrets["GOOGLE_API_KEY"]
 )
 
 
-# PDF / DOCX TEXT EXTRACTION
-def extract_text_from_upload(uploaded_file):
+# SCRAPE JOB PAGE
+def scrape_job_link(url):
+
+    try:
+
+        headers = {
+            "User-Agent":
+            "Mozilla/5.0"
+        }
+
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=10
+        )
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        text = soup.get_text(
+            separator="\n"
+        )
+
+        return text
+
+    except Exception as e:
+
+        return (
+            f"Scrape error: {e}"
+        )
+
+
+# PDF / DOCX EXTRACTION
+def extract_text_from_upload(
+    uploaded_file
+):
 
     text = ""
 
-    if uploaded_file.name.endswith(".pdf"):
+    if uploaded_file.name.endswith(
+        ".pdf"
+    ):
 
         pdf = fitz.open(
             stream=uploaded_file.read(),
@@ -23,29 +63,38 @@ def extract_text_from_upload(uploaded_file):
         )
 
         for page in pdf:
+
             text += page.get_text()
 
-    elif uploaded_file.name.endswith(".docx"):
+    elif uploaded_file.name.endswith(
+        ".docx"
+    ):
 
         document = docx.Document(
             uploaded_file
         )
 
         for para in document.paragraphs:
-            text += para.text + "\n"
+
+            text += (
+                para.text
+                + "\n"
+            )
 
     return text
 
 
-# AI JOB DESCRIPTION CLEANER
-def clean_description_with_ai(raw_text):
+# CLEAN DESCRIPTION
+def clean_description_with_ai(
+    raw_text
+):
 
     try:
 
         prompt = f"""
 Clean and organize this job description.
 
-Make sections:
+Create:
 
 Responsibilities
 Requirements
@@ -61,18 +110,22 @@ Text:
             "gemini-2.5-flash"
         )
 
-        response = model.generate_content(
-            prompt
+        response = (
+            model.generate_content(
+                prompt
+            )
         )
 
         return response.text
 
     except Exception as e:
 
-        return f"AI formatting error: {e}"
+        return (
+            f"AI formatting error: {e}"
+        )
 
 
-# RESUME MATCH ANALYZER
+# RESUME SCORING
 def get_ai_match_feedback(
     job_desc,
     resume_text
@@ -81,26 +134,23 @@ def get_ai_match_feedback(
     try:
 
         prompt = f"""
-Compare this resume against the job description.
+Compare resume vs job.
 
-Return EXACTLY in this format:
+Return:
 
 Score: XX%
 
 Strengths:
 - item
 - item
-- item
 
 Missing Skills:
-- item
 - item
 - item
 
 Resume:
 
 {resume_text}
-
 
 Job Description:
 
@@ -111,8 +161,10 @@ Job Description:
             "gemini-2.5-flash"
         )
 
-        response = model.generate_content(
-            prompt
+        response = (
+            model.generate_content(
+                prompt
+            )
         )
 
         result = response.text
@@ -120,7 +172,7 @@ Job Description:
         score = "N/A"
 
         match = re.search(
-            r'(\d+)%',
+            r"(\\d+)%",
             result
         )
 
@@ -133,11 +185,9 @@ Job Description:
 
         feedback = []
 
-        lines = result.split(
+        for line in result.split(
             "\n"
-        )
-
-        for line in lines:
+        ):
 
             line = line.strip()
 
@@ -148,7 +198,6 @@ Job Description:
                 )
 
         return {
-
             "score":
             score,
 
@@ -159,12 +208,11 @@ Job Description:
     except Exception as e:
 
         return {
-
             "score":
             "Error",
 
             "feedback":
             [
-                f"Technical error: {str(e)}"
+                f"Technical error: {e}"
             ]
         }
