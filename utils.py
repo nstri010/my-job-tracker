@@ -22,6 +22,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 def generate_pdf_snapshot(job_url, output_file):
     try:
         api_key = st.secrets["SCREENSHOTONE_KEY"]
+        st.info(f"🔑 Key loaded: {api_key[:6]}...")
 
         # Call ScreenshotOne API
         params = {
