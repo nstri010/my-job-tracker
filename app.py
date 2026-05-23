@@ -78,11 +78,11 @@ if not st.session_state["logged_in"]:
 
     with tab1:
 
-        u = st.text_input(
+        username = st.text_input(
             "Username"
         )
 
-        p = st.text_input(
+        password = st.text_input(
             "Password",
             type="password"
         )
@@ -92,8 +92,8 @@ if not st.session_state["logged_in"]:
         ):
 
             if login_user(
-                u,
-                p
+                username,
+                password
             ):
 
                 st.session_state[
@@ -102,7 +102,7 @@ if not st.session_state["logged_in"]:
 
                 st.session_state[
                     "username"
-                ] = u
+                ] = username
 
                 st.rerun()
 
@@ -114,11 +114,11 @@ if not st.session_state["logged_in"]:
 
     with tab2:
 
-        new_u = st.text_input(
+        new_user = st.text_input(
             "Create Username"
         )
 
-        new_p = st.text_input(
+        new_pass = st.text_input(
             "Create Password",
             type="password"
         )
@@ -128,8 +128,8 @@ if not st.session_state["logged_in"]:
         ):
 
             if sign_up_user(
-                new_u,
-                new_p
+                new_user,
+                new_pass
             ):
 
                 st.success(
@@ -146,41 +146,37 @@ if not st.session_state["logged_in"]:
 # MAIN APP
 if st.session_state["logged_in"]:
 
-    t1, t2 = st.columns(
+    top1, top2 = st.columns(
         [5,1]
     )
 
-    with t1:
+    with top1:
 
         st.title(
             "📂 Job Tracker"
         )
 
-    with t2:
+    with top2:
 
         if st.button(
             "Sign Out"
         ):
 
             st.session_state.clear()
-
             st.rerun()
 
-    # ADD APPLICATION
     with st.expander(
         "➕ Add New Application"
     ):
 
-        c1, c2 = st.columns(2)
+        c1,c2 = st.columns(2)
 
         with c1:
-
             comp = st.text_input(
                 "Company Name"
             )
 
         with c2:
-
             pos = st.text_input(
                 "Position Title"
             )
@@ -210,19 +206,14 @@ if st.session_state["logged_in"]:
                     )
 
         final_desc = st.text_area(
-
             "Job Description",
-
-            value=
-            st.session_state[
+            value=st.session_state[
                 "formatted_desc"
             ],
-
             height=220
-
         )
 
-        col1, col2 = st.columns(2)
+        col1,col2 = st.columns(2)
 
         with col1:
 
@@ -246,22 +237,18 @@ if st.session_state["logged_in"]:
 
             if final_desc and up_file:
 
-                with st.spinner(
-                    "Analyzing match..."
-                ):
-
-                    resume_txt = (
-                        extract_text_from_upload(
-                            up_file
-                        )
+                resume_txt = (
+                    extract_text_from_upload(
+                        up_file
                     )
+                )
 
-                    st.session_state[
-                        "match_data"
-                    ] = get_ai_match_feedback(
-                        final_desc,
-                        resume_txt
-                    )
+                st.session_state[
+                    "match_data"
+                ] = get_ai_match_feedback(
+                    final_desc,
+                    resume_txt
+                )
 
         if st.session_state[
             "match_data"
@@ -280,69 +267,29 @@ if st.session_state["logged_in"]:
                 []
             ):
 
-                st.write(
-                    item
-                )
+                st.write(item)
 
-        # SAVE APPLICATION BUTTON
         if st.button(
             "💾 Save Application"
         ):
 
-            score = "N/A"
-
-            if st.session_state[
-                "match_data"
-            ]:
-
-                score = (
-                    st.session_state[
-                        "match_data"
-                    ].get(
-                        "score",
-                        "N/A"
-                    )
-                )
-
-            resume_url = None
-
-            if up_file:
-
-                resume_url = upload_resume(
-                    up_file,
-                    st.session_state[
-                        "username"
-                    ]
-                )
-
-            success = save_job(
-
+            save_job(
                 comp,
-
                 pos,
-
                 final_desc,
-
                 url_in,
-
-                resume_url,
-
-                score,
-
+                None,
+                "N/A",
                 applied_date=
                 applied_date
-
             )
 
-            if success:
+            st.success(
+                "Application saved"
+            )
 
-                st.success(
-                    "Application saved"
-                )
+            st.rerun()
 
-                st.rerun()
-
-    # SAVED JOBS
     st.divider()
 
     st.header(
@@ -354,14 +301,13 @@ if st.session_state["logged_in"]:
     status_options = [
 
         "📝 Applied",
-
-        "📨 Contacted",
-
-        "📅 Interview",
-
+        "📨 Recruiter Contacted",
+        "📅 Interview Scheduled",
+        "🎤 Interviewed",
+        "⏳ Waiting",
         "✅ Offer",
-
-        "❌ Rejected"
+        "❌ Rejected",
+        "🚫 Withdrawn"
 
     ]
 
@@ -371,147 +317,86 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        col_ratios = [
-            2,
-            2,
-            0.8,
-            1.5,
-            0.5,
-            0.5,
-            0.5
-        ]
+        # FINAL COMPACT RATIOS: [Company, Position, Match, Status, Resume, Delete]
+        col_ratios = [2.5, 2.5, 0.5, 1.1, 0.4, 0.4]
 
-        headers = [
+        h1,h2,h3,h4,h5,h6 = st.columns(col_ratios)
 
-            "Company",
-
-            "Position",
-
-            "Match",
-
-            "Status",
-
-            "Resume",
-
-            "Listing",
-
-            "Delete"
-
-        ]
-
-        cols = st.columns(
-            col_ratios
-        )
-
-        for col, head in zip(
-            cols,
-            headers
-        ):
-
-            col.markdown(
-                f"**{head}**"
-            )
+        h1.markdown("**Company**")
+        h2.markdown("**Position**")
+        h3.markdown("**Match**")
+        h4.markdown("**Status**")
+        h5.markdown("**Res**") # Shorter header to match narrow col
+        h6.markdown("**Del**") # Shorter header to match narrow col
 
         st.divider()
 
         for idx,row in df.iterrows():
 
-            c1,c2,c3,c4,c5,c6,c7,c8 = st.columns(
+            c1,c2,c3,c4,c5,c6 = st.columns(
                 col_ratios,
                 vertical_alignment="center"
             )
 
-            c1.write(
-                row.get(
-                    "company",
-                    ""
-                )
-            )
+            with c1:
+                st.write(row.get("company", ""))
 
-            c2.write(
-                row.get(
-                    "position",
-                    ""
-                )
-            )
+            with c2:
+                st.write(row.get("position", ""))
 
-            c3.write(
-                row.get(
-                    "match_score",
-                    "N/A"
-                )
-            )
+            with c3:
+                st.write(row.get("score", "N/A"))
 
             with c4:
+                current = row.get("status", "📝 Applied")
 
-                curr = row.get(
-                    "status",
-                    "📝 Applied"
-                )
+                status_map = {
+                    "Applied": "📝 Applied",
+                    "Recruiter Contacted": "📨 Recruiter Contacted",
+                    "Interview Scheduled": "📅 Interview Scheduled",
+                    "Interviewed": "🎤 Interviewed",
+                    "Waiting": "⏳ Waiting",
+                    "Offer": "✅ Offer",
+                    "Rejected": "❌ Rejected",
+                    "Withdrawn": "🚫 Withdrawn"
+                }
+                current = status_map.get(current, current)
 
-                new_stat = st.selectbox(
+                if current not in status_options:
+                    current = "📝 Applied"
 
+                new_status = st.selectbox(
                     "Status",
-
                     status_options,
-
-                    index=
-                    status_options.index(
-                        curr
-                    ) if curr in status_options else 0,
-
-                    key=
-                    f"s_{row['id']}",
-
-                    label_visibility=
-                    "collapsed"
-
+                    index=status_options.index(current),
+                    key=f"status_{row['id']}",
+                    label_visibility="collapsed"
                 )
 
-                if new_stat != curr:
-
+                if new_status != current:
                     update_job_full(
                         row["id"],
-                        {
-                            "status":
-                            new_stat
-                        }
+                        {"status": new_status}
                     )
-
                     st.rerun()
 
-            if row.get(
-                "resume_link"
-            ):
+            with c5:
+                resume = row.get("resume_link")
+                if resume:
+                    st.link_button(
+                        "📄",
+                        resume,
+                        use_container_width=True
+                    )
 
-                c5.link_button(
-                    "📄",
-                    row[
-                        "resume_link"
-                    ]
-                )
-
-            if row.get(
-                "pdf_url"
-            ):
-
-                c6.link_button(
-                    "📑",
-                    row[
-                        "pdf_url"
-                    ]
-                )
-
-            if c7.button(
-                "❌",
-                key=f"d_{row['id']}"
-            ):
-
-                delete_job(
-                    row["id"]
-                )
-
-                st.rerun()
+            with c6:
+                if st.button(
+                    "🗑️",
+                    key=f"delete_{row['id']}",
+                    use_container_width=True
+                ):
+                    delete_job(row["id"])
+                    st.rerun()
 
             st.divider()
 
