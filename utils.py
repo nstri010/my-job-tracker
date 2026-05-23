@@ -1,95 +1,68 @@
+import requests
+from bs4 import BeautifulSoup
+import pypdf
+import docx2txt
+import io
 import google.generativeai as genai
 import streamlit as st
-import fitz
-import docx
-import re
-import requests
-import time
-from playwright.sync_api import sync_playwright
-from bs4 import BeautifulSoup
-from PIL import Image
+import json
+import asyncio
+from playwright.async_api import async_playwright
 
-# GEMINI CONFIG
+# AI Setup
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-def generate_pdf_snapshot(job_url, output_file):
-    """Generates a high-quality PDF of the job posting using Playwright's native PDF engine."""
+def extract_text_from_upload(uploaded_file):
+    ext = uploaded_file.name.split('.')[-1].lower()
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            # Set a standard desktop viewport
-            context = browser.new_context(viewport={"width": 1280, "height": 1000})
-            page = context.new_page()
-            
-            # Navigate and wait for the page to finish loading styles/images
-            page.goto(job_url, wait_until="networkidle", timeout=60000)
-            
-            # Brief pause for any lazy-loaded elements
-            time.sleep(2)
-
-            # Optional: Remove common popups that might block the job details
-            page.evaluate("""
-                () => {
-                    const selectors = ['[role="dialog"]', '.popup', '.modal', '#cookie-banner'];
-                    selectors.forEach(s => {
-                        document.querySelectorAll(s).forEach(el => el.remove());
-                    });
-                }
-            """)
-
-            # Generate the PDF directly from the page
-            page.pdf(
-                path=output_file,
-                format="A4",
-                print_background=True,
-                margin={"top": "20px", "right": "20px", "bottom": "20px", "left": "20px"}
-            )
-            browser.close()
-        return True
-    except Exception as e:
-        print(f"Snapshot error: {e}")
-        return False
+        if ext == 'pdf':
+            reader = pypdf.PdfReader(uploaded_file)
+            return " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        elif ext in ['docx', 'doc']:
+            return docx2txt.process(io.BytesIO(uploaded_file.getvalue()))
+    except: return ""
+    return ""
 
 def scrape_job_link(url):
     try:
-        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-        soup = BeautifulSoup(response.text, "html.parser")
-        return soup.get_text(separator="\n")
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
+        response = requests.get(url, headers=headers, timeout=15)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        for junk in soup(["script", "style", "nav", "footer", "header"]):
+            junk.decompose()
+        return soup.get_text(separator='\n\n', strip=True)
     except Exception as e:
-        return f"Scrape error: {e}"
-
-def extract_text_from_upload(uploaded_file):
-    text = ""
-    if uploaded_file.name.endswith(".pdf"):
-        pdf = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-        for page in pdf:
-            text += page.get_text()
-    elif uploaded_file.name.endswith(".docx"):
-        document = docx.Document(uploaded_file)
-        for para in document.paragraphs:
-            text += para.text + "\n"
-    return text
+        return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
+    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
     try:
-        prompt = f"Organize this job posting into sections (Responsibilities, Requirements, Skills, Benefits):\n\n{raw_text}"
-        model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(prompt)
         return response.text
-    except Exception as e:
-        return f"Formatting error: {e}"
+    except: return raw_text
 
 def get_ai_match_feedback(job_desc, resume_text):
+    prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
     try:
-        prompt = f"Compare resume against job. Return Rating: X/10, Strengths, Missing Skills, and Suggestions.\n\nResume:\n{resume_text}\n\nJob:\n{job_desc}"
-        model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(prompt)
-        result = response.text
-        rating = "N/A"
-        match = re.search(r"(\d+)\s*/\s*10", result)
-        if match:
-            rating = match.group(1) + "/10"
-        feedback = [line.strip() for line in result.split("\n") if line.strip()]
-        return {"score": rating, "feedback": feedback}
-    except Exception as e:
-        return {"score": "Error", "feedback": [f"Technical error: {e}"]}
+        return json.loads(response.text.strip('`json \n'))
+    except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
+
+def generate_pdf_snapshot(url, filename):
+    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
+    async def run():
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            try:
+                # networkidle waits for the page to finish loading images/scripts
+                await page.goto(url, wait_until="networkidle", timeout=30000)
+                await page.pdf(path=filename, format="A4")
+                await browser.close()
+                return True
+            except Exception as e:
+                print(f"Snapshot Error: {e}")
+                await browser.close()
+                return False
+    return asyncio.run(run())
