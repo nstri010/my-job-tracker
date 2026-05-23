@@ -3,6 +3,10 @@ import pandas as pd
 from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_full
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
+
+if not os.path.exists("/home/appuser/.cache/ms-playwright"):
+    subprocess.run(["playwright", "install", "chromium"])
+    
 # Page Configuration [cite: 4]
 st.set_page_config(page_title="Job Tracker", layout="wide")
 
