@@ -8,7 +8,7 @@ try:
     key = st.secrets["SUPABASE_KEY"]
     supabase: Client = create_client(url, key)
 except:
-    st.error("Secrets Error: Ensure SUPABASE_URL and SUPABASE_KEY are in your secrets.")
+    st.error("Secrets Error.")
     st.stop()
 
 def sign_up_user(username, password):
@@ -37,24 +37,18 @@ def save_job(company, position, description, job_url, resume_url, match_score, a
     if job_url:
         from utils import generate_pdf_snapshot
         snap_name = f"JOB_{company}_{int(time.time())}.pdf".replace(" ", "_")
-        # Call the updated high-quality PDF function
         if generate_pdf_snapshot(job_url, snap_name):
             try:
                 with open(snap_name, "rb") as f:
-                    supabase.storage.from_("job_previews").upload(
-                        path=snap_name, 
-                        file=f, 
-                        file_options={"content-type": "application/pdf", "upsert": "true"}
-                    )
+                    supabase.storage.from_("job_previews").upload(path=snap_name, file=f, file_options={"content-type": "application/pdf"})
                 pdf_url = supabase.storage.from_("job_previews").get_public_url(snap_name)
-                os.remove(snap_name) # Remove local temp file
-            except Exception as e: 
-                print(f"Storage Upload Error: {e}")
+                os.remove(snap_name)
+            except: pass
 
     data = {
         "company": company, "position": position, "description": description,
         "job_url": job_url, "resume_link": resume_url, "pdf_url": pdf_url,
-        "match_score": str(match_score), "status": "📝 Applied"
+        "match_score": str(match_score), "status": "Active"
     }
     
     if applied_date:
