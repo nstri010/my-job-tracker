@@ -2,449 +2,115 @@ import streamlit as st
 import pandas as pd
 import os
 import subprocess
+from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_full
+from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
-from storage import (
-    load_jobs,
-    save_job,
-    delete_job,
-    sign_up_user,
-    login_user,
-    upload_resume,
-    update_job_full
-)
-
-from utils import (
-    scrape_job_link,
-    clean_description_with_ai,
-    get_ai_match_feedback,
-    extract_text_from_upload
-)
-
-# PLAYWRIGHT INSTALL
-if not os.path.exists(
-    "/home/appuser/.cache/ms-playwright"
-):
-
+# PLAYWRIGHT INSTALLATION (Required for snapshots)
+if not os.path.exists("/home/appuser/.cache/ms-playwright"):
     try:
-
-        subprocess.run(
-            [
-                "playwright",
-                "install",
-                "chromium"
-            ],
-            check=True
-        )
-
+        subprocess.run(["playwright", "install", "chromium"], check=True)
     except Exception as e:
+        st.error(f"Browser install error: {e}")
 
-        st.error(
-            f"Browser install error: {e}"
-        )
+st.set_page_config(page_title="Job Tracker", layout="wide")
 
-# PAGE CONFIG
-st.set_page_config(
-    page_title="Job Tracker",
-    layout="wide"
-)
+# SESSION STATE INITIALIZATION
+if "logged_in" not in st.session_state: st.session_state["logged_in"] = False
+if "formatted_desc" not in st.session_state: st.session_state["formatted_desc"] = ""
+if "match_data" not in st.session_state: st.session_state["match_data"] = None
+if "username" not in st.session_state: st.session_state["username"] = None
 
-# SESSION STATE
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-
-if "formatted_desc" not in st.session_state:
-    st.session_state["formatted_desc"] = ""
-
-if "match_data" not in st.session_state:
-    st.session_state["match_data"] = None
-
-if "username" not in st.session_state:
-    st.session_state["username"] = None
-
-
-# LOGIN
+# AUTHENTICATION UI
 if not st.session_state["logged_in"]:
-
-    st.title(
-        "🔐 Job Tracker Login"
-    )
-
-    tab1, tab2 = st.tabs(
-        [
-            "Login",
-            "Sign Up"
-        ]
-    )
-
+    st.title("🔐 Job Tracker Login")
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
     with tab1:
-
-        username = st.text_input(
-            "Username"
-        )
-
-        password = st.text_input(
-            "Password",
-            type="password"
-        )
-
-        if st.button(
-            "Login"
-        ):
-
-            if login_user(
-                username,
-                password
-            ):
-
-                st.session_state[
-                    "logged_in"
-                ] = True
-
-                st.session_state[
-                    "username"
-                ] = username
-
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if login_user(u, p):
+                st.session_state["logged_in"], st.session_state["username"] = True, u
                 st.rerun()
-
-            else:
-
-                st.error(
-                    "Invalid login"
-                )
-
+            else: st.error("Invalid login")
     with tab2:
+        nu = st.text_input("Create Username")
+        np = st.text_input("Create Password", type="password")
+        if st.button("Create Account"):
+            if sign_up_user(nu, np): st.success("Account created!")
+            else: st.error("Username already exists")
 
-        new_user = st.text_input(
-            "Create Username"
-        )
-
-        new_pass = st.text_input(
-            "Create Password",
-            type="password"
-        )
-
-        if st.button(
-            "Create Account"
-        ):
-
-            if sign_up_user(
-                new_user,
-                new_pass
-            ):
-
-                st.success(
-                    "Account created"
-                )
-
-            else:
-
-                st.error(
-                    "Username already exists"
-                )
-
-
-# MAIN APP
+# MAIN APP INTERFACE
 if st.session_state["logged_in"]:
+    t1, t2 = st.columns([5,1])
+    t1.title("📂 Job Tracker")
+    if t2.button("Sign Out"):
+        st.session_state.clear()
+        st.rerun()
 
-    top1, top2 = st.columns(
-        [5,1]
-    )
+    with st.expander("➕ Add New Application"):
+        c1, c2 = st.columns(2)
+        comp = c1.text_input("Company Name")
+        pos = c2.text_input("Position Title")
+        url_in = st.text_input("Job Posting URL")
 
-    with top1:
-        st.title(
-            "📂 Job Tracker"
-        )
-
-    with top2:
-
-        if st.button(
-            "Sign Out"
-        ):
-
-            st.session_state.clear()
-            st.rerun()
-
-    with st.expander(
-        "➕ Add New Application"
-    ):
-
-        c1,c2 = st.columns(2)
-
-        with c1:
-            comp = st.text_input(
-                "Company Name"
-            )
-
-        with c2:
-            pos = st.text_input(
-                "Position Title"
-            )
-
-        url_in = st.text_input(
-            "Job Posting URL"
-        )
-
-        if st.button(
-            "✨ Auto-Fill"
-        ):
-
+        if st.button("✨ Auto-Fill Description"):
             if url_in:
+                with st.spinner("Fetching details..."):
+                    raw = scrape_job_link(url_in)
+                    st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
-                with st.spinner(
-                    "Filling out description... Just a few moments"
-                ):
+        final_desc = st.text_area("Job Description", value=st.session_state["formatted_desc"], height=200)
+        
+        col1, col2 = st.columns(2)
+        up_file = col1.file_uploader("Upload Resume Used", type=["pdf", "docx"])
+        applied_date = col2.date_input("Date Applied")
 
-                    raw = scrape_job_link(
-                        url_in
-                    )
-
-                    st.session_state[
-                        "formatted_desc"
-                    ] = clean_description_with_ai(
-                        raw
-                    )
-
-        final_desc = st.text_area(
-            "Job Description",
-            value=
-            st.session_state[
-                "formatted_desc"
-            ],
-            height=220
-        )
-
-        col1,col2 = st.columns(2)
-
-        with col1:
-
-            up_file = st.file_uploader(
-                "Upload Resume",
-                type=[
-                    "pdf",
-                    "docx"
-                ]
-            )
-
-        with col2:
-
-            applied_date = st.date_input(
-                "Date Applied"
-            )
-
-        if st.button(
-            "🔍 Scan Resume"
-        ):
-
-            if final_desc and up_file:
-
-                resume_txt = extract_text_from_upload(
-                    up_file
-                )
-
-                st.session_state[
-                    "match_data"
-                ] = get_ai_match_feedback(
-                    final_desc,
-                    resume_txt
-                )
-
-        if st.session_state[
-            "match_data"
-        ]:
-
-            match = st.session_state[
-                "match_data"
-            ]
-
-            st.success(
-                f"🎯 Resume Match: {match.get('score','N/A')}"
-            )
-
-            for item in match.get(
-                "feedback",
-                []
-            ):
-
-                st.write(item)
+        if st.button("🔍 Scan Match & Save"):
+            if comp and pos:
+                with st.spinner("Saving application and taking snapshot..."):
+                    res_url = upload_resume(up_file, st.session_state["username"]) if up_file else None
+                    score = "N/A"
+                    if up_file and final_desc:
+                        match = get_ai_match_feedback(final_desc, extract_text_from_upload(up_file))
+                        score = match["score"]
+                    
+                    if save_job(comp, pos, final_desc, url_in, res_url, score, applied_date):
+                        st.success("Application Saved!")
+                        time.sleep(1)
+                        st.rerun()
+            else:
+                st.warning("Please enter Company and Position.")
 
     st.divider()
+    st.header("📋 My Applied Jobs")
+    jobs = load_jobs()
+    status_options = ["📝 Applied", "📨 Recruiter Contacted", "📅 Interview Scheduled", "🎤 Interviewed", "✅ Offer", "❌ Rejected"]
 
-    st.header(
-        "📋 My Applied Jobs"
-    )
+    if jobs:
+        df = pd.DataFrame(jobs)
+        ratios = [2, 2, 0.8, 1.5, 0.6, 0.6, 0.5]
+        h = st.columns(ratios)
+        cols = ["Company", "Position", "Match", "Status", "Resume", "Page", "Del"]
+        for i, name in enumerate(cols): h[i].markdown(f"**{name}**")
 
-    jobs_list = load_jobs()
-
-    status_options = [
-
-        "📝 Applied",
-        "📨 Recruiter Contacted",
-        "📅 Interview Scheduled",
-        "🎤 Interviewed",
-        "⏳ Waiting",
-        "✅ Offer",
-        "❌ Rejected",
-        "🚫 Withdrawn"
-
-    ]
-
-    if jobs_list:
-
-        df = pd.DataFrame(
-            jobs_list
-        )
-
-        # Company Position Match Status Resume PDF Delete
-        col_ratios = [
-            2.3,
-            2.3,
-            0.5,
-            1.1,
-            0.4,
-            0.4,
-            0.4
-        ]
-
-        h1,h2,h3,h4,h5,h6,h7 = st.columns(
-            col_ratios
-        )
-
-        h1.markdown("**Company**")
-        h2.markdown("**Position**")
-        h3.markdown("**Match**")
-        h4.markdown("**Status**")
-        h5.markdown("**Resume**")
-        h6.markdown("**Job Snapshot**")
-        h7.markdown("**Delete**")
-
-        st.divider()
-
-        for idx,row in df.iterrows():
-
-            c1,c2,c3,c4,c5,c6,c7 = st.columns(
-                col_ratios,
-                vertical_alignment="center"
-            )
-
-            with c1:
-                st.write(
-                    row.get(
-                        "company",
-                        ""
-                    )
-                )
-
-            with c2:
-                st.write(
-                    row.get(
-                        "position",
-                        ""
-                    )
-                )
-
-            with c3:
-                st.write(
-                    row.get(
-                        "score",
-                        "N/A"
-                    )
-                )
-
-            with c4:
-
-                current = row.get(
-                    "status",
-                    "📝 Applied"
-                )
-
-                if current not in status_options:
-                    current = "📝 Applied"
-
-                new_status = st.selectbox(
-
-                    "Status",
-
-                    status_options,
-
-                    index=
-                    status_options.index(
-                        current
-                    ),
-
-                    key=
-                    f"status_{row['id']}",
-
-                    label_visibility=
-                    "collapsed"
-
-                )
-
-                if new_status != current:
-
-                    update_job_full(
-                        row["id"],
-                        {
-                            "status":
-                            new_status
-                        }
-                    )
-
+        for _, row in df.iterrows():
+            c = st.columns(ratios, vertical_alignment="center")
+            c[0].write(row.get("company"))
+            c[1].write(row.get("position"))
+            c[2].write(row.get("match_score", "N/A"))
+            
+            with c[3]:
+                cur = row.get("status", "📝 Applied")
+                new_stat = st.selectbox("Status", status_options, index=status_options.index(cur) if cur in status_options else 0, key=f"s_{row['id']}", label_visibility="collapsed")
+                if new_stat != cur:
+                    update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
 
-            # RESUME
-            with c5:
-
-                resume = row.get(
-                    "resume_link"
-                )
-
-                if resume:
-
-                    st.link_button(
-                        "📄",
-                        resume,
-                        use_container_width=True
-                    )
-
-            # SAVED JOB SNAPSHOT PDF
-            with c6:
-
-                pdf = row.get(
-                    "pdf_url"
-                )
-
-                if pdf:
-
-                    st.link_button(
-                        "🔗",
-                        pdf,
-                        use_container_width=True
-                    )
-
-            # DELETE
-            with c7:
-
-                if st.button(
-
-                    "❌",
-
-                    key=
-                    f"delete_{row['id']}",
-
-                    use_container_width=True
-
-                ):
-
-                    delete_job(
-                        row["id"]
-                    )
-
-                    st.rerun()
-
-            st.divider()
-
+            if row.get("resume_link"): c[4].link_button("📄", row["resume_link"])
+            if row.get("pdf_url"): c[5].link_button("🌐", row["pdf_url"]) # This opens the high-quality PDF
+            
+            if c[6].button("❌", key=f"d_{row['id']}"):
+                delete_job(row["id"])
+                st.rerun()
     else:
-
-        st.write(
-            "No applications saved yet."
-        )
+        st.info("No applications yet.")
