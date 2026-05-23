@@ -454,61 +454,99 @@ if st.session_state["logged_in"]:
             )
         )
 
-        status_options = [
-            "Active",
-            "Applied",
-            "Interview Scheduled",
-            "Interviewed",
-            "Moving On"
-        ]
+       # STATUS OPTIONS
+status_options = [
 
-        edited_df = st.data_editor(
+    "▼ 📝 Applied",
 
-            df,
+    "▼ 📨 Recruiter Contacted",
 
-            width="stretch",
+    "▼ 📅 Interview Scheduled",
 
-            hide_index=True,
+    "▼ 🎤 Interviewed",
 
-            key="jobs_editor",
+    "▼ ⏳ Waiting",
 
-            num_rows="dynamic",
+    "▼ ✅ Offer",
 
-            column_config={
+    "▼ ❌ Rejected",
 
-                "created_at":
-                st.column_config.TextColumn(
-                    "Date Applied"
-                ),
+    "▼ 🚫 Withdrawn"
 
-                "status":
-                st.column_config.SelectboxColumn(
-                    "Status",
-                    options=status_options
-                ),
+]
 
-                "pdf_url":
-                st.column_config.LinkColumn(
-                    "Job Snapshot",
-                    display_text="View"
-                ),
+# USER INSTRUCTION
+st.info(
+    "💡 Click any status with ▼ to open the dropdown menu and update progress"
+)
 
-                "resume_link":
-                st.column_config.LinkColumn(
-                    "My Resume",
-                    display_text="Download"
-                ),
+edited_df = st.data_editor(
 
-                "job_url":
-                st.column_config.LinkColumn(
-                    "Original Posting",
-                    display_text="Open Link"
-                ),
+    df,
 
-                "id": None,
-                "description": None
-            }
-        )
+    width="stretch",
+
+    hide_index=True,
+
+    key="jobs_editor",
+
+    num_rows="dynamic",
+
+    column_config={
+
+        "created_at":
+        st.column_config.TextColumn(
+            "Date Applied"
+        ),
+
+        "status":
+        st.column_config.SelectboxColumn(
+
+            "Application Status",
+
+            help=
+            "Click the ▼ icon to change status",
+
+            options=status_options,
+
+            required=True
+
+        ),
+
+        "pdf_url":
+        st.column_config.LinkColumn(
+
+            "Job Snapshot",
+
+            display_text="View"
+
+        ),
+
+        "resume_link":
+        st.column_config.LinkColumn(
+
+            "My Resume",
+
+            display_text="Download"
+
+        ),
+
+        "job_url":
+        st.column_config.LinkColumn(
+
+            "Original Posting",
+
+            display_text="Open Link"
+
+        ),
+
+        "id": None,
+
+        "description": None
+
+    }
+
+)
 
         # DELETE
         if st.session_state[
