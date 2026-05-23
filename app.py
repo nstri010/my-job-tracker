@@ -313,7 +313,7 @@ if st.session_state["logged_in"]:
         h2.markdown("**Position**")
         h3.markdown("**Match**")
         h4.markdown("**Status**")
-        h5.markdown("**Submitted Resume**")
+        h5.markdown("**Resume**")
         h6.markdown("**Job Snapshot**")
         h7.markdown("**Delete**")
 
