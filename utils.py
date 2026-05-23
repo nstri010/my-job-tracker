@@ -9,91 +9,98 @@ from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Image as RLImage
 from reportlab.lib.units import mm
-from reportlab.lib import colors
 
 # GEMINI CONFIG
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
 # PDF SNAPSHOT
-# Fetches job page text and renders it as a clean PDF
+# Uses ScreenshotOne API to take a real visual screenshot
+# then saves it as a PDF
 def generate_pdf_snapshot(job_url, output_file):
     try:
-        # Fetch the page
+        api_key = st.secrets["SCREENSHOTONE_KEY"]
+
+        # Call ScreenshotOne API
+        params = {
+            "access_key": api_key,
+            "url": job_url,
+            "format": "jpg",
+            "viewport_width": 1440,
+            "viewport_height": 900,
+            "full_page": "true",
+            "block_ads": "true",
+            "block_cookie_banners": "true",
+            "block_trackers": "true",
+            "delay": 2,
+            "timeout": 30,
+        }
+
         response = requests.get(
-            job_url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
-            timeout=20
+            "https://api.screenshotone.com/take",
+            params=params,
+            timeout=60
         )
-        response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, "html.parser")
+        if response.status_code != 200:
+            st.warning(f"⚠️ Screenshot API error: {response.status_code} — {response.text[:200]}")
+            return False
 
-        # Pull page title
-        title = soup.title.string.strip() if soup.title else job_url
+        # Convert screenshot image to PDF
+        img = Image.open(BytesIO(response.content)).convert("RGB")
 
-        # Remove noise
-        for tag in soup(["script", "style", "nav", "footer", "header", "aside", "iframe"]):
-            tag.decompose()
+        # Scale image to fit A4 width
+        a4_width_mm = 210
+        a4_height_mm = 297
+        a4_width_px = int(a4_width_mm * 3.7795)  # mm to px at 96dpi
 
-        # Get clean text
-        text = soup.get_text(separator="\n")
-        lines = [l.strip() for l in text.splitlines() if l.strip()]
-        clean_text = "\n".join(lines)
+        ratio = a4_width_px / img.width
+        new_height = int(img.height * ratio)
+        img = img.resize((a4_width_px, new_height), Image.LANCZOS)
 
-        # Build PDF with reportlab
+        # Save resized image temporarily
+        tmp_img = output_file.replace(".pdf", "_tmp.jpg")
+        img.save(tmp_img, "JPEG", quality=85)
+
+        # Build PDF — one wide image across multiple A4 pages
+        page_height_px = int(a4_height_mm * 3.7795)
+        total_height = new_height
+        num_pages = max(1, -(-total_height // page_height_px))  # ceiling division
+
         doc = SimpleDocTemplate(
             output_file,
             pagesize=A4,
-            leftMargin=15*mm,
-            rightMargin=15*mm,
-            topMargin=15*mm,
-            bottomMargin=15*mm
-        )
-
-        styles = getSampleStyleSheet()
-
-        title_style = ParagraphStyle(
-            "Title",
-            parent=styles["Heading1"],
-            fontSize=14,
-            textColor=colors.HexColor("#1a1a2e"),
-            spaceAfter=6
-        )
-
-        url_style = ParagraphStyle(
-            "URL",
-            parent=styles["Normal"],
-            fontSize=8,
-            textColor=colors.HexColor("#0066cc"),
-            spaceAfter=12
-        )
-
-        body_style = ParagraphStyle(
-            "Body",
-            parent=styles["Normal"],
-            fontSize=9,
-            leading=13,
-            textColor=colors.HexColor("#222222")
+            leftMargin=0,
+            rightMargin=0,
+            topMargin=0,
+            bottomMargin=0
         )
 
         story = []
-        story.append(Paragraph(title, title_style))
-        story.append(Paragraph(job_url, url_style))
-        story.append(Spacer(1, 4*mm))
+        for i in range(num_pages):
+            y_start = i * page_height_px
+            y_end = min(y_start + page_height_px, total_height)
+            crop = img.crop((0, y_start, a4_width_px, y_end))
 
-        # Split into chunks to avoid overflow
-        chunk_size = 1500
-        for i in range(0, min(len(clean_text), 15000), chunk_size):
-            chunk = clean_text[i:i+chunk_size]
-            chunk = chunk.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            story.append(Paragraph(chunk, body_style))
-            story.append(Spacer(1, 3*mm))
+            tmp_crop = output_file.replace(".pdf", f"_crop_{i}.jpg")
+            crop.save(tmp_crop, "JPEG", quality=85)
+
+            rl_img = RLImage(tmp_crop, width=a4_width_mm*mm, height=(y_end - y_start) * (a4_width_mm*mm / a4_width_px))
+            story.append(rl_img)
 
         doc.build(story)
+
+        # Cleanup temp files
+        import os
+        if os.path.exists(tmp_img):
+            os.remove(tmp_img)
+        for i in range(num_pages):
+            tmp_crop = output_file.replace(".pdf", f"_crop_{i}.jpg")
+            if os.path.exists(tmp_crop):
+                os.remove(tmp_crop)
+
         return True
 
     except Exception as e:
