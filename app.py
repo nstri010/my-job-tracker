@@ -151,7 +151,6 @@ if st.session_state["logged_in"]:
     )
 
     with top1:
-
         st.title(
             "📂 Job Tracker"
         )
@@ -207,7 +206,8 @@ if st.session_state["logged_in"]:
 
         final_desc = st.text_area(
             "Job Description",
-            value=st.session_state[
+            value=
+            st.session_state[
                 "formatted_desc"
             ],
             height=220
@@ -237,10 +237,8 @@ if st.session_state["logged_in"]:
 
             if final_desc and up_file:
 
-                resume_txt = (
-                    extract_text_from_upload(
-                        up_file
-                    )
+                resume_txt = extract_text_from_upload(
+                    up_file
                 )
 
                 st.session_state[
@@ -269,27 +267,6 @@ if st.session_state["logged_in"]:
 
                 st.write(item)
 
-        if st.button(
-            "💾 Save Application"
-        ):
-
-            save_job(
-                comp,
-                pos,
-                final_desc,
-                url_in,
-                None,
-                "N/A",
-                applied_date=
-                applied_date
-            )
-
-            st.success(
-                "Application saved"
-            )
-
-            st.rerun()
-
     st.divider()
 
     st.header(
@@ -317,85 +294,151 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        # FINAL COMPACT RATIOS: [Company, Position, Match, Status, Resume, Delete]
-        col_ratios = [2.5, 2.5, 0.5, 1.1, 0.4, 0.4]
+        # Company Position Match Status Resume PDF Delete
+        col_ratios = [
+            2.3,
+            2.3,
+            0.5,
+            1.1,
+            0.4,
+            0.4,
+            0.4
+        ]
 
-        h1,h2,h3,h4,h5,h6 = st.columns(col_ratios)
+        h1,h2,h3,h4,h5,h6,h7 = st.columns(
+            col_ratios
+        )
 
         h1.markdown("**Company**")
         h2.markdown("**Position**")
         h3.markdown("**Match**")
         h4.markdown("**Status**")
-        h5.markdown("**Res**") # Shorter header to match narrow col
-        h6.markdown("**Del**") # Shorter header to match narrow col
+        h5.markdown("**Res**")
+        h6.markdown("**PDF**")
+        h7.markdown("**Del**")
 
         st.divider()
 
         for idx,row in df.iterrows():
 
-            c1,c2,c3,c4,c5,c6 = st.columns(
+            c1,c2,c3,c4,c5,c6,c7 = st.columns(
                 col_ratios,
                 vertical_alignment="center"
             )
 
             with c1:
-                st.write(row.get("company", ""))
+                st.write(
+                    row.get(
+                        "company",
+                        ""
+                    )
+                )
 
             with c2:
-                st.write(row.get("position", ""))
+                st.write(
+                    row.get(
+                        "position",
+                        ""
+                    )
+                )
 
             with c3:
-                st.write(row.get("score", "N/A"))
+                st.write(
+                    row.get(
+                        "score",
+                        "N/A"
+                    )
+                )
 
             with c4:
-                current = row.get("status", "📝 Applied")
 
-                status_map = {
-                    "Applied": "📝 Applied",
-                    "Recruiter Contacted": "📨 Recruiter Contacted",
-                    "Interview Scheduled": "📅 Interview Scheduled",
-                    "Interviewed": "🎤 Interviewed",
-                    "Waiting": "⏳ Waiting",
-                    "Offer": "✅ Offer",
-                    "Rejected": "❌ Rejected",
-                    "Withdrawn": "🚫 Withdrawn"
-                }
-                current = status_map.get(current, current)
+                current = row.get(
+                    "status",
+                    "📝 Applied"
+                )
 
                 if current not in status_options:
                     current = "📝 Applied"
 
                 new_status = st.selectbox(
+
                     "Status",
+
                     status_options,
-                    index=status_options.index(current),
-                    key=f"status_{row['id']}",
-                    label_visibility="collapsed"
+
+                    index=
+                    status_options.index(
+                        current
+                    ),
+
+                    key=
+                    f"status_{row['id']}",
+
+                    label_visibility=
+                    "collapsed"
+
                 )
 
                 if new_status != current:
+
                     update_job_full(
                         row["id"],
-                        {"status": new_status}
+                        {
+                            "status":
+                            new_status
+                        }
                     )
+
                     st.rerun()
 
+            # RESUME
             with c5:
-                resume = row.get("resume_link")
+
+                resume = row.get(
+                    "resume_link"
+                )
+
                 if resume:
+
                     st.link_button(
                         "📄",
                         resume,
                         use_container_width=True
                     )
 
+            # SAVED JOB SNAPSHOT PDF
             with c6:
+
+                pdf = row.get(
+                    "pdf_url"
+                )
+
+                if pdf:
+
+                    st.link_button(
+                        "📑",
+                        pdf,
+                        use_container_width=True
+                    )
+
+            # DELETE
+            with c7:
+
                 if st.button(
+
                     "🗑️",
-                    key=f"delete_{row['id']}",
+
+                    key=
+                    f"delete_{row['id']}",
+
                     use_container_width=True
+
                 ):
-                    delete_job(row["id"])
+
+                    delete_job(
+                        row["id"]
+                    )
+
                     st.rerun()
 
             st.divider()
