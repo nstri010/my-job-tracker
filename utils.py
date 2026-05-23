@@ -32,14 +32,20 @@ def scrape_job_link(url):
         soup = BeautifulSoup(response.text, 'html.parser')
         for junk in soup(["script", "style", "nav", "footer", "header"]):
             junk.decompose()
-        # Using a single newline helps maintain structure without too much gap
+        # Using separator='\n' helps the AI understand the layout (bullets/headers)
         return soup.get_text(separator='\n', strip=True)
     except Exception as e:
         return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    # Added explicit instruction to keep the original formatting and spacing
-    prompt = f"Format this into a clean job listing with bold headers and bullet points. Preserve the original paragraph spacing and structure exactly; do not summarize:\n\n{raw_text[:5000]}"
+    # Added explicit instruction to keep spacing so it's not one big paragraph
+    prompt = f"""
+    Format this into a clean job listing with bold headers and bullets. 
+    IMPORTANT: Maintain the original paragraph spacing and structure. Do not summarize.
+    
+    TEXT:
+    {raw_text[:5000]}
+    """
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -48,24 +54,27 @@ def clean_description_with_ai(raw_text):
 def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"""
     Compare this Job and Resume. 
-    Return ONLY a JSON object with this exact format:
-    {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
+    Return ONLY a JSON object: {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
     
     JOB: {job_desc[:2000]}
     RESUME: {resume_text[:2000]}
     """
     try:
         response = model.generate_content(prompt)
-        text = response.text.strip()
+        raw_content = response.text.strip()
         
-        # Robust Cleaning: This finds the actual JSON block if AI adds extra words
-        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        # Robust Cleaning: Find the first '{' and last '}'
+        # This prevents "Score: Error" if the AI adds markdown or extra text.
+        json_match = re.search(r'\{.*\}', raw_content, re.DOTALL)
+        
         if json_match:
             return json.loads(json_match.group(0))
+        else:
+            return {"score": "N/A", "feedback": ["AI response formatting issue."]}
             
-        return {"score": "N/A", "feedback": ["AI formatting error. Try again."]}
     except Exception as e:
-        return {"score": "Error", "feedback": [f"Technical error: {e}"]}
+        # This will now show you the actual error in the UI if it happens
+        return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
     async def run():
