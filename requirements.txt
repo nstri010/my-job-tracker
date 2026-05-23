@@ -1,10 +1,9 @@
 streamlit
-pandas
-supabase
 google-generativeai
-requests
-beautifulsoup4
-python-docx
 PyMuPDF
-playwright
+python-docx
+beautifulsoup4
+requests
 reportlab
+playwright
+Pillow
