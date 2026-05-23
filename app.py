@@ -493,7 +493,7 @@ with c3:
                         width="stretch"
                     )
 
-            with c6:
+    with c6:
 
                 if st.button(
 
