@@ -62,7 +62,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN SCREEN
+# LOGIN
 if not st.session_state["logged_in"]:
 
     st.title(
@@ -76,7 +76,6 @@ if not st.session_state["logged_in"]:
         ]
     )
 
-    # LOGIN
     with tab1:
 
         u = st.text_input(
@@ -113,7 +112,6 @@ if not st.session_state["logged_in"]:
                     "Invalid login"
                 )
 
-    # SIGN UP
     with tab2:
 
         new_u = st.text_input(
@@ -242,7 +240,6 @@ if st.session_state["logged_in"]:
                 "Date Applied"
             )
 
-        # SCAN RESUME
         if st.button(
             "🔍 Scan Resume"
         ):
@@ -266,7 +263,6 @@ if st.session_state["logged_in"]:
                         resume_txt
                     )
 
-        # MATCH RESULTS
         if st.session_state[
             "match_data"
         ]:
@@ -288,81 +284,63 @@ if st.session_state["logged_in"]:
                     item
                 )
 
-        # SAVE APPLICATION
+        # SAVE APPLICATION BUTTON
         if st.button(
             "💾 Save Application"
         ):
 
-            with st.spinner(
-                "Saving application... Catching opportunities ✨"
-            ):
+            score = "N/A"
 
-                score = "N/A"
+            if st.session_state[
+                "match_data"
+            ]:
 
-                if st.session_state[
-                    "match_data"
-                ]:
-
-                    score = (
-                        st.session_state[
-                            "match_data"
-                        ].get(
-                            "score",
-                            "N/A"
-                        )
-                    )
-
-                resume_url = None
-
-                if up_file:
-
-                    resume_url = upload_resume(
-                        up_file,
-                        st.session_state[
-                            "username"
-                        ]
-                    )
-
-                success = save_job(
-
-                    comp,
-
-                    pos,
-
-                    final_desc,
-
-                    url_in,
-
-                    resume_url,
-
-                    score,
-
-                    applied_date=
-                    applied_date
-
-                )
-
-                if success:
-
-                    st.success(
-                        "Application saved 🎉"
-                    )
-
-                    st.session_state[
-                        "formatted_desc"
-                    ] = ""
-
+                score = (
                     st.session_state[
                         "match_data"
-                    ] = None
-
-                    st.rerun()
-
-                else:
-
-                    st.error(
-                        "Unable to save application"
+                    ].get(
+                        "score",
+                        "N/A"
                     )
+                )
+
+            resume_url = None
+
+            if up_file:
+
+                resume_url = upload_resume(
+                    up_file,
+                    st.session_state[
+                        "username"
+                    ]
+                )
+
+            success = save_job(
+
+                comp,
+
+                pos,
+
+                final_desc,
+
+                url_in,
+
+                resume_url,
+
+                score,
+
+                applied_date=
+                applied_date
+
+            )
+
+            if success:
+
+                st.success(
+                    "Application saved"
+                )
+
+                st.rerun()
 
     # SAVED JOBS
     st.divider()
