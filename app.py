@@ -448,4 +448,3 @@ if st.session_state["logged_in"]:
         st.write(
             "No applications saved yet."
         )
-
