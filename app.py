@@ -101,7 +101,7 @@ if st.session_state["logged_in"]:
         df = pd.DataFrame(jobs_list)
         col_ratios = [2, 2, 0.8, 1.5, 0.5, 0.5, 0.5]
         cols = st.columns(col_ratios)
-        headers = ["Company", "Position", "Match", "Status", "CV", "Link", "Del"]
+        headers = ["Company", "Position", "Match", "Status", "Resume", "Snapshot", "Delete"]
         for col, h in zip(cols, headers): col.markdown(f"**{h}**")
         st.divider()
 
