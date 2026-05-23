@@ -27,23 +27,20 @@ def extract_text_from_upload(uploaded_file):
 def scrape_job_link(url):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
-        # timeout reduced slightly for better UX
-        response = requests.get(url, headers=headers, timeout=10) 
+        response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
         for junk in soup(["script", "style", "nav", "footer", "header"]):
             junk.decompose()
-        # separator='\n' helps the AI see the original list structure
+        # Using separator='\n' keeps the list structure for the AI
         return soup.get_text(separator='\n', strip=True)
     except Exception as e:
         return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    # Added instructions to prevent the "one large paragraph" issue
+    # Instructions to maintain spacing and bullets
     prompt = f"""
-    Format this into a clean job listing. 
-    1. Use bold headers for sections.
-    2. Use bullet points for requirements and responsibilities.
-    3. IMPORTANT: Preserve original paragraph spacing and do not summarize details into a block.
+    Format this into a clean job listing with bold headers and bullets. 
+    IMPORTANT: Maintain original paragraph spacing and do not summarize.
     
     TEXT:
     {raw_text[:5000]}
@@ -55,14 +52,13 @@ def clean_description_with_ai(raw_text):
 
 def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"""
-    Compare this Job and Resume. 
-    Provide a match score out of 10 and 3 actionable bullet points for improvement.
+    Compare this Job and Resume. Provide a score out of 10 and 3 improvement points.
     
     JOB: {job_desc[:2000]}
     RESUME: {resume_text[:2000]}
     """
     try:
-        # Using JSON Mode to prevent "Score: Error"
+        # JSON Mode: This forces the AI to output valid JSON only.
         response = model.generate_content(
             prompt,
             generation_config={
@@ -78,7 +74,7 @@ def get_ai_match_feedback(job_desc, resume_text):
         )
         return json.loads(response.text)
     except: 
-        return {"score": "N/A", "feedback": ["Could not generate feedback. Check API connection."]}
+        return {"score": "N/A", "feedback": ["AI formatting error. Please try again."]}
 
 def generate_pdf_snapshot(url, filename):
     async def run():
