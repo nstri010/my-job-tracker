@@ -366,75 +366,74 @@ if st.session_state["logged_in"]:
                     )
                 )
 
-with c4:
+            # --- INDENTATION FIXED BELOW ---
+            with c4:
 
-    current = row.get(
-        "status",
-        "📝 Applied"
-    )
+                current = row.get(
+                    "status",
+                    "📝 Applied"
+                )
 
-    # FIX OLD SAVED VALUES
-    if current == "Applied":
-        current = "📝 Applied"
+                # FIX OLD SAVED VALUES
+                if current == "Applied":
+                    current = "📝 Applied"
 
-    elif current == "Recruiter Contacted":
-        current = "📨 Recruiter Contacted"
+                elif current == "Recruiter Contacted":
+                    current = "📨 Recruiter Contacted"
 
-    elif current == "Interview Scheduled":
-        current = "📅 Interview Scheduled"
+                elif current == "Interview Scheduled":
+                    current = "📅 Interview Scheduled"
 
-    elif current == "Interviewed":
-        current = "🎤 Interviewed"
+                elif current == "Interviewed":
+                    current = "🎤 Interviewed"
 
-    elif current == "Waiting":
-        current = "⏳ Waiting"
+                elif current == "Waiting":
+                    current = "⏳ Waiting"
 
-    elif current == "Offer":
-        current = "✅ Offer"
+                elif current == "Offer":
+                    current = "✅ Offer"
 
-    elif current == "Rejected":
-        current = "❌ Rejected"
+                elif current == "Rejected":
+                    current = "❌ Rejected"
 
-    elif current == "Withdrawn":
-        current = "🚫 Withdrawn"
+                elif current == "Withdrawn":
+                    current = "🚫 Withdrawn"
 
-    # SAFETY CHECK
-    if current not in status_options:
+                # SAFETY CHECK
+                if current not in status_options:
 
-        current = (
-            "📝 Applied"
-        )
+                    current = (
+                        "📝 Applied"
+                    )
 
-    new_status = st.selectbox(
+                new_status = st.selectbox(
 
-        "",
+                    "",
 
-        status_options,
+                    status_options,
 
-        index=
-        status_options.index(
-            current
-        ),
+                    index=
+                    status_options.index(
+                        current
+                    ),
 
-        key=
-        f"status_{row['id']}"
+                    key=
+                    f"status_{row['id']}"
 
-    )
+                )
 
-    if new_status != current:
+                if new_status != current:
 
-        update_job_full(
+                    update_job_full(
 
-            row["id"],
+                        row["id"],
 
-            {
-                "status":
-                new_status
-            }
+                        {
+                            "status":
+                            new_status
+                        }
 
-        )
-
-        st.rerun()
+                    )
 
                     st.rerun()
 
