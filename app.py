@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import os           
-import subprocess 
+import os
+import subprocess
 from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_full
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
@@ -135,9 +135,20 @@ if st.session_state['logged_in']:
                 "position": st.column_config.TextColumn("Position", disabled=False),
                 "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
                 "match_score": st.column_config.TextColumn("Score", disabled=True),
-                "pdf_url": st.column_config.LinkColumn("Job Snapshot"),
-                "resume_link": st.column_config.LinkColumn("My Resume"),
-                "job_url": st.column_config.LinkColumn("Original Posting Link"),
+                
+                # --- PRETTIER LINKS WITH YOUR PREFERRED NAMES ---
+                "pdf_url": st.column_config.LinkColumn(
+                    "Job Snapshot", 
+                    display_text="View"
+                ),
+                "resume_link": st.column_config.LinkColumn(
+                    "My Resume", 
+                    display_text="Download"
+                ),
+                "job_url": st.column_config.LinkColumn(
+                    "Original Posting Link", 
+                    display_text="Open Link"
+                ),
                 "id": None, "description": None
             },
             hide_index=True,
