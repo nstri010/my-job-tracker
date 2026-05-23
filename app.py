@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import subprocess
 
 from storage import (
     load_jobs,
@@ -20,24 +19,6 @@ from utils import (
     extract_text_from_upload
 )
 
-# INSTALL PLAYWRIGHT
-if not os.path.exists(
-    "/home/appuser/.cache/ms-playwright"
-):
-    try:
-        subprocess.run(
-            [
-                "playwright",
-                "install",
-                "chromium"
-            ],
-            check=True
-        )
-
-    except Exception as e:
-        st.error(
-            f"Browser install error: {e}"
-        )
 
 st.set_page_config(
     page_title="Job Tracker",
