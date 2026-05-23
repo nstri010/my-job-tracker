@@ -1,10 +1,10 @@
+playwright
 streamlit
 pandas
-supabase
-google-generativeai
 requests
+supabase
 beautifulsoup4
-python-docx
-PyMuPDF
-playwright
-reportlab
+pypdf
+docx2txt
+google-generativeai
+fpdf2
