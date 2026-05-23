@@ -15,7 +15,6 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 def generate_pdf_snapshot(job_url, output_file):
     try:
-        screenshot_file = "temp_capture.png"
         
         with sync_playwright() as p:
             # Launch browser
@@ -49,15 +48,21 @@ def generate_pdf_snapshot(job_url, output_file):
             """)
 
             # TAKE THE VISUAL SNAPSHOT
-            page.screenshot(path=screenshot_file, full_page=True)
-            browser.close()
+            page.emulate_media(media="screen")
 
-        # CONVERT IMAGE TO PDF (This creates the visual look you want)
-        img = Image.open(screenshot_file)
-        if img.mode in ("RGBA", "P"):
-            img = img.convert("RGB")
-        
-        img.save(output_file, "PDF", resolution=100.0)
+page.pdf(
+    path=output_file,
+    print_background=True,
+    format="A4",
+    margin={
+        "top": "0.3in",
+        "bottom": "0.3in",
+        "left": "0.3in",
+        "right": "0.3in"
+    }
+)
+
+browser.close()
         
         # Cleanup
         if os.path.exists(screenshot_file):
