@@ -317,9 +317,9 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        # Header ratios adjusted to match rows
+        # Header ratios adjusted to the new snug layout
         h1,h2,h3,h4,h5,h6 = st.columns(
-            [2,2,1,1.5,0.5,0.5]
+            [2, 2, 0.8, 1.2, 0.5, 0.5]
         )
 
         h1.write("**Company**")
@@ -333,38 +333,21 @@ if st.session_state["logged_in"]:
 
         for idx,row in df.iterrows():
 
-            # FIX 1: Tightened ratios [2, 2, 1, 1.5, 0.5, 0.5]
-            # FIX 2: Added vertical_alignment="center"
+            # ULTRA SNUG: Status at 1.2 and Match at 0.8
             c1,c2,c3,c4,c5,c6 = st.columns(
-                [2,2,1,1.5,0.5,0.5],
+                [2, 2, 0.8, 1.2, 0.5, 0.5],
                 vertical_alignment="center"
             )
 
             with c1:
-                st.write(
-                    row.get(
-                        "company",
-                        ""
-                    )
-                )
+                st.write(row.get("company", ""))
 
             with c2:
-                st.write(
-                    row.get(
-                        "position",
-                        ""
-                    )
-                )
+                st.write(row.get("position", ""))
 
             with c3:
-                st.write(
-                    row.get(
-                        "score",
-                        "N/A"
-                    )
-                )
+                st.write(row.get("score", "N/A"))
 
-            # FIX 3: INDENTED PROPERLY INSIDE THE LOOP
             with c4:
 
                 current = row.get(
@@ -372,32 +355,19 @@ if st.session_state["logged_in"]:
                     "📝 Applied"
                 )
 
-                # FIX OLD SAVED VALUES
-                if current == "Applied":
-                    current = "📝 Applied"
+                # Map legacy values
+                status_map = {
+                    "Applied": "📝 Applied",
+                    "Recruiter Contacted": "📨 Recruiter Contacted",
+                    "Interview Scheduled": "📅 Interview Scheduled",
+                    "Interviewed": "🎤 Interviewed",
+                    "Waiting": "⏳ Waiting",
+                    "Offer": "✅ Offer",
+                    "Rejected": "❌ Rejected",
+                    "Withdrawn": "🚫 Withdrawn"
+                }
+                current = status_map.get(current, current)
 
-                elif current == "Recruiter Contacted":
-                    current = "📨 Recruiter Contacted"
-
-                elif current == "Interview Scheduled":
-                    current = "📅 Interview Scheduled"
-
-                elif current == "Interviewed":
-                    current = "🎤 Interviewed"
-
-                elif current == "Waiting":
-                    current = "⏳ Waiting"
-
-                elif current == "Offer":
-                    current = "✅ Offer"
-
-                elif current == "Rejected":
-                    current = "❌ Rejected"
-
-                elif current == "Withdrawn":
-                    current = "🚫 Withdrawn"
-
-                # SAFETY CHECK
                 if current not in status_options:
                     current = "📝 Applied"
 
@@ -406,7 +376,7 @@ if st.session_state["logged_in"]:
                     status_options,
                     index=status_options.index(current),
                     key=f"status_{row['id']}",
-                    label_visibility="collapsed" # Fixed the gap
+                    label_visibility="collapsed"
                 )
 
                 if new_status != current:
