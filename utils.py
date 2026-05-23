@@ -35,9 +35,8 @@ def scrape_job_link(url):
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Remove script and style elements
-        for script or style in soup(["script", "style"]):
-            script.decompose()
+        for element in soup(["script", "style"]):
+            element.decompose()
             
         return soup.get_text(separator=' ', strip=True)
     except Exception as e:
@@ -80,7 +79,6 @@ def get_ai_match_feedback(job_desc, resume_text):
             return json.loads(clean_json)
         else:
             return {"score": "N/A", "feedback": ["AI response was not in the correct format."]}
-
     except Exception as e:
         print(f"Error parsing AI response: {e}")
         return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
