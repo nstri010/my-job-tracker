@@ -11,8 +11,11 @@ import re
 from playwright.async_api import async_playwright
 
 # AI Setup
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+try:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error("Missing Google API Key in Secrets")
 
 def extract_text_from_upload(uploaded_file):
     ext = uploaded_file.name.split('.')[-1].lower()
@@ -22,8 +25,7 @@ def extract_text_from_upload(uploaded_file):
             return " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
         elif ext in ['docx', 'doc']:
             return docx2txt.process(io.BytesIO(uploaded_file.getvalue()))
-    except Exception as e:
-        print(f"Extraction error: {e}")
+    except Exception:
         return ""
     return ""
 
@@ -39,49 +41,33 @@ def scrape_job_link(url):
             element.decompose()
             
         return soup.get_text(separator=' ', strip=True)
-    except Exception as e:
-        print(f"Scraping error: {e}")
+    except Exception:
         return ""
 
 def clean_description_with_ai(raw_text):
-    prompt = f"Extract only the job title, company name, and the core job description from this text. Remove headers, footers, and legal disclaimers:\n\n{raw_text[:4000]}"
+    prompt = f"Extract only the job title, company name, and core description. Remove legal jargon:\n\n{raw_text[:4000]}"
     try:
         response = model.generate_content(prompt)
         return response.text
-    except:
+    except Exception:
         return raw_text[:2000]
 
 def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"""
-    You are an expert career coach and ATS (Applicant Tracking System).
-    Analyze the following Job Description and Resume.
-    Provide a match score out of 10 and 3 specific, actionable suggestions for improvement.
-    Return ONLY a JSON object. No conversational text.
-    
-    Expected JSON:
-    {{
-        "score": "X/10",
-        "feedback": ["point 1", "point 2", "point 3"]
-    }}
-
+    Analyze the following Job and Resume. Provide a score out of 10 and 3 suggestions.
+    Return ONLY JSON: {{"score": "X/10", "feedback": ["1", "2", "3"]}}
     JOB: {job_desc[:2000]}
     RESUME: {resume_text[:2000]}
     """
     try:
         response = model.generate_content(prompt)
         raw_content = response.text.strip()
-        
-        # Look for the JSON block using a Regular Expression
         json_match = re.search(r'\{.*\}', raw_content, re.DOTALL)
-        
         if json_match:
-            clean_json = json_match.group(0)
-            return json.loads(clean_json)
-        else:
-            return {"score": "N/A", "feedback": ["AI response was not in the correct format."]}
+            return json.loads(json_match.group(0))
+        return {"score": "N/A", "feedback": ["AI formatting error"]}
     except Exception as e:
-        print(f"Error parsing AI response: {e}")
-        return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
+        return {"score": "Error", "feedback": [f"Connection error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
     async def run():
@@ -93,9 +79,10 @@ def generate_pdf_snapshot(url, filename):
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
-            except Exception as e:
-                print(f"Playwright error: {e}")
+            except Exception:
                 await browser.close()
                 return False
-                
-    return asyncio.run(run())
+    try:
+        return asyncio.run(run())
+    except Exception:
+        return False
