@@ -88,7 +88,9 @@ def generate_pdf_snapshot(url, filename):
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
-            except:
+            except Exception as e:
+                print(f"Playwright error: {e}")
                 await browser.close()
                 return False
+
     return asyncio.run(run())
