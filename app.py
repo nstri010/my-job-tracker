@@ -317,25 +317,24 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        # Header ratios adjusted to the new snug layout
-        h1,h2,h3,h4,h5,h6 = st.columns(
-            [2, 2, 0.8, 1.2, 0.5, 0.5]
-        )
+        # FINAL COMPACT RATIOS: [Company, Position, Match, Status, Resume, Delete]
+        col_ratios = [2.5, 2.5, 0.5, 1.1, 0.4, 0.4]
 
-        h1.write("**Company**")
-        h2.write("**Position**")
-        h3.write("**Match**")
-        h4.write("**Status**")
-        h5.write("**Resume**")
-        h6.write("**Delete**")
+        h1,h2,h3,h4,h5,h6 = st.columns(col_ratios)
+
+        h1.markdown("**Company**")
+        h2.markdown("**Position**")
+        h3.markdown("**Match**")
+        h4.markdown("**Status**")
+        h5.markdown("**Res**") # Shorter header to match narrow col
+        h6.markdown("**Del**") # Shorter header to match narrow col
 
         st.divider()
 
         for idx,row in df.iterrows():
 
-            # ULTRA SNUG: Status at 1.2 and Match at 0.8
             c1,c2,c3,c4,c5,c6 = st.columns(
-                [2, 2, 0.8, 1.2, 0.5, 0.5],
+                col_ratios,
                 vertical_alignment="center"
             )
 
@@ -349,13 +348,8 @@ if st.session_state["logged_in"]:
                 st.write(row.get("score", "N/A"))
 
             with c4:
+                current = row.get("status", "📝 Applied")
 
-                current = row.get(
-                    "status",
-                    "📝 Applied"
-                )
-
-                # Map legacy values
                 status_map = {
                     "Applied": "📝 Applied",
                     "Recruiter Contacted": "📨 Recruiter Contacted",
