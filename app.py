@@ -543,7 +543,8 @@ edited_df = st.data_editor(
         "id": None,
 
         "description": None
-
+        )
+        )
     }
         # DELETE
         if st.session_state[
