@@ -15,7 +15,6 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 def generate_pdf_snapshot(job_url, output_file):
     try:
-        
         with sync_playwright() as p:
             # Launch browser
             browser = p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"])
@@ -50,26 +49,35 @@ def generate_pdf_snapshot(job_url, output_file):
             # TAKE THE VISUAL SNAPSHOT
             page.emulate_media(media="screen")
 
-page.pdf(
-    path=output_file,
-    print_background=True,
-    format="A4",
-    margin={
-        "top": "0.3in",
-        "bottom": "0.3in",
-        "left": "0.3in",
-        "right": "0.3in"
-    }
-)
+            page.pdf(
+                path=output_file,
+                print_background=True,
+                format="A4",
+                margin={
+                    "top": "0.3in",
+                    "bottom": "0.3in",
+                    "left": "0.3in",
+                    "right": "0.3in"
+                }
+            )
 
-browser.close()
-        
-        # Cleanup
-        if os.path.exists(screenshot_file):
-            os.remove(screenshot_file)
+            browser.close()
             
         return True
 
     except Exception as e:
         st.error(f"Snapshot Error: {e}")
         return False
+
+# Placeholder functions to satisfy app.py imports
+def scrape_job_link(url):
+    return "Raw job content"
+
+def clean_description_with_ai(text):
+    return "Cleaned AI description"
+
+def get_ai_match_feedback(desc, resume):
+    return {"score": "85%", "feedback": ["Good match", "Missing SQL"]}
+
+def extract_text_from_upload(file):
+    return "Extracted resume text"
