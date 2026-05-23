@@ -33,6 +33,7 @@ def upload_resume(file_obj, username):
     except: return None
 
 def save_job(company, position, description, job_url, resume_url, match_score, applied_date=None):
+    """Saves a new job application to Supabase."""
     pdf_url = None
     if job_url:
         from utils import generate_pdf_snapshot
@@ -46,12 +47,17 @@ def save_job(company, position, description, job_url, resume_url, match_score, a
             except: pass
 
     data = {
-        "company": company, "position": position, "description": description,
-        "job_url": job_url, "resume_link": resume_url, "pdf_url": pdf_url,
-        "match_score": str(match_score), "status": "Active"
+        "company": company, 
+        "position": position, 
+        "description": description,
+        "job_url": job_url, 
+        "resume_link": resume_url, 
+        "pdf_url": pdf_url,
+        "match_score": str(match_score), 
+        "status": "Active"
     }
     
-    # If a specific date was chosen in the UI, use it
+    # Use selected date if provided
     if applied_date:
         data["created_at"] = applied_date.isoformat()
 
@@ -61,18 +67,21 @@ def save_job(company, position, description, job_url, resume_url, match_score, a
     except: return False
 
 def load_jobs():
+    """Fetches all jobs from the database."""
     try:
         res = supabase.table("jobs").select("*").order("created_at", desc=True).execute()
         return res.data
     except: return []
 
 def update_job_full(job_id, changes):
+    """Updates specific fields for an existing job."""
     try:
         supabase.table("jobs").update(changes).eq("id", job_id).execute()
         return True
     except: return False
 
 def delete_job(job_id):
+    """Removes a job application from the database."""
     try:
         supabase.table("jobs").delete().eq("id", job_id).execute()
         return True
