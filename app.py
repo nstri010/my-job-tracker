@@ -457,29 +457,31 @@ if st.session_state[
 
             # RESUME BUTTON
 
-            if row.get(
-                "resume_link"
-            ):
+            resume_link = row.get("resume_link")
 
-                c5.link_button(
-                    "📄",
-                    row[
-                        "resume_link"
-                    ]
-                )
+            with c5:
+                if resume_link:
+                    st.link_button("📄", resume_link)
+                else:
+                    st.button(
+                        "📄",
+                        key=f"r_{row['id']}",
+                        disabled=True
+                    )
 
             # SNAPSHOT BUTTON
 
-            if row.get(
-                "pdf_url"
-            ):
+            pdf_url = row.get("pdf_url")
 
-                c6.link_button(
-                    "📸",
-                    row[
-                        "pdf_url"
-                    ]
-                )
+            with c6:
+                if pdf_url:
+                    st.link_button("📸", pdf_url)
+                else:
+                    st.button(
+                        "📸",
+                        key=f"p_{row['id']}",
+                        disabled=True
+                    )
 
             # DELETE
 
