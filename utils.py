@@ -1,68 +1,344 @@
-import requests
-from bs4 import BeautifulSoup
-import pypdf
-import docx2txt
-import io
 import google.generativeai as genai
 import streamlit as st
-import json
-import asyncio
-from playwright.async_api import async_playwright
+import fitz
+import docx
+import re
+import requests
+import time
 
-# AI Setup
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+from playwright.sync_api import (
+    sync_playwright
+)
 
-def extract_text_from_upload(uploaded_file):
-    ext = uploaded_file.name.split('.')[-1].lower()
+from bs4 import BeautifulSoup
+
+from PIL import Image
+
+
+# GEMINI CONFIG
+genai.configure(
+    api_key=st.secrets[
+        "GOOGLE_API_KEY"
+    ]
+)
+
+
+# PDF SNAPSHOT
+# Creates REAL webpage screenshot
+# then converts to PDF
+
+def generate_pdf_snapshot(
+    job_url,
+    output_file
+):
+
     try:
-        if ext == 'pdf':
-            reader = pypdf.PdfReader(uploaded_file)
-            return " ".join([page.extract_text() for page in reader.pages if page.extract_text()])
-        elif ext in ['docx', 'doc']:
-            return docx2txt.process(io.BytesIO(uploaded_file.getvalue()))
-    except: return ""
-    return ""
 
-def scrape_job_link(url):
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
-        response = requests.get(url, headers=headers, timeout=15)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        for junk in soup(["script", "style", "nav", "footer", "header"]):
-            junk.decompose()
-        return soup.get_text(separator='\n\n', strip=True)
+        screenshot_file = (
+            "job_snapshot.png"
+        )
+
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(
+                headless=True
+            )
+
+            page = browser.new_page(
+
+                viewport={
+                    "width": 1440,
+                    "height": 2200
+                }
+
+            )
+
+            page.goto(
+
+                job_url,
+
+                wait_until=
+                "networkidle",
+
+                timeout=60000
+
+            )
+
+            time.sleep(3)
+
+            # remove popups/modals
+
+            page.evaluate(
+                """
+                () => {
+
+                    document
+                    .querySelectorAll(
+                    '[role="dialog"], .popup, .modal'
+                    )
+
+                    .forEach(
+                    x => x.remove()
+                    );
+
+                }
+                """
+            )
+
+            page.screenshot(
+
+                path=
+                screenshot_file,
+
+                full_page=True
+
+            )
+
+            browser.close()
+
+        img = Image.open(
+            screenshot_file
+        )
+
+        img.convert(
+            "RGB"
+        ).save(
+            output_file
+        )
+
+        return True
+
     except Exception as e:
-        return f"Scraper Error: {e}"
 
-def clean_description_with_ai(raw_text):
-    prompt = f"Format this into a clean job listing with bold headers and bullets. Keep all details:\n\n{raw_text[:5000]}"
+        print(
+            f"Snapshot error: {e}"
+        )
+
+        return False
+
+
+# SCRAPE JOB PAGE
+
+def scrape_job_link(
+    url
+):
+
     try:
-        response = model.generate_content(prompt)
+
+        response = requests.get(
+
+            url,
+
+            headers={
+
+                "User-Agent":
+                "Mozilla/5.0"
+
+            },
+
+            timeout=10
+
+        )
+
+        soup = BeautifulSoup(
+
+            response.text,
+
+            "html.parser"
+
+        )
+
+        text = soup.get_text(
+            separator="\n"
+        )
+
+        return text
+
+    except Exception as e:
+
+        return (
+            f"Scrape error: {e}"
+        )
+
+
+# EXTRACT RESUME TEXT
+
+def extract_text_from_upload(
+    uploaded_file
+):
+
+    text = ""
+
+    if uploaded_file.name.endswith(
+        ".pdf"
+    ):
+
+        pdf = fitz.open(
+
+            stream=
+            uploaded_file.read(),
+
+            filetype="pdf"
+
+        )
+
+        for page in pdf:
+
+            text += page.get_text()
+
+    elif uploaded_file.name.endswith(
+        ".docx"
+    ):
+
+        document = docx.Document(
+            uploaded_file
+        )
+
+        for para in document.paragraphs:
+
+            text += (
+                para.text
+                + "\n"
+            )
+
+    return text
+
+
+# CLEAN DESCRIPTION
+
+def clean_description_with_ai(
+    raw_text
+):
+
+    try:
+
+        prompt = f"""
+Organize this job posting.
+
+Create sections:
+
+Responsibilities
+
+Requirements
+
+Preferred Skills
+
+Benefits
+
+Job Text:
+
+{raw_text}
+"""
+
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
+
+        response = model.generate_content(
+            prompt
+        )
+
         return response.text
-    except: return raw_text
 
-def get_ai_match_feedback(job_desc, resume_text):
-    prompt = f"Compare this Job and Resume. Return ONLY JSON: {{\"score\": \"X/10\", \"feedback\": [\"point 1\", \"point 2\", \"point 3\"]}}\n\nJOB: {job_desc[:2000]}\nRESUME: {resume_text[:2000]}"
+    except Exception as e:
+
+        return (
+            f"Formatting error: {e}"
+        )
+
+
+# RESUME MATCH
+
+def get_ai_match_feedback(
+    job_desc,
+    resume_text
+):
+
     try:
-        response = model.generate_content(prompt)
-        return json.loads(response.text.strip('`json \n'))
-    except: return {"score": "N/A", "feedback": ["Could not generate feedback"]}
 
-def generate_pdf_snapshot(url, filename):
-    """Restored: Uses Playwright to take a PDF snapshot of the job website."""
-    async def run():
-        async with async_playwright() as p:
-            browser = await p.chromium.launch()
-            page = await browser.new_page()
-            try:
-                # networkidle waits for the page to finish loading images/scripts
-                await page.goto(url, wait_until="networkidle", timeout=30000)
-                await page.pdf(path=filename, format="A4")
-                await browser.close()
-                return True
-            except Exception as e:
-                print(f"Snapshot Error: {e}")
-                await browser.close()
-                return False
-    return asyncio.run(run())
+        prompt = f"""
+Compare resume against job.
+
+Return EXACTLY:
+
+Rating: X/10
+
+Strengths:
+- item
+
+Missing Skills:
+- item
+
+Suggestions:
+- item
+
+Resume:
+
+{resume_text}
+
+Job:
+
+{job_desc}
+"""
+
+        model = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
+
+        response = model.generate_content(
+            prompt
+        )
+
+        result = response.text
+
+        rating = "N/A"
+
+        match = re.search(
+            r"(\\d+)\\s*/\\s*10",
+            result
+        )
+
+        if match:
+
+            rating = (
+                match.group(1)
+                + "/10"
+            )
+
+        feedback = []
+
+        for line in result.split(
+            "\n"
+        ):
+
+            line = line.strip()
+
+            if line:
+
+                feedback.append(
+                    line
+                )
+
+        return {
+
+            "score":
+            rating,
+
+            "feedback":
+            feedback
+
+        }
+
+    except Exception as e:
+
+        return {
+
+            "score":
+            "Error",
+
+            "feedback":
+            [
+                f"Technical error: {e}"
+            ]
+
+        }
