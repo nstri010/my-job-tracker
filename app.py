@@ -165,23 +165,18 @@ if st.session_state["logged_in"]:
             st.session_state.clear()
             st.rerun()
 
-    # ADD JOB
     with st.expander(
         "➕ Add New Application"
     ):
 
-        c1, c2 = st.columns(
-            2
-        )
+        c1,c2 = st.columns(2)
 
         with c1:
-
             comp = st.text_input(
                 "Company Name"
             )
 
         with c2:
-
             pos = st.text_input(
                 "Position Title"
             )
@@ -212,20 +207,13 @@ if st.session_state["logged_in"]:
 
         final_desc = st.text_area(
             "Job Description",
-            value=
-            st.session_state[
+            value=st.session_state[
                 "formatted_desc"
             ],
             height=220
         )
 
-        st.subheader(
-            "🎯 Resume Match"
-        )
-
-        col1, col2 = st.columns(
-            2
-        )
+        col1,col2 = st.columns(2)
 
         with col1:
 
@@ -266,64 +254,32 @@ if st.session_state["logged_in"]:
             "match_data"
         ]:
 
-            m = st.session_state[
+            match = st.session_state[
                 "match_data"
             ]
 
             st.success(
-                f"🎯 Resume Match: {m.get('score','N/A')}"
+                f"🎯 Resume Match: {match.get('score','N/A')}"
             )
 
-            st.subheader(
-                "AI Feedback"
-            )
-
-            for item in m.get(
+            for item in match.get(
                 "feedback",
                 []
             ):
 
-                st.write(
-                    item
-                )
+                st.write(item)
 
         if st.button(
             "💾 Save Application"
         ):
-
-            score = "N/A"
-
-            if st.session_state[
-                "match_data"
-            ]:
-
-                score = (
-                    st.session_state[
-                        "match_data"
-                    ].get(
-                        "score",
-                        "N/A"
-                    )
-                )
-
-            resume_url = None
-
-            if up_file:
-
-                resume_url = upload_resume(
-                    up_file,
-                    st.session_state[
-                        "username"
-                    ]
-                )
 
             save_job(
                 comp,
                 pos,
                 final_desc,
                 url_in,
-                resume_url,
-                score,
+                None,
+                "N/A",
                 applied_date=
                 applied_date
             )
@@ -334,7 +290,6 @@ if st.session_state["logged_in"]:
 
             st.rerun()
 
-    # SAVED JOBS
     st.divider()
 
     st.header(
@@ -346,19 +301,12 @@ if st.session_state["logged_in"]:
     status_options = [
 
         "📝 Applied",
-
         "📨 Recruiter Contacted",
-
         "📅 Interview Scheduled",
-
         "🎤 Interviewed",
-
         "⏳ Waiting",
-
         "✅ Offer",
-
         "❌ Rejected",
-
         "🚫 Withdrawn"
 
     ]
@@ -369,34 +317,16 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        st.info(
-            "💡 Use the dropdown beside status to update progress"
-        )
-
-        # DROPDOWN FIX
-        st.markdown(
-            """
-<style>
-
-div[data-baseweb="select"]{
-    margin-top:-6px;
-}
-
-</style>
-""",
-            unsafe_allow_html=True
-        )
-
         h1,h2,h3,h4,h5,h6 = st.columns(
             [2,2,2,2,1,1]
         )
 
-        h1.markdown("**Company**")
-        h2.markdown("**Position**")
-        h3.markdown("**Match**")
-        h4.markdown("**Status**")
-        h5.markdown("**Resume**")
-        h6.markdown("**Delete**")
+        h1.write("Company")
+        h2.write("Position")
+        h3.write("Match")
+        h4.write("Status")
+        h5.write("Resume")
+        h6.write("Delete")
 
         st.divider()
 
@@ -406,50 +336,42 @@ div[data-baseweb="select"]{
                 [2,2,2,2,1,1]
             )
 
-with c1:
+            with c1:
 
-    st.write("")
+                st.write("")
+                st.write(
+                    row.get(
+                        "company",
+                        ""
+                    )
+                )
 
-    st.write(
-        row.get(
-            "company",
-            ""
-        )
-    )
+            with c2:
 
-with c2:
+                st.write("")
+                st.write(
+                    row.get(
+                        "position",
+                        ""
+                    )
+                )
 
-    st.write("")
+            with c3:
 
-    st.write(
-        row.get(
-            "position",
-            ""
-        )
-    )
+                st.write("")
+                st.write(
+                    row.get(
+                        "score",
+                        "N/A"
+                    )
+                )
 
-with c3:
-
-    st.write("")
-
-    st.write(
-        row.get(
-            "score",
-            "N/A"
-        )
-    )
-    with c4:
+            with c4:
 
                 current = row.get(
                     "status",
                     "📝 Applied"
                 )
-
-                if current not in status_options:
-
-                    current = (
-                        "📝 Applied"
-                    )
 
                 new_status = st.selectbox(
 
@@ -479,7 +401,7 @@ with c3:
 
                     st.rerun()
 
-    with c5:
+            with c5:
 
                 resume = row.get(
                     "resume_link"
@@ -489,20 +411,17 @@ with c3:
 
                     st.link_button(
                         "📄",
-                        resume,
-                        width="stretch"
+                        resume
                     )
 
-    with c6:
+            with c6:
 
                 if st.button(
 
                     "🗑️",
 
                     key=
-                    f"delete_{row['id']}",
-
-                    width="stretch"
+                    f"delete_{row['id']}"
 
                 ):
 
@@ -512,7 +431,7 @@ with c3:
 
                     st.rerun()
 
-    st.divider()
+            st.divider()
 
     else:
 
