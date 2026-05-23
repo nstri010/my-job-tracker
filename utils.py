@@ -15,7 +15,7 @@ try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception:
-    st.error("Missing Google API Key in Secrets.")
+    st.error("Check your Google API Key in Streamlit Secrets.")
 
 def extract_text_from_upload(uploaded_file):
     ext = uploaded_file.name.split('.')[-1].lower()
@@ -36,17 +36,23 @@ def scrape_job_link(url):
         }
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Clean up script and style elements
         for element in soup(["script", "style"]):
             element.decompose()
-            
-        return soup.get_text(separator=' ', strip=True)
+        # Using separator='\n' helps preserve structure during initial scrape
+        return soup.get_text(separator='\n', strip=True)
     except Exception:
         return ""
 
 def clean_description_with_ai(raw_text):
-    prompt = f"Extract only the job title, company name, and core description. Remove legal jargon:\n\n{raw_text[:4000]}"
+    # Added explicit instruction to keep newlines/spacing
+    prompt = f"""
+    Extract the job title, company name, and the core job description from the text below. 
+    IMPORTANT: Maintain the original formatting, bullet points, and paragraph spacing of the job description. 
+    Remove only the website navigation, headers, footers, and legal disclaimers.
+
+    TEXT:
+    {raw_text[:4000]}
+    """
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -55,20 +61,25 @@ def clean_description_with_ai(raw_text):
 
 def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"""
-    Analyze the following Job and Resume. Provide a score out of 10 and 3 suggestions.
-    Return ONLY JSON: {{"score": "X/10", "feedback": ["1", "2", "3"]}}
+    Analyze the following Job and Resume. Provide a score out of 10 and 3 actionable suggestions.
+    Return ONLY a raw JSON object. Do not include markdown code blocks like ```json.
+    
+    Format: {{"score": "X/10", "feedback": ["suggestion 1", "suggestion 2", "suggestion 3"]}}
+
     JOB: {job_desc[:2000]}
     RESUME: {resume_text[:2000]}
     """
     try:
         response = model.generate_content(prompt)
         raw_content = response.text.strip()
+        
+        # Robust JSON extraction: finds the first { and the last }
         json_match = re.search(r'\{.*\}', raw_content, re.DOTALL)
         if json_match:
             return json.loads(json_match.group(0))
-        return {"score": "N/A", "feedback": ["AI formatting error"]}
+        
+        return {"score": "N/A", "feedback": ["AI failed to format response correctly."]}
     except Exception as e:
-        # Fixed: Indented to match the 'try' block above
         return {"score": "Error", "feedback": [f"Connection error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
@@ -82,7 +93,8 @@ def generate_pdf_snapshot(url, filename):
                 await browser.close()
                 return True
             except Exception:
-                await browser.close()
+                if 'browser' in locals():
+                    await browser.close()
                 return False
     try:
         return asyncio.run(run())
