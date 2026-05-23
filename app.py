@@ -20,7 +20,7 @@ from utils import (
     extract_text_from_upload
 )
 
-# Install Playwright browser if needed
+# INSTALL PLAYWRIGHT
 if not os.path.exists(
     "/home/appuser/.cache/ms-playwright"
 ):
@@ -42,13 +42,14 @@ if not os.path.exists(
             f"Browser install error: {e}"
         )
 
-# PAGE SETTINGS
+
+# PAGE
 st.set_page_config(
     page_title="Job Tracker",
     layout="wide"
 )
 
-# SESSION STATE
+# SESSION
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
@@ -62,7 +63,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN
+# LOGIN PAGE
 if not st.session_state["logged_in"]:
 
     st.title(
@@ -79,14 +80,12 @@ if not st.session_state["logged_in"]:
     with tab1:
 
         u = st.text_input(
-            "Username",
-            key="login_user"
+            "Username"
         )
 
         p = st.text_input(
             "Password",
-            type="password",
-            key="login_pass"
+            type="password"
         )
 
         if st.button(
@@ -111,20 +110,18 @@ if not st.session_state["logged_in"]:
             else:
 
                 st.error(
-                    "Invalid credentials"
+                    "Invalid login"
                 )
 
     with tab2:
 
-        new_u = st.text_input(
-            "Choose Username",
-            key="reg_user"
+        nu = st.text_input(
+            "New Username"
         )
 
-        new_p = st.text_input(
-            "Choose Password",
-            type="password",
-            key="reg_pass"
+        np = st.text_input(
+            "New Password",
+            type="password"
         )
 
         if st.button(
@@ -132,65 +129,38 @@ if not st.session_state["logged_in"]:
         ):
 
             if sign_up_user(
-                new_u,
-                new_p
+                nu,
+                np
             ):
 
                 st.success(
-                    "Account created!"
+                    "Account created"
                 )
 
             else:
 
                 st.error(
-                    "Username already exists"
+                    "Username exists"
                 )
 
 
 # MAIN APP
 if st.session_state["logged_in"]:
 
-    col_title, col_user, col_logout = st.columns(
-        [4, 1.5, 1]
+    st.title(
+        "📂 Job Tracker"
     )
 
-    with col_title:
+    if st.button(
+        "Sign Out"
+    ):
 
-        st.title(
-            "📂 Job Tracker"
-        )
-
-    with col_user:
-
-        st.markdown(
-            "<div style='margin-top:25px'></div>",
-            unsafe_allow_html=True
-        )
-
-        st.write(
-            f"👤 **{st.session_state['username']}**"
-        )
-
-    with col_logout:
-
-        st.markdown(
-            "<div style='margin-top:18px'></div>",
-            unsafe_allow_html=True
-        )
-
-        if st.button(
-            "Sign Out",
-            type="secondary",
-            width="stretch"
-        ):
-
-            st.session_state.clear()
-            st.rerun()
+        st.session_state.clear()
+        st.rerun()
 
     # ADD JOB
     with st.expander(
-        "➕ Add New Application",
-        expanded=False
+        "➕ Add New Application"
     ):
 
         c1, c2 = st.columns(2)
@@ -204,69 +174,55 @@ if st.session_state["logged_in"]:
         with c2:
 
             pos = st.text_input(
-                "Position Title"
+                "Position"
             )
 
-        row1, row2 = st.columns(
-            [3, 1]
+        url_in = st.text_input(
+            "Job URL"
         )
 
-        with row1:
+        if st.button(
+            "✨ Auto-Fill"
+        ):
 
-            url_in = st.text_input(
-                "Job Posting URL"
-            )
+            if url_in:
 
-        with row2:
+                with st.spinner(
+                    "Filling out description... Just a few moments"
+                ):
 
-            st.markdown(
-                "<div style='margin-top:28px'></div>",
-                unsafe_allow_html=True
-            )
+                    raw = scrape_job_link(
+                        url_in
+                    )
 
-            if st.button(
-                "✨ Auto-Fill"
-            ):
-
-                if url_in:
-
-                    with st.spinner(
-                        "Filling out description... Just a few moments"
-                    ):
-
-                        raw = scrape_job_link(
-                            url_in
-                        )
-
-                        st.session_state[
-                            "formatted_desc"
-                        ] = clean_description_with_ai(
-                            raw
-                        )
-
-                else:
-
-                    st.warning(
-                        "Enter URL first"
+                    st.session_state[
+                        "formatted_desc"
+                    ] = clean_description_with_ai(
+                        raw
                     )
 
         final_desc = st.text_area(
+
             "Job Description",
-            value=st.session_state[
+
+            value=
+            st.session_state[
                 "formatted_desc"
             ],
+
             height=200
+
         )
 
         st.subheader(
-            "🎯 AI Match & Timeline"
+            "🎯 Resume Match"
         )
 
-        col_file, col_date = st.columns(
+        col1, col2 = st.columns(
             2
         )
 
-        with col_file:
+        with col1:
 
             up_file = st.file_uploader(
                 "Upload Resume",
@@ -276,63 +232,32 @@ if st.session_state["logged_in"]:
                 ]
             )
 
-        with col_date:
+        with col2:
 
             applied_date = st.date_input(
                 "Date Applied",
                 value=pd.Timestamp.today()
             )
 
-        # SCAN
         if st.button(
             "🔍 Scan Resume"
         ):
 
             if final_desc and up_file:
 
-                with st.spinner(
-                    "Analyzing Resume..."
-                ):
-
-                    try:
-
-                        resume_txt = (
-                            extract_text_from_upload(
-                                up_file
-                            )
-                        )
-
-                        st.session_state[
-                            "match_data"
-                        ] = (
-                            get_ai_match_feedback(
-                                final_desc,
-                                resume_txt
-                            )
-                        )
-
-                    except Exception as e:
-
-                        st.session_state[
-                            "match_data"
-                        ] = {
-
-                            "score":
-                            "Error",
-
-                            "feedback":
-                            [
-                                str(e)
-                            ]
-                        }
-
-            else:
-
-                st.warning(
-                    "Upload resume and job description first"
+                resume_txt = (
+                    extract_text_from_upload(
+                        up_file
+                    )
                 )
 
-        # RESULTS
+                st.session_state[
+                    "match_data"
+                ] = get_ai_match_feedback(
+                    final_desc,
+                    resume_txt
+                )
+
         if st.session_state[
             "match_data"
         ]:
@@ -354,72 +279,64 @@ if st.session_state["logged_in"]:
                 []
             ):
 
-                if item.strip():
+                st.write(
+                    item
+                )
 
-                    st.write(
-                        item
-                    )
-
-        # SAVE
         if st.button(
             "💾 Save Application"
         ):
 
-            if comp and pos:
+            score = "N/A"
 
-                score = "N/A"
+            if st.session_state[
+                "match_data"
+            ]:
 
-                if st.session_state[
-                    "match_data"
-                ]:
-
-                    score = (
-                        st.session_state[
-                            "match_data"
-                        ].get(
-                            "score",
-                            "N/A"
-                        )
-                    )
-
-                resume_url = None
-
-                if up_file:
-
-                    resume_url = (
-                        upload_resume(
-                            up_file,
-                            st.session_state[
-                                "username"
-                            ]
-                        )
-                    )
-
-                success = save_job(
-                    comp,
-                    pos,
-                    final_desc,
-                    url_in,
-                    resume_url,
-                    score,
-                    applied_date=applied_date
-                )
-
-                if success:
-
-                    st.success(
-                        "Application saved!"
-                    )
-
-                    st.session_state[
-                        "formatted_desc"
-                    ] = ""
-
+                score = (
                     st.session_state[
                         "match_data"
-                    ] = None
+                    ].get(
+                        "score",
+                        "N/A"
+                    )
+                )
 
-                    st.rerun()
+            resume_url = None
+
+            if up_file:
+
+                resume_url = upload_resume(
+                    up_file,
+                    st.session_state[
+                        "username"
+                    ]
+                )
+
+            save_job(
+
+                comp,
+
+                pos,
+
+                final_desc,
+
+                url_in,
+
+                resume_url,
+
+                score,
+
+                applied_date=
+                applied_date
+
+            )
+
+            st.success(
+                "Application Saved"
+            )
+
+            st.rerun()
 
     # SAVED JOBS
     st.divider()
@@ -439,113 +356,113 @@ if st.session_state["logged_in"]:
         df[
             "created_at"
         ] = pd.to_datetime(
-            df["created_at"]
+            df[
+                "created_at"
+            ]
         )
 
         df[
             "created_at"
         ] = (
+
             df[
                 "created_at"
             ]
-            .dt.tz_convert(None)
+
+            .dt.tz_convert(
+                None
+            )
+
             .dt.strftime(
                 "%m/%d/%Y"
             )
+
         )
 
-       # STATUS OPTIONS
-status_options = [
+        status_options = [
 
-    "▼ 📝 Applied",
+            "▼ 📝 Applied",
 
-    "▼ 📨 Recruiter Contacted",
+            "▼ 📨 Recruiter Contacted",
 
-    "▼ 📅 Interview Scheduled",
+            "▼ 📅 Interview Scheduled",
 
-    "▼ 🎤 Interviewed",
+            "▼ 🎤 Interviewed",
 
-    "▼ ⏳ Waiting",
+            "▼ ⏳ Waiting",
 
-    "▼ ✅ Offer",
+            "▼ ✅ Offer",
 
-    "▼ ❌ Rejected",
+            "▼ ❌ Rejected",
 
-    "▼ 🚫 Withdrawn"
+            "▼ 🚫 Withdrawn"
 
-]
+        ]
 
-# USER INSTRUCTION
-st.info(
-    "💡 Click any status with ▼ to open the dropdown menu and update progress"
-)
-
-edited_df = st.data_editor(
-
-    df,
-
-    width="stretch",
-
-    hide_index=True,
-
-    key="jobs_editor",
-
-    num_rows="dynamic",
-
-    column_config={
-
-        "created_at":
-        st.column_config.TextColumn(
-            "Date Applied"
-        ),
-
-        "status":
-        st.column_config.SelectboxColumn(
-
-            "Application Status",
-
-            help=
-            "Click the ▼ icon to change status",
-
-            options=status_options,
-
-            required=True
-
-        ),
-
-        "pdf_url":
-        st.column_config.LinkColumn(
-
-            "Job Snapshot",
-
-            display_text="View"
-
-        ),
-
-        "resume_link":
-        st.column_config.LinkColumn(
-
-            "My Resume",
-
-            display_text="Download"
-
-        ),
-
-        "job_url":
-        st.column_config.LinkColumn(
-
-            "Original Posting",
-
-            display_text="Open Link"
-
-        ),
-
-        "id": None,
-
-        "description": None
+        st.info(
+            "💡 Click any status with ▼ to update progress"
         )
+
+        edited_df = st.data_editor(
+
+            df,
+
+            width="stretch",
+
+            hide_index=True,
+
+            key="jobs_editor",
+
+            num_rows="dynamic",
+
+            column_config={
+
+                "created_at":
+
+                st.column_config.TextColumn(
+                    "Date Applied"
+                ),
+
+                "status":
+
+                st.column_config.SelectboxColumn(
+
+                    "Application Status",
+
+                    options=
+                    status_options,
+
+                    help=
+                    "Click ▼ to edit"
+
+                ),
+
+                "pdf_url":
+
+                st.column_config.LinkColumn(
+                    "Snapshot"
+                ),
+
+                "resume_link":
+
+                st.column_config.LinkColumn(
+                    "Resume"
+                ),
+
+                "job_url":
+
+                st.column_config.LinkColumn(
+                    "Posting"
+                ),
+
+                "id": None,
+
+                "description": None
+
+            }
+
         )
-    }
+
         # DELETE
         if st.session_state[
             "jobs_editor"
@@ -560,12 +477,16 @@ edited_df = st.data_editor(
             ]:
 
                 delete_job(
-                    df.iloc[row]["id"]
+                    df.iloc[
+                        row
+                    ][
+                        "id"
+                    ]
                 )
 
             st.rerun()
 
-        # EDIT
+        # UPDATE
         if st.session_state[
             "jobs_editor"
         ][
@@ -581,8 +502,15 @@ edited_df = st.data_editor(
             for row, changes in updates.items():
 
                 update_job_full(
-                    df.iloc[row]["id"],
+
+                    df.iloc[
+                        row
+                    ][
+                        "id"
+                    ],
+
                     changes
+
                 )
 
             st.rerun()
