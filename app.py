@@ -429,38 +429,55 @@ if st.session_state["logged_in"]:
 
             with c1:
 
-                st.write(
-                    row.get(
-                        "company",
-                        ""
-                    )
-                )
+    st.markdown(
+        "<div style='padding-top:14px'>"
+        + str(
+            row.get(
+                "company",
+                ""
+            )
+        )
+        + "</div>",
 
-            with c2:
+        unsafe_allow_html=True
+    )
 
-                st.write(
-                    row.get(
-                        "position",
-                        ""
-                    )
-                )
+with c2:
 
-            with c3:
+    st.markdown(
+        "<div style='padding-top:14px'>"
+        + str(
+            row.get(
+                "position",
+                ""
+            )
+        )
+        + "</div>",
 
-                st.write(
-                    row.get(
-                        "score",
-                        "N/A"
-                    )
-                )
+        unsafe_allow_html=True
+    )
 
-            with c4:
+with c3:
 
-                current = row.get(
-                    "status",
-                    "📝 Applied"
-                )
+    st.markdown(
+        "<div style='padding-top:14px'>"
+        + str(
+            row.get(
+                "score",
+                "N/A"
+            )
+        )
+        + "</div>",
 
+        unsafe_allow_html=True
+    )
+
+with c4:
+
+    current = row.get(
+        "status",
+        "📝 Applied"
+    )
                 if current not in status_options:
 
                     current = (
