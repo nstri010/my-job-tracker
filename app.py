@@ -135,9 +135,9 @@ if st.session_state['logged_in']:
                 "position": st.column_config.TextColumn("Position", disabled=False),
                 "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
                 "match_score": st.column_config.TextColumn("Score", disabled=True),
-                "pdf_url": st.column_config.LinkColumn("Job PDF"),
+                "pdf_url": st.column_config.LinkColumn("Job Snapshot"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
-                "job_url": st.column_config.LinkColumn("Original Link"),
+                "job_url": st.column_config.LinkColumn("Original Posting Link"),
                 "id": None, "description": None
             },
             hide_index=True,
