@@ -10,9 +10,9 @@ import asyncio
 import re
 from playwright.async_api import async_playwright
 
-# AI Setup
+# AI Setup - Using stable model name
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 def extract_text_from_upload(uploaded_file):
     ext = uploaded_file.name.split('.')[-1].lower()
@@ -32,20 +32,14 @@ def scrape_job_link(url):
         soup = BeautifulSoup(response.text, 'html.parser')
         for junk in soup(["script", "style", "nav", "footer", "header"]):
             junk.decompose()
-        # Using separator='\n' helps the AI understand the layout (bullets/headers)
+        # Using \n separator helps preserve original structure for the AI
         return soup.get_text(separator='\n', strip=True)
     except Exception as e:
         return f"Scraper Error: {e}"
 
 def clean_description_with_ai(raw_text):
-    # Added explicit instruction to keep spacing so it's not one big paragraph
-    prompt = f"""
-    Format this into a clean job listing with bold headers and bullets. 
-    IMPORTANT: Maintain the original paragraph spacing and structure. Do not summarize.
-    
-    TEXT:
-    {raw_text[:5000]}
-    """
+    # Instructions added to preserve spacing and prevent "one large paragraph"
+    prompt = f"Format this into a clean job listing with bold headers and bullets. IMPORTANT: Preserve original paragraph spacing and do not summarize:\n\n{raw_text[:5000]}"
     try:
         response = model.generate_content(prompt)
         return response.text
@@ -53,27 +47,31 @@ def clean_description_with_ai(raw_text):
 
 def get_ai_match_feedback(job_desc, resume_text):
     prompt = f"""
-    Compare this Job and Resume. 
-    Return ONLY a JSON object: {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
+    Compare this Job and Resume. Provide a score out of 10 and 3 improvement points.
+    Return ONLY a JSON object. No conversational text.
     
+    Format: {{"score": "X/10", "feedback": ["point 1", "point 2", "point 3"]}}
+
     JOB: {job_desc[:2000]}
     RESUME: {resume_text[:2000]}
     """
     try:
-        response = model.generate_content(prompt)
-        raw_content = response.text.strip()
-        
-        # Robust Cleaning: Find the first '{' and last '}'
-        # This prevents "Score: Error" if the AI adds markdown or extra text.
-        json_match = re.search(r'\{.*\}', raw_content, re.DOTALL)
-        
-        if json_match:
-            return json.loads(json_match.group(0))
-        else:
-            return {"score": "N/A", "feedback": ["AI response formatting issue."]}
-            
+        # JSON Mode enabled for portfolio stability
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": {
+                    "type": "object",
+                    "properties": {
+                        "score": {"type": "string"},
+                        "feedback": {"type": "array", "items": {"type": "string"}}
+                    }
+                }
+            }
+        )
+        return json.loads(response.text)
     except Exception as e:
-        # This will now show you the actual error in the UI if it happens
         return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
@@ -86,8 +84,8 @@ def generate_pdf_snapshot(url, filename):
                 await page.pdf(path=filename, format="A4")
                 await browser.close()
                 return True
-            except Exception as e:
-                print(f"Snapshot Error: {e}")
-                await browser.close()
+            except:
+                if 'browser' in locals():
+                    await browser.close()
                 return False
     return asyncio.run(run())
