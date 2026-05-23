@@ -438,7 +438,6 @@ with c3:
             "N/A"
         )
     )
-    )
             with c4:
 
                 current = row.get(
