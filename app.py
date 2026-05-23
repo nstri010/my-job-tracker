@@ -416,7 +416,7 @@ if st.session_state["logged_in"]:
                 if pdf:
 
                     st.link_button(
-                        "📑",
+                        "🔗",
                         pdf,
                         use_container_width=True
                     )
@@ -426,7 +426,7 @@ if st.session_state["logged_in"]:
 
                 if st.button(
 
-                    "🗑️",
+                    "❌",
 
                     key=
                     f"delete_{row['id']}",
