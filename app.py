@@ -237,16 +237,21 @@ if st.session_state["logged_in"]:
 
             if final_desc and up_file:
 
-                resume_txt = extract_text_from_upload(
-                    up_file
-                )
+                # Added the spinner for AI analysis
+                with st.spinner(
+                    "Using AI to analyze and match resume..."
+                ):
 
-                st.session_state[
-                    "match_data"
-                ] = get_ai_match_feedback(
-                    final_desc,
-                    resume_txt
-                )
+                    resume_txt = extract_text_from_upload(
+                        up_file
+                    )
+
+                    st.session_state[
+                        "match_data"
+                    ] = get_ai_match_feedback(
+                        final_desc,
+                        resume_txt
+                    )
 
         if st.session_state[
             "match_data"
