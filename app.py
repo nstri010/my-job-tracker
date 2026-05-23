@@ -406,7 +406,7 @@ div[data-baseweb="select"]{
                 [2,2,2,2,1,1]
             )
 
-            with c1:
+with c1:
 
     st.write("")
 
