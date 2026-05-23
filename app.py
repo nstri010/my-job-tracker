@@ -366,38 +366,75 @@ if st.session_state["logged_in"]:
                     )
                 )
 
-            with c4:
+with c4:
 
-                current = row.get(
-                    "status",
-                    "📝 Applied"
-                )
+    current = row.get(
+        "status",
+        "📝 Applied"
+    )
 
-                new_status = st.selectbox(
+    # FIX OLD SAVED VALUES
+    if current == "Applied":
+        current = "📝 Applied"
 
-                    "",
+    elif current == "Recruiter Contacted":
+        current = "📨 Recruiter Contacted"
 
-                    status_options,
+    elif current == "Interview Scheduled":
+        current = "📅 Interview Scheduled"
 
-                    index=
-                    status_options.index(
-                        current
-                    ),
+    elif current == "Interviewed":
+        current = "🎤 Interviewed"
 
-                    key=
-                    f"status_{row['id']}"
+    elif current == "Waiting":
+        current = "⏳ Waiting"
 
-                )
+    elif current == "Offer":
+        current = "✅ Offer"
 
-                if new_status != current:
+    elif current == "Rejected":
+        current = "❌ Rejected"
 
-                    update_job_full(
-                        row["id"],
-                        {
-                            "status":
-                            new_status
-                        }
-                    )
+    elif current == "Withdrawn":
+        current = "🚫 Withdrawn"
+
+    # SAFETY CHECK
+    if current not in status_options:
+
+        current = (
+            "📝 Applied"
+        )
+
+    new_status = st.selectbox(
+
+        "",
+
+        status_options,
+
+        index=
+        status_options.index(
+            current
+        ),
+
+        key=
+        f"status_{row['id']}"
+
+    )
+
+    if new_status != current:
+
+        update_job_full(
+
+            row["id"],
+
+            {
+                "status":
+                new_status
+            }
+
+        )
+
+        st.rerun()
 
                     st.rerun()
 
