@@ -57,8 +57,8 @@ def extract_text_from_upload(uploaded_file):
 def clean_description_with_ai(raw_text):
     try:
         prompt = f"Organize this job posting.\n\nCreate sections:\nResponsibilities\nRequirements\nPreferred Skills\nBenefits\n\nJob Text:\n{raw_text}"
-        model = genai.GenerativeModel("gemini-2.0-flash") # Updated to stable version
-        response = model.generate_content(prompt)
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         return f"Formatting error: {e}"
@@ -84,8 +84,8 @@ def get_ai_match_feedback(job_desc, resume_text):
         Job:
         {job_desc}
         """
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = model.generate_content(prompt)
         result = response.text
 
         # IMPROVED REGEX: Matches "Rating: 6/10", "6 / 10", or just "6/10"
