@@ -44,21 +44,25 @@ def scrape_job_link(url):
 
 def extract_text_from_upload(uploaded_file):
     text = ""
-    if uploaded_file.name.endswith(".pdf"):
-        pdf = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-        for page in pdf:
-            text += page.get_text()
-    elif uploaded_file.name.endswith(".docx"):
-        document = docx.Document(uploaded_file)
-        for para in document.paragraphs:
-            text += para.text + "\n"
-    return text
+    try:
+        if uploaded_file.name.endswith(".pdf"):
+            pdf = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+            for page in pdf:
+                text += page.get_text()
+        elif uploaded_file.name.endswith(".docx"):
+            document = docx.Document(uploaded_file)
+            for para in document.paragraphs:
+                text += para.text + "\n"
+        return text
+    except Exception as e:
+        return ""
 
 def clean_description_with_ai(raw_text):
     try:
         prompt = f"Organize this job posting.\n\nCreate sections:\nResponsibilities\nRequirements\nPreferred Skills\nBenefits\n\nJob Text:\n{raw_text}"
-model = genai.GenerativeModel("gemini-1.5-flash")
-response = model.generate_content(prompt)
+        # Using 1.5-flash for better stability and higher quota limits
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         return f"Formatting error: {e}"
@@ -84,11 +88,11 @@ def get_ai_match_feedback(job_desc, resume_text):
         Job:
         {job_desc}
         """
-model = genai.GenerativeModel("gemini-1.5-flash")
-response = model.generate_content(prompt)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
         result = response.text
 
-        # IMPROVED REGEX: Matches "Rating: 6/10", "6 / 10", or just "6/10"
+        # Robust regex to catch the rating
         rating = "N/A"
         match = re.search(r"(\d+)\s*/\s*10", result)
         if match:
