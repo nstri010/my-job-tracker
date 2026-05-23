@@ -17,30 +17,27 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
 # PDF SNAPSHOT
-# Uses ScreenshotOne API to take a real visual screenshot
-# then saves it as a PDF
+# Uses ApiFlash to take a real visual screenshot then saves as PDF
 def generate_pdf_snapshot(job_url, output_file):
     try:
-        api_key = st.secrets["SCREENSHOTONE_KEY"]
+        api_key = st.secrets["APIFLASH_KEY"]
         st.info(f"🔑 Key loaded: {api_key[:6]}...")
 
-        # Call ScreenshotOne API
         params = {
             "access_key": api_key,
             "url": job_url,
-            "format": "jpg",
-            "viewport_width": 1440,
-            "viewport_height": 900,
+            "format": "jpeg",
+            "quality": 85,
+            "width": 1440,
+            "height": 900,
             "full_page": "true",
-            "block_ads": "true",
-            "block_cookie_banners": "true",
-            "block_trackers": "true",
+            "no_cookie_banners": "true",
+            "no_ads": "true",
             "delay": 2,
-            "timeout": 30,
         }
 
         response = requests.get(
-            "https://api.screenshotone.com/take",
+            "https://api.apiflash.com/v1/urltoimage",
             params=params,
             timeout=60
         )
@@ -49,51 +46,46 @@ def generate_pdf_snapshot(job_url, output_file):
             st.warning(f"⚠️ Screenshot API error: {response.status_code} — {response.text[:200]}")
             return False
 
-        # Convert screenshot image to PDF
+        # Convert screenshot to PDF
         img = Image.open(BytesIO(response.content)).convert("RGB")
 
-        # Scale image to fit A4 width
         a4_width_mm = 210
         a4_height_mm = 297
-        a4_width_px = int(a4_width_mm * 3.7795)  # mm to px at 96dpi
+        a4_width_px = int(a4_width_mm * 3.7795)
+        page_height_px = int(a4_height_mm * 3.7795)
 
         ratio = a4_width_px / img.width
         new_height = int(img.height * ratio)
         img = img.resize((a4_width_px, new_height), Image.LANCZOS)
 
-        # Save resized image temporarily
         tmp_img = output_file.replace(".pdf", "_tmp.jpg")
         img.save(tmp_img, "JPEG", quality=85)
 
-        # Build PDF — one wide image across multiple A4 pages
-        page_height_px = int(a4_height_mm * 3.7795)
-        total_height = new_height
-        num_pages = max(1, -(-total_height // page_height_px))  # ceiling division
+        num_pages = max(1, -(-new_height // page_height_px))
 
         doc = SimpleDocTemplate(
             output_file,
             pagesize=A4,
-            leftMargin=0,
-            rightMargin=0,
-            topMargin=0,
-            bottomMargin=0
+            leftMargin=0, rightMargin=0,
+            topMargin=0, bottomMargin=0
         )
 
         story = []
         for i in range(num_pages):
             y_start = i * page_height_px
-            y_end = min(y_start + page_height_px, total_height)
+            y_end = min(y_start + page_height_px, new_height)
             crop = img.crop((0, y_start, a4_width_px, y_end))
-
             tmp_crop = output_file.replace(".pdf", f"_crop_{i}.jpg")
             crop.save(tmp_crop, "JPEG", quality=85)
-
-            rl_img = RLImage(tmp_crop, width=a4_width_mm*mm, height=(y_end - y_start) * (a4_width_mm*mm / a4_width_px))
+            rl_img = RLImage(
+                tmp_crop,
+                width=a4_width_mm * mm,
+                height=(y_end - y_start) * (a4_width_mm * mm / a4_width_px)
+            )
             story.append(rl_img)
 
         doc.build(story)
 
-        # Cleanup temp files
         import os
         if os.path.exists(tmp_img):
             os.remove(tmp_img)
