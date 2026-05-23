@@ -94,11 +94,11 @@ if not st.session_state["logged_in"]:
     with tab2:
 
         new_u = st.text_input(
-            "Create Username"
+            "Username"
         )
 
         new_p = st.text_input(
-            "Create Password",
+            "Password",
             type="password"
         )
 
@@ -134,7 +134,7 @@ if st.session_state[
 
     with t1:
         st.title(
-            "📂 Job Tracker"
+            "Job Tracker"
         )
 
     with t2:
@@ -174,13 +174,13 @@ if st.session_state[
         )
 
         if st.button(
-            "✨ Auto-Fill"
+            "✨ Auto-Fill Details"
         ):
 
             if url_in:
 
                 with st.spinner(
-                    "Fetching description..."
+                    "Doing the heavy lifting... just a few moments more while we set things up..."
                 ):
 
                     raw = scrape_job_link(
@@ -254,7 +254,7 @@ if st.session_state[
             ]
 
             st.success(
-                f"🎯 Resume Match: {match.get('score','N/A')}"
+                f"🎯 How You Stack Up: {match.get('score','N/A')}"
             )
 
             for item in match.get(
@@ -387,14 +387,14 @@ if st.session_state[
 
             c1.write(
                 row.get(
-                    "company",
+                    "Company",
                     ""
                 )
             )
 
             c2.write(
                 row.get(
-                    "position",
+                    "Position",
                     ""
                 )
             )
@@ -459,7 +459,7 @@ if st.session_state[
                     st.link_button("📸", pdf_url)
                 else:
                     st.button(
-                        "📸",
+                        "➿",
                         key=f"p_{row['id']}",
                         disabled=True
                     )
@@ -482,5 +482,5 @@ if st.session_state[
     else:
 
         st.write(
-            "No applications saved yet."
+            "You have no applications saved yet."
         )
