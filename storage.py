@@ -32,7 +32,7 @@ def upload_resume(file_obj, username):
         return supabase.storage.from_("resumes").get_public_url(file_path)
     except: return None
 
-def save_job(company, position, description, job_url, resume_url, match_score):
+def save_job(company, position, description, job_url, resume_url, match_score, applied_date=None):
     pdf_url = None
     if job_url:
         from utils import generate_pdf_snapshot
@@ -50,6 +50,11 @@ def save_job(company, position, description, job_url, resume_url, match_score):
         "job_url": job_url, "resume_link": resume_url, "pdf_url": pdf_url,
         "match_score": str(match_score), "status": "Active"
     }
+    
+    # If a specific date was chosen in the UI, use it
+    if applied_date:
+        data["created_at"] = applied_date.isoformat()
+
     try:
         supabase.table("jobs").insert(data).execute()
         return True
@@ -61,10 +66,9 @@ def load_jobs():
         return res.data
     except: return []
 
-# NEW: Flexible update function for any column
-def update_job_full(job_id, changes_dict):
+def update_job_full(job_id, changes):
     try:
-        supabase.table("jobs").update(changes_dict).eq("id", job_id).execute()
+        supabase.table("jobs").update(changes).eq("id", job_id).execute()
         return True
     except: return False
 
