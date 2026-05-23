@@ -438,7 +438,7 @@ if st.session_state[
 
             # RESUME BUTTON
 
-            resume_link = row.get("resume_link")
+            resume_link = str(row.get("resume_link") or "")
 
             with c5:
                 if resume_link:
@@ -452,7 +452,7 @@ if st.session_state[
 
             # SNAPSHOT BUTTON
 
-            pdf_url = row.get("pdf_url")
+            pdf_url = str(row.get("pdf_url") or "")
 
             with c6:
                 if pdf_url:
