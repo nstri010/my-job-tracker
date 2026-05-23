@@ -8,20 +8,17 @@ import time
 from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Image as RLImage
-from reportlab.lib.units import mm
+import img2pdf
+import os
 
 # GEMINI CONFIG
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
 # PDF SNAPSHOT
-# Uses ApiFlash to take a real visual screenshot then saves as PDF
 def generate_pdf_snapshot(job_url, output_file):
     try:
         api_key = st.secrets["APIFLASH_KEY"]
-        st.info(f"🔑 Key loaded: {api_key[:6]}...")
 
         params = {
             "access_key": api_key,
@@ -29,7 +26,6 @@ def generate_pdf_snapshot(job_url, output_file):
             "format": "jpeg",
             "quality": 85,
             "width": 1440,
-            "height": 900,
             "full_page": "true",
             "no_cookie_banners": "true",
             "no_ads": "true",
@@ -46,54 +42,16 @@ def generate_pdf_snapshot(job_url, output_file):
             st.warning(f"⚠️ Screenshot API error: {response.status_code} — {response.text[:200]}")
             return False
 
-        # Convert screenshot to PDF
-        img = Image.open(BytesIO(response.content)).convert("RGB")
+        # Save the JPEG temporarily
+        tmp_jpg = output_file.replace(".pdf", "_tmp.jpg")
+        with open(tmp_jpg, "wb") as f:
+            f.write(response.content)
 
-        a4_width_mm = 210
-        a4_height_mm = 297
-        a4_width_px = int(a4_width_mm * 3.7795)
-        page_height_px = int(a4_height_mm * 3.7795)
+        # Convert directly to PDF using img2pdf (no sizing issues)
+        with open(output_file, "wb") as f:
+            f.write(img2pdf.convert(tmp_jpg))
 
-        ratio = a4_width_px / img.width
-        new_height = int(img.height * ratio)
-        img = img.resize((a4_width_px, new_height), Image.LANCZOS)
-
-        tmp_img = output_file.replace(".pdf", "_tmp.jpg")
-        img.save(tmp_img, "JPEG", quality=85)
-
-        num_pages = max(1, -(-new_height // page_height_px))
-
-        doc = SimpleDocTemplate(
-            output_file,
-            pagesize=A4,
-            leftMargin=0, rightMargin=0,
-            topMargin=0, bottomMargin=0
-        )
-
-        story = []
-        for i in range(num_pages):
-            y_start = i * page_height_px
-            y_end = min(y_start + page_height_px, new_height)
-            crop = img.crop((0, y_start, a4_width_px, y_end))
-            tmp_crop = output_file.replace(".pdf", f"_crop_{i}.jpg")
-            crop.save(tmp_crop, "JPEG", quality=85)
-            rl_img = RLImage(
-                tmp_crop,
-                width=a4_width_mm * mm,
-                height=(y_end - y_start) * (a4_width_mm * mm / a4_width_px)
-            )
-            story.append(rl_img)
-
-        doc.build(story)
-
-        import os
-        if os.path.exists(tmp_img):
-            os.remove(tmp_img)
-        for i in range(num_pages):
-            tmp_crop = output_file.replace(".pdf", f"_crop_{i}.jpg")
-            if os.path.exists(tmp_crop):
-                os.remove(tmp_crop)
-
+        os.remove(tmp_jpg)
         return True
 
     except Exception as e:
