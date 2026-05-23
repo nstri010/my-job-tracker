@@ -76,6 +76,7 @@ if not st.session_state["logged_in"]:
         ]
     )
 
+    # LOGIN TAB
     with tab1:
 
         username = st.text_input(
@@ -112,6 +113,7 @@ if not st.session_state["logged_in"]:
                     "Invalid login"
                 )
 
+    # SIGNUP TAB
     with tab2:
 
         new_user = st.text_input(
@@ -163,20 +165,26 @@ if st.session_state["logged_in"]:
         ):
 
             st.session_state.clear()
+
             st.rerun()
 
+    # ADD JOB
     with st.expander(
         "➕ Add New Application"
     ):
 
-        c1,c2 = st.columns(2)
+        c1, c2 = st.columns(
+            2
+        )
 
         with c1:
+
             comp = st.text_input(
                 "Company Name"
             )
 
         with c2:
+
             pos = st.text_input(
                 "Position Title"
             )
@@ -206,14 +214,25 @@ if st.session_state["logged_in"]:
                     )
 
         final_desc = st.text_area(
+
             "Job Description",
-            value=st.session_state[
+
+            value=
+            st.session_state[
                 "formatted_desc"
             ],
+
             height=220
+
         )
 
-        col1,col2 = st.columns(2)
+        st.subheader(
+            "🎯 Resume Match"
+        )
+
+        col1, col2 = st.columns(
+            2
+        )
 
         with col1:
 
@@ -250,38 +269,80 @@ if st.session_state["logged_in"]:
                     resume_txt
                 )
 
+        # RESULTS
         if st.session_state[
             "match_data"
         ]:
 
-            match = st.session_state[
+            m = st.session_state[
                 "match_data"
             ]
 
             st.success(
-                f"🎯 Resume Match: {match.get('score','N/A')}"
+                f"🎯 Resume Match: {m.get('score','N/A')}"
             )
 
-            for item in match.get(
+            st.subheader(
+                "AI Feedback"
+            )
+
+            for item in m.get(
                 "feedback",
                 []
             ):
 
-                st.write(item)
+                st.write(
+                    item
+                )
 
+        # SAVE
         if st.button(
             "💾 Save Application"
         ):
 
+            resume_url = None
+
+            score = "N/A"
+
+            if st.session_state[
+                "match_data"
+            ]:
+
+                score = (
+                    st.session_state[
+                        "match_data"
+                    ].get(
+                        "score",
+                        "N/A"
+                    )
+                )
+
+            if up_file:
+
+                resume_url = upload_resume(
+                    up_file,
+                    st.session_state[
+                        "username"
+                    ]
+                )
+
             save_job(
+
                 comp,
+
                 pos,
+
                 final_desc,
+
                 url_in,
-                None,
-                "N/A",
+
+                resume_url,
+
+                score,
+
                 applied_date=
                 applied_date
+
             )
 
             st.success(
@@ -290,6 +351,7 @@ if st.session_state["logged_in"]:
 
             st.rerun()
 
+    # SAVED JOBS
     st.divider()
 
     st.header(
@@ -301,12 +363,19 @@ if st.session_state["logged_in"]:
     status_options = [
 
         "📝 Applied",
+
         "📨 Recruiter Contacted",
+
         "📅 Interview Scheduled",
+
         "🎤 Interviewed",
+
         "⏳ Waiting",
+
         "✅ Offer",
+
         "❌ Rejected",
+
         "🚫 Withdrawn"
 
     ]
@@ -317,85 +386,146 @@ if st.session_state["logged_in"]:
             jobs_list
         )
 
-        # FINAL COMPACT RATIOS: [Company, Position, Match, Status, Resume, Delete]
-        col_ratios = [2.5, 2.5, 0.5, 1.1, 0.4, 0.4]
+        st.info(
+            "💡 Use the dropdown beside status to update progress"
+        )
 
-        h1,h2,h3,h4,h5,h6 = st.columns(col_ratios)
+        # HEADER
+        h1,h2,h3,h4,h5,h6 = st.columns(
+            [2,2,2,2,1,1]
+        )
 
-        h1.markdown("**Company**")
-        h2.markdown("**Position**")
-        h3.markdown("**Match**")
-        h4.markdown("**Status**")
-        h5.markdown("**Res**") # Shorter header to match narrow col
-        h6.markdown("**Del**") # Shorter header to match narrow col
+        h1.markdown(
+            "**Company**"
+        )
+
+        h2.markdown(
+            "**Position**"
+        )
+
+        h3.markdown(
+            "**Match**"
+        )
+
+        h4.markdown(
+            "**Status**"
+        )
+
+        h5.markdown(
+            "**Resume**"
+        )
+
+        h6.markdown(
+            "**Delete**"
+        )
 
         st.divider()
 
         for idx,row in df.iterrows():
 
             c1,c2,c3,c4,c5,c6 = st.columns(
-                col_ratios,
-                vertical_alignment="center"
+                [2,2,2,2,1,1]
             )
 
             with c1:
-                st.write(row.get("company", ""))
+
+                st.write(
+                    row.get(
+                        "company",
+                        ""
+                    )
+                )
 
             with c2:
-                st.write(row.get("position", ""))
+
+                st.write(
+                    row.get(
+                        "position",
+                        ""
+                    )
+                )
 
             with c3:
-                st.write(row.get("score", "N/A"))
+
+                st.write(
+                    row.get(
+                        "score",
+                        "N/A"
+                    )
+                )
 
             with c4:
-                current = row.get("status", "📝 Applied")
 
-                status_map = {
-                    "Applied": "📝 Applied",
-                    "Recruiter Contacted": "📨 Recruiter Contacted",
-                    "Interview Scheduled": "📅 Interview Scheduled",
-                    "Interviewed": "🎤 Interviewed",
-                    "Waiting": "⏳ Waiting",
-                    "Offer": "✅ Offer",
-                    "Rejected": "❌ Rejected",
-                    "Withdrawn": "🚫 Withdrawn"
-                }
-                current = status_map.get(current, current)
+                current = row.get(
+                    "status",
+                    "📝 Applied"
+                )
 
                 if current not in status_options:
-                    current = "📝 Applied"
+
+                    current = (
+                        "📝 Applied"
+                    )
 
                 new_status = st.selectbox(
-                    "Status",
+
+                    "",
+
                     status_options,
-                    index=status_options.index(current),
-                    key=f"status_{row['id']}",
-                    label_visibility="collapsed"
+
+                    index=
+                    status_options.index(
+                        current
+                    ),
+
+                    key=
+                    f"status_{row['id']}"
+
                 )
 
                 if new_status != current:
+
                     update_job_full(
+
                         row["id"],
-                        {"status": new_status}
+
+                        {
+                            "status":
+                            new_status
+                        }
+
                     )
+
                     st.rerun()
 
             with c5:
-                resume = row.get("resume_link")
+
+                resume = row.get(
+                    "resume_link"
+                )
+
                 if resume:
+
                     st.link_button(
                         "📄",
-                        resume,
-                        use_container_width=True
+                        resume
                     )
 
             with c6:
+
                 if st.button(
+
                     "🗑️",
-                    key=f"delete_{row['id']}",
-                    use_container_width=True
+
+                    key=
+                    f"delete_{row['id']}"
+
                 ):
-                    delete_job(row["id"])
+
+                    delete_job(
+                        row["id"]
+                    )
+
                     st.rerun()
 
             st.divider()
