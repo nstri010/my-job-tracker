@@ -90,4 +90,3 @@ if st.session_state["logged_in"]:
                 st.warning("Please fill in all fields before scanning.")
 
     st.divider()
-    # Table logic remains the same
