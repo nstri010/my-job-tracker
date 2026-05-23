@@ -118,8 +118,6 @@ Compare resume against job.
 
 Return EXACTLY:
 
-Rating: X/10
-
 Strengths:
 - item
 
