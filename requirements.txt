@@ -6,6 +6,6 @@ requests
 beautifulsoup4
 python-docx
 PyMuPDF
-playwright
 reportlab
 Pillow
+
