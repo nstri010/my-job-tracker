@@ -437,6 +437,7 @@ with c3:
             "score",
             "N/A"
         )
+    )
             with c4:
 
                 current = row.get(
