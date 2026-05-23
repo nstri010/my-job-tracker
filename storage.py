@@ -61,9 +61,10 @@ def load_jobs():
         return res.data
     except: return []
 
-def update_job_status(job_id, new_status):
+# NEW: Flexible update function for any column
+def update_job_full(job_id, changes_dict):
     try:
-        supabase.table("jobs").update({"status": new_status}).eq("id", job_id).execute()
+        supabase.table("jobs").update(changes_dict).eq("id", job_id).execute()
         return True
     except: return False
 
@@ -72,4 +73,3 @@ def delete_job(job_id):
         supabase.table("jobs").delete().eq("id", job_id).execute()
         return True
     except: return False
-
