@@ -545,9 +545,6 @@ edited_df = st.data_editor(
         "description": None
 
     }
-
-)
-
         # DELETE
         if st.session_state[
             "jobs_editor"
