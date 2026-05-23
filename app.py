@@ -62,7 +62,7 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN SCREEN
+# LOGIN
 if not st.session_state["logged_in"]:
 
     st.title(
@@ -211,16 +211,12 @@ if st.session_state["logged_in"]:
                     )
 
         final_desc = st.text_area(
-
             "Job Description",
-
             value=
             st.session_state[
                 "formatted_desc"
             ],
-
             height=220
-
         )
 
         st.subheader(
@@ -322,22 +318,14 @@ if st.session_state["logged_in"]:
                 )
 
             save_job(
-
                 comp,
-
                 pos,
-
                 final_desc,
-
                 url_in,
-
                 resume_url,
-
                 score,
-
                 applied_date=
                 applied_date
-
             )
 
             st.success(
@@ -385,33 +373,30 @@ if st.session_state["logged_in"]:
             "💡 Use the dropdown beside status to update progress"
         )
 
+        # DROPDOWN FIX
+        st.markdown(
+            """
+<style>
+
+div[data-baseweb="select"]{
+    margin-top:-6px;
+}
+
+</style>
+""",
+            unsafe_allow_html=True
+        )
+
         h1,h2,h3,h4,h5,h6 = st.columns(
             [2,2,2,2,1,1]
         )
 
-        h1.markdown(
-            "**Company**"
-        )
-
-        h2.markdown(
-            "**Position**"
-        )
-
-        h3.markdown(
-            "**Match**"
-        )
-
-        h4.markdown(
-            "**Status**"
-        )
-
-        h5.markdown(
-            "**Resume**"
-        )
-
-        h6.markdown(
-            "**Delete**"
-        )
+        h1.markdown("**Company**")
+        h2.markdown("**Position**")
+        h3.markdown("**Match**")
+        h4.markdown("**Status**")
+        h5.markdown("**Resume**")
+        h6.markdown("**Delete**")
 
         st.divider()
 
@@ -425,7 +410,7 @@ if st.session_state["logged_in"]:
 
                 st.markdown(
                     f"""
-<div style='padding-top:14px'>
+<div style='padding-top:32px'>
 {row.get("company","")}
 </div>
 """,
@@ -436,7 +421,7 @@ if st.session_state["logged_in"]:
 
                 st.markdown(
                     f"""
-<div style='padding-top:14px'>
+<div style='padding-top:32px'>
 {row.get("position","")}
 </div>
 """,
@@ -447,7 +432,7 @@ if st.session_state["logged_in"]:
 
                 st.markdown(
                     f"""
-<div style='padding-top:14px'>
+<div style='padding-top:32px'>
 {row.get("score","N/A")}
 </div>
 """,
@@ -486,14 +471,11 @@ if st.session_state["logged_in"]:
                 if new_status != current:
 
                     update_job_full(
-
                         row["id"],
-
                         {
                             "status":
                             new_status
                         }
-
                     )
 
                     st.rerun()
