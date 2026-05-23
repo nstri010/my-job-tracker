@@ -8,4 +8,4 @@ python-docx
 PyMuPDF
 reportlab
 Pillow
-
+img2pdf
