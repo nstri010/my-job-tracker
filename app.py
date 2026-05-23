@@ -72,9 +72,14 @@ if st.session_state['logged_in']:
 
         final_desc = st.text_area("Job Description", value=st.session_state['formatted_desc'], height=200)
 
-        st.subheader("🎯 AI Match Scan")
-        up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
-        if st.button("🔍 Scan"):
+        st.subheader("🎯 AI Match & Timeline")
+        col_file, col_date = st.columns(2)
+        with col_file:
+            up_file = st.file_uploader("Upload Resume", type=['pdf', 'docx'])
+        with col_date:
+            applied_date = st.date_input("Application Date", value="today")
+
+        if st.button("🔍 Scan Resume"):
             if final_desc and up_file:
                 with st.spinner("Analyzing..."):
                     resume_txt = extract_text_from_upload(up_file)
@@ -90,7 +95,7 @@ if st.session_state['logged_in']:
                 with st.spinner("Saving..."):
                     score = st.session_state['match_data']['score'] if st.session_state['match_data'] else "N/A"
                     res_url = upload_resume(up_file, st.session_state['username']) if up_file else None
-                    if save_job(comp, pos, final_desc, url_in, res_url, score):
+                    if save_job(comp, pos, final_desc, url_in, res_url, score, applied_date=applied_date):
                         st.session_state['formatted_desc'] = ""
                         st.session_state['match_data'] = None
                         st.success("Saved!")
@@ -105,19 +110,18 @@ if st.session_state['logged_in']:
     if jobs_list:
         df = pd.DataFrame(jobs_list)
         
-        # Time Formatting
+        # Format the display date
         df['created_at'] = pd.to_datetime(df['created_at'])
-        df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y, %I:%M %p')
+        df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y')
 
         status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Moving On"]
 
-        # Editable Data Table with Dynamic Rows for Deletion
         edited_df = st.data_editor(
             df,
             use_container_width=True,
             num_rows="dynamic",
             column_config={
-                "created_at": st.column_config.TextColumn("Created At", disabled=True),
+                "created_at": st.column_config.TextColumn("Date Applied", disabled=True),
                 "company": st.column_config.TextColumn("Company", disabled=False),
                 "position": st.column_config.TextColumn("Position", disabled=False),
                 "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
@@ -125,21 +129,21 @@ if st.session_state['logged_in']:
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
                 "resume_link": st.column_config.LinkColumn("My Resume"),
                 "job_url": st.column_config.LinkColumn("Original Link"),
-                "id": None, "description": None # Hide internal columns
+                "id": None, "description": None # Hide internal ID and long text
             },
             hide_index=True,
             key="jobs_editor"
         )
 
-        # 1. Handle Row Deletion
+        # Handle Deletions
         if st.session_state["jobs_editor"]["deleted_rows"]:
             for index in st.session_state["jobs_editor"]["deleted_rows"]:
                 job_id = df.iloc[index]["id"]
                 if delete_job(job_id):
-                    st.toast(f"Application removed.", icon="🗑️")
+                    st.toast("Application deleted.", icon="🗑️")
             st.rerun()
 
-        # 2. Handle Edits (Status, Company, or Position)
+        # Handle Edits
         if st.session_state["jobs_editor"]["edited_rows"]:
             updates = st.session_state["jobs_editor"]["edited_rows"]
             for index, changes in updates.items():
