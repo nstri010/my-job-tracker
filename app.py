@@ -408,37 +408,35 @@ div[data-baseweb="select"]{
 
             with c1:
 
-                st.markdown(
-                    f"""
-<div style='padding-top:32px'>
-{row.get("company","")}
-</div>
-""",
-                    unsafe_allow_html=True
-                )
+    st.write("")
 
-            with c2:
+    st.write(
+        row.get(
+            "company",
+            ""
+        )
+    )
 
-                st.markdown(
-                    f"""
-<div style='padding-top:32px'>
-{row.get("position","")}
-</div>
-""",
-                    unsafe_allow_html=True
-                )
+with c2:
 
-            with c3:
+    st.write("")
 
-                st.markdown(
-                    f"""
-<div style='padding-top:32px'>
-{row.get("score","N/A")}
-</div>
-""",
-                    unsafe_allow_html=True
-                )
+    st.write(
+        row.get(
+            "position",
+            ""
+        )
+    )
 
+with c3:
+
+    st.write("")
+
+    st.write(
+        row.get(
+            "score",
+            "N/A"
+        )
             with c4:
 
                 current = row.get(
