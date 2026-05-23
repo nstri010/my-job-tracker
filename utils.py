@@ -74,9 +74,9 @@ def get_ai_match_feedback(job_desc, resume_text):
             # If no curly braces were found at all
             return {"score": "N/A", "feedback": ["AI response was not in the correct format."]}
 
-    except Exception as e:
-        print(f"Error parsing AI response: {e}")
-        return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
+except Exception as e:
+    print(f"Error: {e}") 
+    return {"score": "Error", "feedback": [f"Technical error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
     async def run():
