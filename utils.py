@@ -15,7 +15,7 @@ try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception:
-    st.error("Check your Google API Key in Streamlit Secrets.")
+    st.error("Missing Google API Key in Secrets.")
 
 def extract_text_from_upload(uploaded_file):
     ext = uploaded_file.name.split('.')[-1].lower()
@@ -37,7 +37,7 @@ def scrape_job_link(url):
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Fixed: Correct loop syntax for removing elements
+        # Clean up script and style elements
         for element in soup(["script", "style"]):
             element.decompose()
             
@@ -68,7 +68,7 @@ def get_ai_match_feedback(job_desc, resume_text):
             return json.loads(json_match.group(0))
         return {"score": "N/A", "feedback": ["AI formatting error"]}
     except Exception as e:
-        # Fixed: Corrected indentation for this block
+        # Fixed: Indented to match the 'try' block above
         return {"score": "Error", "feedback": [f"Connection error: {str(e)}"]}
 
 def generate_pdf_snapshot(url, filename):
