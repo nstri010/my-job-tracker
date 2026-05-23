@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_status
+from storage import load_jobs, save_job, delete_job, sign_up_user, login_user, upload_resume, update_job_full
 from utils import scrape_job_link, clean_description_with_ai, get_ai_match_feedback, extract_text_from_upload
 
 # Page Configuration
@@ -54,7 +54,7 @@ if st.session_state['logged_in']:
             st.rerun()
 
     # STEP 1: ADD JOB
-    with st.expander("➕ Add New Application", expanded=True):
+    with st.expander("➕ Add New Application", expanded=False):
         c1, c2 = st.columns(2)
         with c1: comp = st.text_input("Company Name")
         with c2: pos = st.text_input("Position Title")
@@ -96,29 +96,30 @@ if st.session_state['logged_in']:
                         st.success("Saved!")
                         st.rerun()
 
-    # STEP 4: VIEW & EDIT SAVED JOBS
+    # STEP 2: VIEW, EDIT & DELETE SAVED JOBS
     st.divider()
     st.header("📋 My Applied Jobs")
+    st.info("💡 Tip: Click any cell to edit. Select a row and press 'Delete' to remove.")
     jobs_list = load_jobs()
 
     if jobs_list:
         df = pd.DataFrame(jobs_list)
         
-        # Time Formatting (Miami/Local)
+        # Time Formatting
         df['created_at'] = pd.to_datetime(df['created_at'])
         df['created_at'] = df['created_at'].dt.tz_convert(None).dt.strftime('%m/%d/%Y, %I:%M %p')
 
-        # Status Options
         status_options = ["Active", "Applied", "Interview Scheduled", "Interviewed", "Moving On"]
 
-        # Editable Data Table
+        # Editable Data Table with Dynamic Rows for Deletion
         edited_df = st.data_editor(
             df,
             use_container_width=True,
+            num_rows="dynamic",
             column_config={
                 "created_at": st.column_config.TextColumn("Created At", disabled=True),
-                "company": st.column_config.TextColumn("Company", disabled=True),
-                "position": st.column_config.TextColumn("Position", disabled=True),
+                "company": st.column_config.TextColumn("Company", disabled=False),
+                "position": st.column_config.TextColumn("Position", disabled=False),
                 "status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
                 "match_score": st.column_config.TextColumn("Score", disabled=True),
                 "pdf_url": st.column_config.LinkColumn("Job PDF"),
@@ -130,14 +131,21 @@ if st.session_state['logged_in']:
             key="jobs_editor"
         )
 
-        # Trigger update if status changes
-        if st.session_state.get("jobs_editor") and st.session_state["jobs_editor"]["edited_rows"]:
+        # 1. Handle Row Deletion
+        if st.session_state["jobs_editor"]["deleted_rows"]:
+            for index in st.session_state["jobs_editor"]["deleted_rows"]:
+                job_id = df.iloc[index]["id"]
+                if delete_job(job_id):
+                    st.toast(f"Application removed.", icon="🗑️")
+            st.rerun()
+
+        # 2. Handle Edits (Status, Company, or Position)
+        if st.session_state["jobs_editor"]["edited_rows"]:
             updates = st.session_state["jobs_editor"]["edited_rows"]
             for index, changes in updates.items():
-                if "status" in changes:
-                    job_id = df.iloc[index]["id"]
-                    new_status = changes["status"]
-                    if update_job_status(job_id, new_status):
-                        st.toast(f"Status updated to {new_status}!", icon="✅")
+                job_id = df.iloc[index]["id"]
+                if update_job_full(job_id, changes):
+                    st.toast("Changes saved!", icon="✅")
+            st.rerun()
     else:
         st.write("No applications yet.")
