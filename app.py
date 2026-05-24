@@ -167,6 +167,7 @@ if st.session_state["logged_in"]:
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
                     st.info(f"DEBUG — score from AI: {score}")
+                    st.info(f"DEBUG — raw AI response: {match_result}")
             elif st.session_state.get("match_data"):
                 score = st.session_state["match_data"].get("score", "N/A")
             else:
