@@ -149,7 +149,7 @@ if st.session_state["logged_in"]:
                     st.write(item)
 
         # SAVE BUTTON
-        if st.button("💾 Save Results"):
+        if st.button("💾 Save"):
 
             resume_url = None
             score = "No score found... guess your skills just broke our algorithm."
