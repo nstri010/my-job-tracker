@@ -80,15 +80,12 @@ if not st.session_state["logged_in"]:
 
 if st.session_state["logged_in"]:
 
-    t1, t2, t3 = st.columns([5, 1.5, 1])
+    t1, t2 = st.columns([5, 1])
 
     with t1:
         st.title("Job Tracker")
 
     with t2:
-        st.markdown(f"👤 signed in as **{st.session_state['username']}**")
-
-    with t3:
         if st.button("Sign Out"):
             st.session_state.clear()
             st.rerun()
@@ -149,7 +146,7 @@ if st.session_state["logged_in"]:
                     st.write(item)
 
         # SAVE BUTTON
-        if st.button("💾 Save"):
+        if st.button("💾 Save Results"):
 
             resume_url = None
             score = "No score found... guess your skills just broke our algorithm."
@@ -209,8 +206,39 @@ if st.session_state["logged_in"]:
 
         df = pd.DataFrame(jobs_list)
 
-        ratios = [2, 2, 0.8, 1.5, 0.5, 0.5, 0.5]
-        headers = ["Company", "Position", "Match", "Status", "Resume", "Snapshot", "Delete"]
+        # SORT CONTROLS
+        sort_col, sort_dir_col = st.columns([2, 2])
+        with sort_col:
+            sort_by = st.selectbox(
+                "Sort by",
+                ["Date Applied", "Company", "Position", "Match Score", "Status"],
+                key="sort_by"
+            )
+        with sort_dir_col:
+            sort_dir = st.selectbox(
+                "Order",
+                ["Newest First", "Oldest First", "A → Z", "Z → A", "Highest First", "Lowest First"],
+                key="sort_dir"
+            )
+
+        # Apply sort
+        if sort_by == "Company":
+            df = df.sort_values("company", ascending=(sort_dir == "A → Z"))
+        elif sort_by == "Position":
+            df = df.sort_values("position", ascending=(sort_dir == "A → Z"))
+        elif sort_by == "Match Score":
+            def score_val(s):
+                try: return int(str(s).split("/")[0])
+                except: return 0
+            df["_score_num"] = df["match_score"].apply(score_val)
+            df = df.sort_values("_score_num", ascending=(sort_dir == "Lowest First"))
+        elif sort_by == "Status":
+            df = df.sort_values("status", ascending=(sort_dir == "A → Z"))
+        else:
+            df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
+
+        ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
+        headers = ["Company", "Position", "Match", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
 
         cols = st.columns(ratios)
         for c, h in zip(cols, headers):
@@ -220,7 +248,7 @@ if st.session_state["logged_in"]:
 
         for idx, row in df.iterrows():
 
-            c1, c2, c3, c4, c5, c6, c7 = st.columns(ratios, vertical_alignment="center")
+            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
             c1.write(row.get("company", ""))
             c2.write(row.get("position", ""))
@@ -240,21 +268,30 @@ if st.session_state["logged_in"]:
                     update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
 
+            # DATE APPLIED
+            raw_date = row.get("created_at", "")
+            try:
+                from datetime import datetime
+                date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
+            except:
+                date_str = str(raw_date)[:10] if raw_date else "—"
+            c5.write(date_str)
+
             resume_link = str(row.get("resume_link") or "")
-            with c5:
+            with c6:
                 if resume_link:
                     st.link_button("📄", resume_link)
                 else:
                     st.button("📄", key=f"r_{row['id']}", disabled=True)
 
             pdf_url = str(row.get("pdf_url") or "")
-            with c6:
+            with c7:
                 if pdf_url:
                     st.link_button("📸", pdf_url)
                 else:
                     st.button("📸", key=f"p_{row['id']}", disabled=True)
 
-            if c7.button("❌", key=f"d_{row['id']}"):
+            if c8.button("❌", key=f"d_{row['id']}"):
                 delete_job(row["id"])
                 st.rerun()
 
