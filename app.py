@@ -36,6 +36,9 @@ if "formatted_desc" not in st.session_state:
 if "match_data" not in st.session_state:
     st.session_state["match_data"] = None
 
+if "resume_txt" not in st.session_state:
+    st.session_state["resume_txt"] = None
+
 if "username" not in st.session_state:
     st.session_state["username"] = None
 
@@ -54,13 +57,10 @@ if not st.session_state["logged_in"]:
         p = st.text_input("Password", type="password", key="login_password")
 
         if st.button("Login"):
-
             if login_user(u, p):
-
                 st.session_state["logged_in"] = True
                 st.session_state["username"] = u
                 st.rerun()
-
             else:
                 st.error("Invalid login")
 
@@ -70,7 +70,6 @@ if not st.session_state["logged_in"]:
         new_p = st.text_input("Password", type="password", key="signup_password")
 
         if st.button("Create Account"):
-
             if sign_up_user(new_u, new_p):
                 st.success("Account created")
             else:
@@ -106,11 +105,8 @@ if st.session_state["logged_in"]:
         url_in = st.text_input("Job Posting URL")
 
         if st.button("✨ Auto-Fill Details"):
-
             if url_in:
-
                 with st.spinner("Doing the heavy lifting... just a few moments more while we set things up..."):
-
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
@@ -127,24 +123,23 @@ if st.session_state["logged_in"]:
                 "Upload Resume",
                 type=["pdf", "docx", "txt"]
             )
+            if up_file is not None:
+                st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
             applied_date = st.date_input("Date Applied")
 
         if st.button("🔍 Scan Resume"):
-
-            if final_desc and up_file:
-
+            if final_desc and st.session_state.get("resume_txt"):
                 with st.spinner("Analyzing match..."):
-                    resume_txt = extract_text_from_upload(up_file)
-                    st.session_state["match_data"] = get_ai_match_feedback(final_desc, resume_txt)
+                    st.session_state["match_data"] = get_ai_match_feedback(
+                        final_desc,
+                        st.session_state["resume_txt"]
+                    )
 
         if st.session_state["match_data"]:
-
             match = st.session_state["match_data"]
-
             st.success(f"🎯 How You Stack Up: {match.get('score', 'N/A')}")
-
             for item in match.get("feedback", []):
                 st.write(item)
 
@@ -154,21 +149,21 @@ if st.session_state["logged_in"]:
             resume_url = None
             score = "N/A"
 
-            if up_file:
-
+            if up_file is not None:
                 resume_url = upload_resume(
                     up_file,
                     st.session_state["username"]
                 )
 
-                if final_desc:
-                    with st.spinner("Analyzing resume match..."):
-                        resume_txt = extract_text_from_upload(up_file)
-                        match_result = get_ai_match_feedback(final_desc, resume_txt)
-                        st.session_state["match_data"] = match_result
-                        score = match_result.get("score", "N/A")
-
-            elif st.session_state["match_data"]:
+            if st.session_state.get("resume_txt") and final_desc:
+                with st.spinner("Analyzing resume match..."):
+                    match_result = get_ai_match_feedback(
+                        final_desc,
+                        st.session_state["resume_txt"]
+                    )
+                    st.session_state["match_data"] = match_result
+                    score = match_result.get("score", "N/A")
+            elif st.session_state.get("match_data"):
                 score = st.session_state["match_data"].get("score", "N/A")
 
             success = save_job(
@@ -182,6 +177,9 @@ if st.session_state["logged_in"]:
             )
 
             if success:
+                st.session_state["resume_txt"] = None
+                st.session_state["match_data"] = None
+                st.session_state["formatted_desc"] = ""
                 st.success("Application saved")
                 st.rerun()
             else:
@@ -209,7 +207,6 @@ if st.session_state["logged_in"]:
         headers = ["Company", "Position", "Match", "Status", "Resume", "Snapshot", "Delete"]
 
         cols = st.columns(ratios)
-
         for c, h in zip(cols, headers):
             c.markdown(f"**{h}**")
 
@@ -233,30 +230,24 @@ if st.session_state["logged_in"]:
                     key=f"s_{row['id']}",
                     label_visibility="collapsed"
                 )
-
                 if new_stat != curr:
                     update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
 
-            # RESUME BUTTON
             resume_link = str(row.get("resume_link") or "")
-
             with c5:
                 if resume_link:
                     st.link_button("📄", resume_link)
                 else:
                     st.button("📄", key=f"r_{row['id']}", disabled=True)
 
-            # SNAPSHOT BUTTON
             pdf_url = str(row.get("pdf_url") or "")
-
             with c6:
                 if pdf_url:
                     st.link_button("📸", pdf_url)
                 else:
                     st.button("📸", key=f"p_{row['id']}", disabled=True)
 
-            # DELETE
             if c7.button("❌", key=f"d_{row['id']}"):
                 delete_job(row["id"])
                 st.rerun()
