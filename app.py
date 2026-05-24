@@ -141,7 +141,8 @@ if st.session_state["logged_in"]:
             match = st.session_state["match_data"]
             st.success(f"🎯 How You Stack Up: {match.get('score', 'N/A')}")
             for item in match.get("feedback", []):
-                st.write(item)
+                if not item.upper().startswith("SCORE:"):
+                    st.write(item)
 
         # SAVE BUTTON
         if st.button("💾 Save Application"):
