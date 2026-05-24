@@ -149,6 +149,9 @@ if st.session_state["logged_in"]:
             resume_url = None
             score = "N/A"
 
+            st.info(f"DEBUG — resume_txt in session: {bool(st.session_state.get('resume_txt'))}")
+            st.info(f"DEBUG — final_desc length: {len(final_desc)}")
+
             if up_file is not None:
                 resume_url = upload_resume(
                     up_file,
@@ -163,8 +166,11 @@ if st.session_state["logged_in"]:
                     )
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
+                    st.info(f"DEBUG — score from AI: {score}")
             elif st.session_state.get("match_data"):
                 score = st.session_state["match_data"].get("score", "N/A")
+            else:
+                st.warning("DEBUG — no resume_txt and no match_data, score stays N/A")
 
             success = save_job(
                 company=comp,
