@@ -158,7 +158,7 @@ if st.session_state["logged_in"]:
                 )
 
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Analyzing resume match..."):
+                with st.spinner("Analyzing your resume..."):
                     match_result = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
