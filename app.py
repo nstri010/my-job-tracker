@@ -57,14 +57,9 @@ if not st.session_state["logged_in"]:
 
     with tab1:
 
-        u = st.text_input(
-            "Username"
-        )
+        u = st.text_input("Username", key="login_username")
 
-        p = st.text_input(
-            "Password",
-            type="password"
-        )
+        p = st.text_input("Password", type="password", key="login_password")
 
         if st.button(
             "Login"
@@ -93,14 +88,9 @@ if not st.session_state["logged_in"]:
 
     with tab2:
 
-        new_u = st.text_input(
-            "Username"
-        )
+        new_u = st.text_input("Username", key="signup_username")
 
-        new_p = st.text_input(
-            "Password",
-            type="password"
-        )
+        new_p = st.text_input("Password", type="password", key="signup_password")
 
         if st.button(
             "Create Account"
