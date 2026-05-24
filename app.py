@@ -131,7 +131,7 @@ if st.session_state["logged_in"]:
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Seeing you match..."):
+                with st.spinner("Seeing how you match..."):
                     st.session_state["match_data"] = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
