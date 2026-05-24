@@ -86,7 +86,7 @@ if st.session_state["logged_in"]:
         st.title("Job Tracker")
 
     with t2:
-        st.markdown(f"👤 **{st.session_state['username']}**")
+        st.markdown(f"👤 signed in as **{st.session_state['username']}**")
 
     with t3:
         if st.button("Sign Out"):
