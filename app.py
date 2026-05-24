@@ -80,12 +80,15 @@ if not st.session_state["logged_in"]:
 
 if st.session_state["logged_in"]:
 
-    t1, t2 = st.columns([5, 1])
+    t1, t2, t3 = st.columns([5, 1.5, 1])
 
     with t1:
         st.title("Job Tracker")
 
     with t2:
+        st.markdown(f"👤 **{st.session_state['username']}**")
+
+    with t3:
         if st.button("Sign Out"):
             st.session_state.clear()
             st.rerun()
