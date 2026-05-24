@@ -131,7 +131,7 @@ if st.session_state["logged_in"]:
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Seeing how you match..."):
+                with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
                     st.session_state["match_data"] = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
@@ -149,7 +149,7 @@ if st.session_state["logged_in"]:
         if st.button("💾 Save Results"):
 
             resume_url = None
-            score = "N/A"
+            score = "No score found... guess your skills just broke our algorithm."
 
             if up_file is not None:
                 resume_url = upload_resume(
@@ -158,7 +158,7 @@ if st.session_state["logged_in"]:
                 )
 
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Saving your results..."):
+                with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
                     match_result = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
