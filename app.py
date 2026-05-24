@@ -143,6 +143,9 @@ if st.session_state["logged_in"]:
             for item in match.get("feedback", []):
                 if not item.upper().startswith("SCORE:"):
                     st.write(item)
+                    
+st.markdown("## 🎯 How You Stack Up")
+st.success(f"Your Rank: {match.get('score', 'N/A')}")
 
         # SAVE BUTTON
         if st.button("💾 Save Application"):
