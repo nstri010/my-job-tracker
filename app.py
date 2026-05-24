@@ -139,7 +139,7 @@ if st.session_state["logged_in"]:
 
         if st.session_state["match_data"]:
             match = st.session_state["match_data"]
-            st.success(f"🎯 How You Stack Up: {match.get('score', 'N/A')}")
+            st.success(f"Your Rank: {match.get('score', 'N/A')}")
             for item in match.get("feedback", []):
                 if not item.upper().startswith("SCORE:"):
                     st.write(item)
