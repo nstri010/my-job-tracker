@@ -137,7 +137,10 @@ Job Description:
 {job_desc}
 """
         model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(temperature=0)
+        )
         result = response.text
 
         rating = "N/A"
