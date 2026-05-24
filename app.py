@@ -146,7 +146,7 @@ if st.session_state["logged_in"]:
                     st.write(item)
 
         # SAVE BUTTON
-        if st.button("💾 Save Application"):
+        if st.button("💾 Save Results"):
 
             resume_url = None
             score = "N/A"
@@ -158,7 +158,7 @@ if st.session_state["logged_in"]:
                 )
 
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Analyzing your resume..."):
+                with st.spinner("Saving your results..."):
                     match_result = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
