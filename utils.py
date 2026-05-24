@@ -114,9 +114,12 @@ Job Text:
 def get_ai_match_feedback(job_desc, resume_text):
     try:
         prompt = f"""
-Compare resume against job.
+You are a resume evaluator. Compare the resume against the job description.
 
-Return EXACTLY:
+Your response MUST start with this exact line:
+SCORE: X/10
+
+Where X is a whole number from 1 to 10. Then provide:
 
 Strengths:
 - item
@@ -128,11 +131,9 @@ Suggestions:
 - item
 
 Resume:
-
 {resume_text}
 
-Job:
-
+Job Description:
 {job_desc}
 """
         model = genai.GenerativeModel("gemini-2.5-flash")
@@ -140,9 +141,13 @@ Job:
         result = response.text
 
         rating = "N/A"
-        match = re.search(r"(\d+)\s*/\s*10", result)
+        match = re.search(r"SCORE:\s*(\d+)\s*/\s*10", result, re.IGNORECASE)
         if match:
             rating = match.group(1) + "/10"
+        else:
+            match = re.search(r"(\d+)\s*/\s*10", result)
+            if match:
+                rating = match.group(1) + "/10"
 
         feedback = [line.strip() for line in result.split("\n") if line.strip()]
 
