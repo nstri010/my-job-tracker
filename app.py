@@ -157,7 +157,9 @@ if st.session_state["logged_in"]:
                     st.session_state["username"]
                 )
 
-            if st.session_state.get("resume_txt") and final_desc:
+            if st.session_state.get("match_data"):
+                score = st.session_state["match_data"].get("score", "N/A")
+            elif st.session_state.get("resume_txt") and final_desc:
                 with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
                     match_result = get_ai_match_feedback(
                         final_desc,
@@ -165,9 +167,6 @@ if st.session_state["logged_in"]:
                     )
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
-
-            elif st.session_state.get("match_data"):
-                score = st.session_state["match_data"].get("score", "N/A")
 
             success = save_job(
                 company=comp,
