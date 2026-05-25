@@ -97,10 +97,10 @@ if st.session_state["logged_in"]:
         c1, c2 = st.columns(2)
 
         with c1:
-            comp = st.text_input("Company Name")
+            comp = st.text_input("Company Name", key="input_comp")
 
         with c2:
-            pos = st.text_input("Position Title")
+            pos = st.text_input("Position Title", key="input_pos")
 
         url_in = st.text_input("Job Posting URL")
 
@@ -169,8 +169,8 @@ if st.session_state["logged_in"]:
                     score = match_result.get("score", "N/A")
 
             success = save_job(
-                company=comp,
-                position=pos,
+                company=st.session_state.get("input_comp", comp),
+                position=st.session_state.get("input_pos", pos),
                 description=final_desc,
                 job_url=url_in,
                 resume_url=resume_url,
