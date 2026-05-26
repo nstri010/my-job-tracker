@@ -130,7 +130,6 @@ if not st.session_state["logged_in"]:
         """, unsafe_allow_html=True)
 
     with r_col:
-        # Aligning the right column container to match the screenshot's spacing
         with st.container():
             tab = st.session_state["login_tab"]
             
@@ -180,7 +179,8 @@ if st.session_state["logged_in"]:
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
-        if st.button("Sign Out"):
+        # FIXED: Added unique key
+        if st.button("Sign Out", key="sign_out_main_top"):
             st.session_state.clear()
             st.rerun()
 
@@ -398,5 +398,6 @@ if st.session_state["logged_in"]:
 
 if st.session_state["logged_in"]:
     st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
-    if st.button("Sign Out"):
+    # FIXED: Added unique key
+    if st.button("Sign Out", key="sign_out_dashboard_bottom"): 
         st.session_state.clear(); st.rerun()
