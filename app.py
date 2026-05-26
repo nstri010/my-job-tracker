@@ -283,79 +283,68 @@ if not st.session_state["logged_in"]:
                 new_e = st.text_input("Email", key="s_e")
                 new_p = st.text_input("Password", type="password", key="s_p")
 
-                st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
-                if st.button("Sign Up", use_container_width=True):
-                    ok, err = sign_up_user(new_u, new_p, new_e)
-                    if ok: st.session_state["login_tab"] = "login"; st.rerun()
-                    else: st.error(err)
+                # Password strength meter
+                if new_p:
+                    label, color, pct = password_strength(new_p)
+                    st.markdown(f"""
+                    <div style="margin-top:-8px;margin-bottom:8px;">
+                        <div style="background:#2a1230;border-radius:4px;height:5px;width:100%;overflow:hidden;">
+                            <div style="background:{color};height:5px;width:{pct}%;border-radius:4px;transition:width 0.3s;"></div>
+                        </div>
+                        <div style="text-align:right;font-size:12px;color:{color};margin-top:3px;font-weight:600;">{label}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                if st.button("← Back to Login", use_container_width=True):
-                    st.session_state["login_tab"] = "login"; st.rerun()
+                confirm_p = st.text_input("Confirm Password", type="password", key="signup_confirm", placeholder="Re-enter your password")
+
+                # Password match indicator
+                if confirm_p:
+                    if new_p == confirm_p:
+                        st.markdown("<div style='font-size:12px;color:#22c55e;margin-top:-8px;margin-bottom:8px;'>✓ Passwords match</div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<div style='font-size:12px;color:#ef4444;margin-top:-8px;margin-bottom:8px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
+
+                # Terms of service
+                agree = st.checkbox("I agree to the Terms of Service and Privacy Policy", key="agree_terms")
+                st.markdown("""
+                <div style='font-size:11px;color:#5a3858;margin-top:-8px;margin-bottom:12px;line-height:1.5;'>
+                    By creating an account you agree to our
+                    <span style='color:#f472b6;cursor:pointer;'>Terms of Service</span> and
+                    <span style='color:#f472b6;cursor:pointer;'>Privacy Policy</span>.
+                    Your data is kept private and never sold.
+                </div>
+                """, unsafe_allow_html=True)
+
+                if st.button("Create Account", key="do_signup", use_container_width=True):
+                    if not new_u or not new_e or not new_p:
+                        st.error("Please fill in all fields")
+                    elif "@" not in new_e or "." not in new_e:
+                        st.error("Please enter a valid email address")
+                    elif new_p != confirm_p:
+                        st.error("Passwords do not match")
+                    elif not agree:
+                        st.error("Please agree to the Terms of Service to continue")
+                    elif password_strength(new_p)[0] == "Weak":
+                        st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
+                    else:
+                        ok, err = sign_up_user(new_u, new_p, new_e)
+                        if ok:
+                            st.success("Account created! Check your email to confirm, then sign in.")
+                            st.session_state["login_tab"] = "login"
+                            st.rerun()
+                        else:
+                            st.error(f"Sign up failed: {err}")
+
+                st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
+                if st.button("Sign in →", key="go_login", use_container_width=True):
+                    st.session_state["login_tab"] = "login"
+                    st.rerun()
 
 
 # ── DASHBOARD ──────────────────────────────────────────────────────────────────
 
 if st.session_state["logged_in"]:
     st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
-
-# Password strength meter
-            if new_p:
-                label, color, pct = password_strength(new_p)
-                st.markdown(f"""
-                <div style="margin-top:-8px;margin-bottom:8px;">
-                    <div style="background:#2a1230;border-radius:4px;height:5px;width:100%;overflow:hidden;">
-                        <div style="background:{color};height:5px;width:{pct}%;border-radius:4px;transition:width 0.3s;"></div>
-                    </div>
-                    <div style="text-align:right;font-size:12px;color:{color};margin-top:3px;font-weight:600;">{label}</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            confirm_p = st.text_input("Confirm Password", type="password", key="signup_confirm", placeholder="Re-enter your password")
-
-            # Password match indicator
-            if confirm_p:
-                if new_p == confirm_p:
-                    st.markdown("<div style='font-size:12px;color:#22c55e;margin-top:-8px;margin-bottom:8px;'>✓ Passwords match</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<div style='font-size:12px;color:#ef4444;margin-top:-8px;margin-bottom:8px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
-
-            # Terms of service
-            agree = st.checkbox("I agree to the Terms of Service and Privacy Policy", key="agree_terms")
-            st.markdown("""
-            <div style='font-size:11px;color:#5a3858;margin-top:-8px;margin-bottom:12px;line-height:1.5;'>
-                By creating an account you agree to our
-                <span style='color:#f472b6;cursor:pointer;'>Terms of Service</span> and
-                <span style='color:#f472b6;cursor:pointer;'>Privacy Policy</span>.
-                Your data is kept private and never sold.
-            </div>
-            """, unsafe_allow_html=True)
-
-            if st.button("Create Account", key="do_signup", use_container_width=True):
-                if not new_u or not new_e or not new_p:
-                    st.error("Please fill in all fields")
-                elif "@" not in new_e or "." not in new_e:
-                    st.error("Please enter a valid email address")
-                elif new_p != confirm_p:
-                    st.error("Passwords do not match")
-                elif not agree:
-                    st.error("Please agree to the Terms of Service to continue")
-                elif password_strength(new_p)[0] == "Weak":
-                    st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
-                else:
-                    ok, err = sign_up_user(new_u, new_p, new_e)
-                    if ok:
-                        st.success("Account created! Check your email to confirm, then sign in.")
-                        st.session_state["login_tab"] = "login"
-                        st.rerun()
-                    else:
-                        st.error(f"Sign up failed: {err}")
-
-            st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
-            if st.button("Sign in →", key="go_login", use_container_width=True):
-                st.session_state["login_tab"] = "login"
-                st.rerun()
-
-
 
 # MAIN APP
 
