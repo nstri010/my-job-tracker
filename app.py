@@ -26,22 +26,16 @@ st.set_page_config(
 )
 
 # SESSION
-
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
-
 if "formatted_desc" not in st.session_state:
     st.session_state["formatted_desc"] = ""
-
 if "match_data" not in st.session_state:
     st.session_state["match_data"] = None
-
 if "resume_txt" not in st.session_state:
     st.session_state["resume_txt"] = None
-
 if "username" not in st.session_state:
     st.session_state["username"] = None
-
 if "dark_mode" not in st.session_state:
     st.session_state["dark_mode"] = False
 
@@ -56,12 +50,13 @@ DARK_CSS = """
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
+[data-testid="stMainBlockContainer"] { padding-top: 2rem !important; }
 
 h1, h2, h3 {
     font-family: 'Playfair Display', serif !important;
     color: #fde8f0 !important;
 }
-p, label, .stMarkdown, [data-testid="stText"] {
+p, label, .stMarkdown p, [data-testid="stText"] {
     color: #f9a8d4 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
@@ -78,6 +73,7 @@ p, label, .stMarkdown, [data-testid="stText"] {
     font-family: 'Inter', sans-serif !important;
 }
 .stButton > button:hover { opacity: 0.88 !important; }
+.stButton > button:disabled { opacity: 0.35 !important; }
 
 /* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
@@ -97,12 +93,12 @@ p, label, .stMarkdown, [data-testid="stText"] {
 /* Expander */
 [data-testid="stExpander"] {
     background: rgba(255,182,213,0.06) !important;
-    border: 1px solid rgba(244,114,182,0.15) !important;
-    border-radius: 10px !important;
+    border: 1px solid rgba(244,114,182,0.2) !important;
+    border-radius: 12px !important;
 }
 
 /* Divider */
-hr { border-color: rgba(244,114,182,0.15) !important; }
+hr { border-color: rgba(244,114,182,0.12) !important; }
 
 /* Tabs */
 .stTabs [data-baseweb="tab"] { color: #f9a8d4 !important; font-weight: 600 !important; }
@@ -110,27 +106,25 @@ hr { border-color: rgba(244,114,182,0.15) !important; }
 
 /* Link buttons */
 .stLinkButton a {
-    background: rgba(244,114,182,0.12) !important;
-    border: 2px solid rgba(244,114,182,0.35) !important;
+    background: rgba(255,182,213,0.08) !important;
+    border: 2px solid rgba(244,114,182,0.4) !important;
     color: #f472b6 !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
+    padding: 4px 10px !important;
 }
 
-/* Row and card borders */
-[data-testid="stHorizontalBlock"] {
-    background: rgba(255,182,213,0.06) !important;
-    border: 1px solid rgba(244,114,182,0.2) !important;
+/* Job row cards — target only rows inside the jobs list */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:first-child > div > div > p) {
+    background: rgba(255,182,213,0.07) !important;
+    border: 1px solid rgba(244,114,182,0.22) !important;
     border-radius: 12px !important;
-    padding: 6px 10px !important;
-    margin-bottom: 6px !important;
+    padding: 8px 14px !important;
+    margin-bottom: 8px !important;
 }
-
-/* Sidebar/metric */
-[data-testid="metric-container"] { color: #fde8f0 !important; }
 
 /* Success/error */
-[data-testid="stAlert"] { border-radius: 8px !important; }
+[data-testid="stAlert"] { border-radius: 10px !important; }
 </style>
 """
 
@@ -143,12 +137,13 @@ LIGHT_CSS = """
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
+[data-testid="stMainBlockContainer"] { padding-top: 2rem !important; }
 
 h1, h2, h3 {
     font-family: 'Playfair Display', serif !important;
     color: #6b1f38 !important;
 }
-p, label, .stMarkdown, [data-testid="stText"] {
+p, label, .stMarkdown p, [data-testid="stText"] {
     color: #2a4a38 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
@@ -165,6 +160,7 @@ p, label, .stMarkdown, [data-testid="stText"] {
     font-family: 'Inter', sans-serif !important;
 }
 .stButton > button:hover { opacity: 0.88 !important; }
+.stButton > button:disabled { opacity: 0.35 !important; }
 
 /* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
@@ -183,13 +179,13 @@ p, label, .stMarkdown, [data-testid="stText"] {
 
 /* Expander */
 [data-testid="stExpander"] {
-    background: rgba(255,255,255,0.35) !important;
-    border: 1px solid rgba(255,255,255,0.5) !important;
-    border-radius: 10px !important;
+    background: rgba(255,255,255,0.38) !important;
+    border: 1px solid rgba(255,255,255,0.65) !important;
+    border-radius: 12px !important;
 }
 
 /* Divider */
-hr { border-color: rgba(226,115,150,0.2) !important; }
+hr { border-color: rgba(226,115,150,0.18) !important; }
 
 /* Tabs */
 .stTabs [data-baseweb="tab"] { color: #6b1f38 !important; font-weight: 600 !important; }
@@ -197,20 +193,25 @@ hr { border-color: rgba(226,115,150,0.2) !important; }
 
 /* Link buttons */
 .stLinkButton a {
-    background: rgba(255,255,255,0.4) !important;
-    border: 2px solid rgba(107,31,56,0.35) !important;
+    background: rgba(255,255,255,0.45) !important;
+    border: 2px solid rgba(107,31,56,0.4) !important;
     color: #6b1f38 !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
+    padding: 4px 10px !important;
 }
-/* Row and card borders */
-[data-testid="stHorizontalBlock"] {
-    background: rgba(255,255,255,0.35) !important;
-    border: 1px solid rgba(255,255,255,0.6) !important;
+
+/* Job row cards */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:first-child > div > div > p) {
+    background: rgba(255,255,255,0.38) !important;
+    border: 1px solid rgba(255,255,255,0.7) !important;
     border-radius: 12px !important;
-    padding: 6px 10px !important;
-    margin-bottom: 6px !important;
+    padding: 8px 14px !important;
+    margin-bottom: 8px !important;
 }
+
+/* Success/error */
+[data-testid="stAlert"] { border-radius: 10px !important; }
 </style>
 """
 
@@ -229,10 +230,8 @@ if not st.session_state["logged_in"]:
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
     with tab1:
-
         u = st.text_input("Username", key="login_username")
         p = st.text_input("Password", type="password", key="login_password")
-
         if st.button("Login"):
             if login_user(u, p):
                 st.session_state["logged_in"] = True
@@ -242,10 +241,8 @@ if not st.session_state["logged_in"]:
                 st.error("Invalid login")
 
     with tab2:
-
         new_u = st.text_input("Username", key="signup_username")
         new_p = st.text_input("Password", type="password", key="signup_password")
-
         if st.button("Create Account"):
             if sign_up_user(new_u, new_p):
                 st.success("Account created")
@@ -275,14 +272,11 @@ if st.session_state["logged_in"]:
             st.rerun()
 
     # ADD JOB
-
     with st.expander("➕ Add New Application"):
 
         c1, c2 = st.columns(2)
-
         with c1:
             comp = st.text_input("Company Name")
-
         with c2:
             pos = st.text_input("Position Title")
 
@@ -301,15 +295,10 @@ if st.session_state["logged_in"]:
         )
 
         col1, col2 = st.columns(2)
-
         with col1:
-            up_file = st.file_uploader(
-                "Upload Resume",
-                type=["pdf", "docx", "txt"]
-            )
+            up_file = st.file_uploader("Upload Resume", type=["pdf", "docx", "txt"])
             if up_file is not None:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
-
         with col2:
             applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
 
@@ -317,8 +306,7 @@ if st.session_state["logged_in"]:
             if final_desc and st.session_state.get("resume_txt"):
                 with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
                     st.session_state["match_data"] = get_ai_match_feedback(
-                        final_desc,
-                        st.session_state["resume_txt"]
+                        final_desc, st.session_state["resume_txt"]
                     )
 
         if st.session_state["match_data"]:
@@ -329,38 +317,25 @@ if st.session_state["logged_in"]:
                 if not item.upper().startswith("SCORE:"):
                     st.write(item)
 
-        # SAVE BUTTON
         if st.button("💾 Save"):
-
             resume_url = None
             score = "No score found... guess your skills just broke our algorithm."
 
             if up_file is not None:
-                resume_url = upload_resume(
-                    up_file,
-                    st.session_state["username"]
-                )
+                resume_url = upload_resume(up_file, st.session_state["username"])
 
             if st.session_state.get("resume_txt") and final_desc:
                 with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
-                    match_result = get_ai_match_feedback(
-                        final_desc,
-                        st.session_state["resume_txt"]
-                    )
+                    match_result = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
-
             elif st.session_state.get("match_data"):
                 score = st.session_state["match_data"].get("score", "N/A")
 
             success = save_job(
-                company=comp,
-                position=pos,
-                description=final_desc,
-                job_url=url_in,
-                resume_url=resume_url,
-                match_score=score,
-                applied_date=applied_date
+                company=comp, position=pos, description=final_desc,
+                job_url=url_in, resume_url=resume_url,
+                match_score=score, applied_date=applied_date
             )
 
             if success:
@@ -373,24 +348,17 @@ if st.session_state["logged_in"]:
                 st.error("Save failed")
 
     st.divider()
-
     st.header("📋 My Applied Jobs")
 
     jobs_list = load_jobs()
 
     status_options = [
-        "📝 Applied",
-        "📨 Contacted",
-        "📅 Interview",
-        "✅ Offer",
-        "❌ Rejected"
+        "📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"
     ]
 
     if jobs_list:
-
         df = pd.DataFrame(jobs_list)
 
-        # SORT CONTROLS
         sort_col, sort_dir_col = st.columns([2, 2])
         with sort_col:
             sort_by = st.selectbox(
@@ -405,7 +373,6 @@ if st.session_state["logged_in"]:
                 key="sort_dir"
             )
 
-        # Apply sort
         if sort_by == "Company":
             df = df.sort_values("company", ascending=(sort_dir == "A → Z"))
         elif sort_by == "Position":
@@ -432,54 +399,63 @@ if st.session_state["logged_in"]:
 
         for idx, row in df.iterrows():
 
-            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+            with st.container():
+                # wrap each row in a styled container via markdown
+                if st.session_state["dark_mode"]:
+                    st.markdown(
+                        '<div style="background:rgba(255,182,213,0.07);border:1px solid rgba(244,114,182,0.25);border-radius:12px;padding:2px 14px;margin-bottom:8px;">',
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        '<div style="background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:2px 14px;margin-bottom:8px;">',
+                        unsafe_allow_html=True
+                    )
 
-            c1.write(row.get("company", ""))
-            c2.write(row.get("position", ""))
-            c3.write(row.get("match_score", "N/A"))
+                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-            curr = row.get("status", "📝 Applied")
+                c1.write(row.get("company", ""))
+                c2.write(row.get("position", ""))
+                c3.write(row.get("match_score", "N/A"))
 
-            with c4:
-                new_stat = st.selectbox(
-                    "Status",
-                    status_options,
-                    index=(status_options.index(curr) if curr in status_options else 0),
-                    key=f"s_{row['id']}",
-                    label_visibility="collapsed"
-                )
-                if new_stat != curr:
-                    update_job_full(row["id"], {"status": new_stat})
+                curr = row.get("status", "📝 Applied")
+                with c4:
+                    new_stat = st.selectbox(
+                        "Status", status_options,
+                        index=(status_options.index(curr) if curr in status_options else 0),
+                        key=f"s_{row['id']}", label_visibility="collapsed"
+                    )
+                    if new_stat != curr:
+                        update_job_full(row["id"], {"status": new_stat})
+                        st.rerun()
+
+                raw_date = row.get("created_at", "")
+                try:
+                    from datetime import datetime
+                    date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
+                except:
+                    date_str = str(raw_date)[:10] if raw_date else "—"
+                c5.write(date_str)
+
+                resume_link = str(row.get("resume_link") or "")
+                with c6:
+                    if resume_link:
+                        st.link_button("📄", resume_link)
+                    else:
+                        st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+                pdf_url = str(row.get("pdf_url") or "")
+                with c7:
+                    if pdf_url:
+                        st.link_button("📸", pdf_url)
+                    else:
+                        st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+                if c8.button("❌", key=f"d_{row['id']}"):
+                    delete_job(row["id"])
                     st.rerun()
 
-            # DATE APPLIED
-            raw_date = row.get("created_at", "")
-            try:
-                from datetime import datetime
-                date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
-            except:
-                date_str = str(raw_date)[:10] if raw_date else "—"
-            c5.write(date_str)
-
-            resume_link = str(row.get("resume_link") or "")
-            with c6:
-                if resume_link:
-                    st.link_button("📄", resume_link)
-                else:
-                    st.button("📄", key=f"r_{row['id']}", disabled=True)
-
-            pdf_url = str(row.get("pdf_url") or "")
-            with c7:
-                if pdf_url:
-                    st.link_button("📸", pdf_url)
-                else:
-                    st.button("📸", key=f"p_{row['id']}", disabled=True)
-
-            if c8.button("❌", key=f"d_{row['id']}"):
-                delete_job(row["id"])
-                st.rerun()
-
-            st.divider()
+                st.markdown('</div>', unsafe_allow_html=True)
 
     else:
         st.write("You have no applications saved yet.")
