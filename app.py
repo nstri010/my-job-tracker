@@ -186,10 +186,10 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 
 /* ── Shorter Upload Resume bar ── */
 [data-testid="stFileUploader"] > div {
-    max-width: 340px !important;
+    max-width: 400px !important;
 }
 [data-testid="stFileUploaderDropzone"] {
-    max-width: 340px !important;
+    max-width: 400px !important;
     padding: 8px 12px !important;
     min-height: 50px !important;
 }
