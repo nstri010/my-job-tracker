@@ -57,21 +57,21 @@ st.markdown("""
 }
 
 [data-testid="stHeader"] { background: transparent !important; }
-[data-testid="stMainBlockContainer"] { padding-top: 5rem !important; max-width: 1200px !important; }
+[data-testid="stMainBlockContainer"] { padding-top: 6rem !important; max-width: 1200px !important; }
 
 /* ── Typography ── */
 * { font-family: 'Inter', sans-serif !important; }
 h1, h2, h3 { font-family: 'Playfair Display', serif !important; color: #ffffff !important; letter-spacing: -0.02em; }
 p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14px !important; }
 
-/* ── Glassmorphism Login Panel ── */
+/* ── Glassmorphism Panels ── */
 .login-panel {
     background: rgba(18, 18, 24, 0.7) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 24px !important;
-    padding: 60px 50px !important;
-    height: 600px;
+    padding: 50px 45px !important;
+    min-height: 580px;
 }
 
 /* ── Inputs (Terminal Style) ── */
@@ -91,7 +91,7 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 10px !important;
     font-weight: 600 !important;
-    height: 45px !important;
+    height: 48px !important;
     transition: all 0.3s ease !important;
 }
 .stButton > button:hover { 
@@ -129,45 +129,48 @@ if not st.session_state["logged_in"]:
         """, unsafe_allow_html=True)
 
     with r_col:
-        # Aligning the right column container to match the screenshot's spacing
-        with st.container():
-            tab = st.session_state["login_tab"]
+        # WRAPPER FOR RIGHT BORDER
+        st.markdown('<div class="login-panel">', unsafe_allow_html=True)
+        
+        tab = st.session_state["login_tab"]
+        
+        if tab == "login":
+            st.markdown("<h2 style='font-size:36px; margin-bottom:8px;'>Welcome Back</h2>", unsafe_allow_html=True)
+            st.markdown("<p style='margin-bottom:32px;'>Enter your credentials to access your dashboard</p>", unsafe_allow_html=True)
             
-            if tab == "login":
-                st.markdown("<h2 style='font-size:36px; margin-bottom:8px;'>Welcome Back</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='margin-bottom:32px;'>Enter your credentials to access your dashboard</p>", unsafe_allow_html=True)
-                
-                u = st.text_input("Username", key="login_username")
-                p = st.text_input("Password", type="password", key="login_password")
-                
-                st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-                if st.button("Sign In", use_container_width=True):
-                    if login_user(u, p):
-                        st.session_state["logged_in"] = True
-                        st.session_state["username"] = u
-                        st.rerun()
-                    else: st.error("Invalid credentials")
-                
-                st.markdown("<p style='text-align:center; margin-top:20px;'>New here? <span style='color:#f472b6;'>Create account</span></p>", unsafe_allow_html=True)
-                if st.button("Create Account →", use_container_width=True):
-                    st.session_state["login_tab"] = "signup"; st.rerun()
+            u = st.text_input("Username", key="login_username")
+            p = st.text_input("Password", type="password", key="login_password")
+            
+            st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+            if st.button("Sign In", use_container_width=True):
+                if login_user(u, p):
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = u
+                    st.rerun()
+                else: st.error("Invalid credentials")
+            
+            st.markdown("<p style='text-align:center; margin-top:20px;'>New here? <span style='color:#f472b6;'>Create account</span></p>", unsafe_allow_html=True)
+            if st.button("Create Account →", use_container_width=True):
+                st.session_state["login_tab"] = "signup"; st.rerun()
 
-            elif tab == "signup":
-                st.markdown("<h2 style='font-size:40px; margin-bottom:8px;'>Create Account</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='margin-bottom:24px;'>Join the AI-powered career revolution</p>", unsafe_allow_html=True)
-                
-                new_u = st.text_input("Username", key="s_u")
-                new_e = st.text_input("Email", key="s_e")
-                new_p = st.text_input("Password", type="password", key="s_p")
-                
-                st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
-                if st.button("Sign Up", use_container_width=True):
-                    ok, err = sign_up_user(new_u, new_p, new_e)
-                    if ok: st.session_state["login_tab"] = "login"; st.rerun()
-                    else: st.error(err)
-                
-                if st.button("← Back to Login", use_container_width=True):
-                    st.session_state["login_tab"] = "login"; st.rerun()
+        elif tab == "signup":
+            st.markdown("<h2 style='font-size:36px; margin-bottom:8px;'>Create Account</h2>", unsafe_allow_html=True)
+            st.markdown("<p style='margin-bottom:24px;'>Join the AI-powered career revolution</p>", unsafe_allow_html=True)
+            
+            new_u = st.text_input("Username", key="s_u")
+            new_e = st.text_input("Email", key="s_e")
+            new_p = st.text_input("Password", type="password", key="s_p")
+            
+            st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+            if st.button("Sign Up", use_container_width=True):
+                ok, err = sign_up_user(new_u, new_p, new_e)
+                if ok: st.session_state["login_tab"] = "login"; st.rerun()
+                else: st.error(err)
+            
+            if st.button("← Back to Login", use_container_width=True):
+                st.session_state["login_tab"] = "login"; st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ── DASHBOARD ──────────────────────────────────────────────────────────────────
 
