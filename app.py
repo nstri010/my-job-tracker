@@ -36,11 +36,11 @@ if "resume_txt" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state["username"] = None
 
-# ── THEME CSS (DARK ONLY) ──────────────────────────────────────────────────────
+# ── THEME CSS (DARK & NON-ITALIC) ──────────────────────────────────────────────
 
 DARK_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
 
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(160deg, #2d1b2e 0%, #3d1f3a 45%, #1f1a35 100%) !important;
@@ -51,11 +51,12 @@ DARK_CSS = """
 
 h1 {
     font-family: 'Playfair Display', serif !important;
-    font-style: italic !important;
+    font-style: normal !important; /* Removed Italic */
     color: #fde8f0 !important;
 }
 h2, h3 {
     font-family: 'Playfair Display', serif !important;
+    font-style: normal !important; /* Removed Italic */
     color: #fde8f0 !important;
 }
 p, label, div[data-testid="stText"] > p {
@@ -167,7 +168,8 @@ if st.session_state["logged_in"]:
     t1, t3 = st.columns([6, 1])
 
     with t1:
-        st.markdown("✦ **CAREER DASHBOARD** ✦", unsafe_allow_html=True)
+        # Removed the stars and bold markdown to keep it clean and non-italic
+        st.markdown("CAREER DASHBOARD", unsafe_allow_html=True)
         st.title("Job Tracker")
 
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
