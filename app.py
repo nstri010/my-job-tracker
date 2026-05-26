@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+from datetime import datetime
 
 from storage import (
     load_jobs,
@@ -9,7 +10,8 @@ from storage import (
     sign_up_user,
     login_user,
     upload_resume,
-    update_job_full
+    update_job_full,
+    send_password_reset
 )
 
 from utils import (
@@ -19,11 +21,7 @@ from utils import (
     extract_text_from_upload
 )
 
-
-st.set_page_config(
-    page_title="Job Tracker",
-    layout="wide"
-)
+st.set_page_config(page_title="Job Tracker", layout="wide")
 
 # SESSION
 if "logged_in" not in st.session_state:
@@ -36,89 +34,104 @@ if "resume_txt" not in st.session_state:
     st.session_state["resume_txt"] = None
 if "username" not in st.session_state:
     st.session_state["username"] = None
+if "login_tab" not in st.session_state:
+    st.session_state["login_tab"] = "login"
+if "reset_sent" not in st.session_state:
+    st.session_state["reset_sent"] = False
 
-# ── THEME CSS ──────────────────────────────────────────────────────────────────
+# ── CSS ────────────────────────────────────────────────────────────────────────
 
-DARK_CSS = """
+st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap');
 
+/* ── Base ── */
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(135deg, #2d1b2e 0%, #3b1f45 40%, #1a1a3e 100%) !important;
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
-[data-testid="stMainBlockContainer"] { padding-top: 2rem !important; }
+/* ── Login page column styling ── */
+[data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
 
-h1 {
-    font-family: 'Playfair Display', serif !important;
-    color: #ead8ee !important;
+/* Kill ALL vertical gaps globally on login */
+[data-testid="stVerticalBlock"] { gap: 0 !important; }
+
+/* Right column card background */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%) !important;
+    border: 1px solid #3a1a45 !important;
+    border-radius: 16px !important;
+    padding: 1.5rem !important;
 }
-h2, h3 {
-    font-family: 'Playfair Display', serif !important;
-    color: #ead8ee !important;
-}
-p, label, div[data-testid="stText"] > p {
-    color: #c0a0c4 !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 600 !important;
-}
-[data-testid="stCaptionContainer"] p {
-    color: #e879a0 !important;
-    font-weight: 600 !important;
-}
+* { font-family: 'Inter', sans-serif !important; }
+h1 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
+h2, h3 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
+p, label, div[data-testid="stText"] > p { color: #c0a0c4 !important; font-weight: 500 !important; }
+[data-testid="stCaptionContainer"] p { color: #e879a0 !important; font-weight: 600 !important; }
 strong { color: #ead8ee !important; }
+hr { border-color: #4a2248 !important; }
 
-/* Buttons */
+/* ── Buttons ── */
 .stButton > button {
     background: #4a2248 !important;
     color: #c090be !important;
     border: 1px solid #6e3868 !important;
     border-radius: 8px !important;
     font-weight: 700 !important;
-    font-family: 'Inter', sans-serif !important;
     transition: background 0.2s !important;
 }
-.stButton > button:hover {
-    background: #5a2a58 !important;
-    border-color: #8a4a88 !important;
-}
+.stButton > button:hover { background: #5a2a58 !important; border-color: #8a4a88 !important; }
 .stButton > button:disabled {
     background: #2e1a2e !important;
     border-color: #4a2248 !important;
     color: rgba(192,144,190,0.3) !important;
 }
 
-/* Inputs */
+/* ── Primary action button (Login / Sign Up) ── */
+.primary-btn > button {
+    background: linear-gradient(135deg, #7a3a78, #5a2a88) !important;
+    color: #f0d8f8 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    padding: 0.6rem 1rem !important;
+    width: 100% !important;
+}
+.primary-btn > button:hover { background: linear-gradient(135deg, #8a4a88, #6a3a98) !important; }
+
+/* ── Inputs ── */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
-    background: #3a1e3c !important;
+    background: #2a1230 !important;
     border: 1px solid #5a2d58 !important;
     color: #ead8ee !important;
     border-radius: 8px !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
+}
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: #a060a0 !important;
+    box-shadow: 0 0 0 2px rgba(160,96,160,0.2) !important;
 }
 .stSelectbox > div > div {
-    background: #3a1e3c !important;
+    background: #2a1230 !important;
     border: 1px solid #5a2d58 !important;
     color: #ead8ee !important;
     border-radius: 8px !important;
 }
 
-/* Expander */
+/* ── Expander ── */
 [data-testid="stExpander"] {
-    background: #3a1e3c !important;
+    background: #2a1230 !important;
     border: 1px solid #5a2d58 !important;
     border-radius: 12px !important;
 }
 
-/* Divider */
-hr { border-color: #4a2248 !important; }
-
-/* Tabs */
+/* ── Tabs ── */
 .stTabs [data-baseweb="tab"] { color: #c090be !important; font-weight: 600 !important; }
 .stTabs [aria-selected="true"] { color: #f472b6 !important; border-bottom-color: #f472b6 !important; }
 
-/* Link buttons */
+/* ── Link buttons ── */
 .stLinkButton a {
     background: #4a2248 !important;
     border: 1px solid #6e3868 !important;
@@ -127,13 +140,11 @@ hr { border-color: #4a2248 !important; }
     font-weight: 700 !important;
     padding: 6px 12px !important;
 }
-.stLinkButton a:hover {
-    background: #5a2a58 !important;
-}
+.stLinkButton a:hover { background: #5a2a58 !important; }
 
-/* Row cards */
+/* ── Row cards ── */
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: #3d1f42 !important;
+    background: #2e1535 !important;
     border: 1px solid #7a3a78 !important;
     border-radius: 10px !important;
     padding: 4px 8px !important;
@@ -141,62 +152,262 @@ hr { border-color: #4a2248 !important; }
     transition: background 0.18s, border-color 0.18s !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: #4a2450 !important;
+    background: #3a1d42 !important;
     border-color: #a050a0 !important;
 }
 
 [data-testid="stAlert"] { border-radius: 10px !important; }
-
-/* Collapse excess vertical gaps */
 .stDivider { margin-top: 0.3rem !important; margin-bottom: 0.3rem !important; }
 [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] { margin-bottom: 0 !important; }
+
+/* ── Split login panel ── */
+.login-left {
+    background: linear-gradient(160deg, #1a0a20 0%, #2a1040 60%, #1a1535 100%);
+    border-radius: 16px;
+    padding: 48px 40px;
+    height: 100%;
+    min-height: 520px;
+    border: 1px solid #3a1a45;
+}
+.login-right {
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%);
+    border-radius: 16px;
+    padding: 48px 40px;
+    border: 1px solid #3a1a45;
+    min-height: 520px;
+}
+.login-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: #ead8ee;
+    margin-bottom: 8px;
+}
+.login-tagline {
+    font-size: 14px;
+    color: #8a6888;
+    margin-bottom: 40px;
+}
+.login-stat-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+}
+.login-stat-num { font-size: 24px; font-weight: 700; color: #f472b6; }
+.login-stat-num.green { color: #34d399; }
+.login-stat-num.purple { color: #c084fc; }
+.login-stat-lbl { font-size: 12px; color: #7a5888; margin-top: 2px; }
+.login-welcome { font-size: 26px; font-weight: 700; color: #ead8ee; margin-bottom: 6px; }
+.login-sub { font-size: 14px; color: #8a6888; margin-bottom: 32px; }
+.tab-row { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid #3a1a45; }
+.tab-btn {
+    background: none; border: none; padding: 10px 24px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    color: #7a5878; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tab-btn.active { color: #f472b6; border-bottom-color: #f472b6; }
 </style>
-"""
+""", unsafe_allow_html=True)
 
-st.markdown(DARK_CSS, unsafe_allow_html=True)
+# ── PASSWORD STRENGTH HELPER ───────────────────────────────────────────────────
 
-# ── LOGIN ──────────────────────────────────────────────────────────────────────
+def password_strength(pw):
+    if not pw:
+        return None, None, None
+    score = 0
+    if len(pw) >= 8:  score += 1
+    if len(pw) >= 12: score += 1
+    if any(c.isupper() for c in pw): score += 1
+    if any(c.isdigit() for c in pw): score += 1
+    if any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in pw): score += 1
+    if score <= 1:   return "Weak",   "#ef4444", 20
+    elif score == 2: return "Fair",   "#f97316", 40
+    elif score == 3: return "Medium", "#eab308", 65
+    elif score == 4: return "Strong", "#22c55e", 85
+    else:            return "Very Strong", "#10b981", 100
+
+# ── LOGIN PAGE ─────────────────────────────────────────────────────────────────
 
 if not st.session_state["logged_in"]:
 
-    st.title("🔐 Job Tracker Login")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    left, right = st.columns([1, 1], gap="medium")
 
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
+    with left:
+        st.markdown("""
+        <div class="login-left">
+            <div class="login-logo">✦ Job Tracker</div>
+            <div class="login-tagline">Your AI-powered career command center</div>
+            <div style="font-size:28px;font-weight:700;color:#ead8ee;line-height:1.3;margin-bottom:12px;">
+                Land Your<br><span style="color:#f472b6;">Dream Job</span>
+            </div>
+            <div style="font-size:14px;color:#8a6888;line-height:1.7;max-width:320px;">
+                Track applications, scan your resume against job descriptions, and get AI-powered match scores — all in one place.
+            </div>
+            <div class="login-stat-row">
+                <div><div class="login-stat-num">AI</div><div class="login-stat-lbl">Match Scoring</div></div>
+                <div><div class="login-stat-num green">Auto</div><div class="login-stat-lbl">Job Scraping</div></div>
+                <div><div class="login-stat-num purple">Live</div><div class="login-stat-lbl">Status Tracking</div></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    with tab1:
-        u = st.text_input("Username", key="login_username")
-        p = st.text_input("Password", type="password", key="login_password")
-        if st.button("Login"):
-            if login_user(u, p):
-                st.session_state["logged_in"] = True
-                st.session_state["username"] = u
+    with right:
+        tab = st.session_state["login_tab"]
+
+        # ── SIGN IN ──
+        if tab == "login":
+            st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;text-align:center;'>Welcome Back</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;text-align:center;'>Sign in to continue your journey</div>", unsafe_allow_html=True)
+
+            u = st.text_input("Username", key="login_username", placeholder="Enter your username")
+            p = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+
+            # Remember me + Forgot password row
+            rm_col, fp_col = st.columns([1, 1])
+            with rm_col:
+                remember = st.checkbox("Remember me", key="remember_me")
+            with fp_col:
+                if st.button("Forgot password?", key="go_forgot", use_container_width=True):
+                    st.session_state["login_tab"] = "forgot"
+                    st.session_state["reset_sent"] = False
+                    st.rerun()
+
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+            if st.button("Sign In", key="do_login", use_container_width=True):
+                if login_user(u, p):
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = u
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+
+            st.markdown("""
+            <div style='text-align:center;margin-top:20px;font-size:13px;color:#7a5878;'>
+                Don't have an account?
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Sign up for free →", key="go_signup", use_container_width=True):
+                st.session_state["login_tab"] = "signup"
                 st.rerun()
-            else:
-                st.error("Invalid login")
 
-    with tab2:
-        new_u = st.text_input("Username", key="signup_username")
-        new_p = st.text_input("Password", type="password", key="signup_password")
-        if st.button("Create Account"):
-            if sign_up_user(new_u, new_p):
-                st.success("Account created")
-            else:
-                st.error("Username exists")
+        # ── FORGOT PASSWORD ──
+        elif tab == "forgot":
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Reset Password</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;'>Enter your username and we'll send you a reset link</div>", unsafe_allow_html=True)
 
+            if st.session_state["reset_sent"]:
+                st.markdown("""
+                <div style="background:#1a3a2a;border:1px solid #2a6a4a;border-radius:10px;padding:20px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">📬</div>
+                    <div style="font-size:15px;font-weight:600;color:#34d399;margin-bottom:6px;">Reset email sent!</div>
+                    <div style="font-size:13px;color:#8a9888;">Check your inbox and follow the link to reset your password.</div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                reset_u = st.text_input("Username", key="reset_username", placeholder="Enter your username")
+                if st.button("Send Reset Link", key="do_reset", use_container_width=True):
+                    if not reset_u:
+                        st.error("Please enter your username")
+                    else:
+                        send_password_reset(reset_u)
+                        # Always show success (don't reveal if user exists)
+                        st.session_state["reset_sent"] = True
+                        st.rerun()
+
+            st.markdown("<div style='text-align:center;margin-top:20px;font-size:13px;color:#7a5878;'>Remember your password?</div>", unsafe_allow_html=True)
+            if st.button("Back to Sign In →", key="back_login", use_container_width=True):
+                st.session_state["login_tab"] = "login"
+                st.session_state["reset_sent"] = False
+                st.rerun()
+
+        # ── SIGN UP ──
+        else:
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Create Account</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:24px;'>Start your job tracking journey today</div>", unsafe_allow_html=True)
+
+            new_u = st.text_input("Username", key="signup_username", placeholder="Choose a username")
+            new_e = st.text_input("Email", key="signup_email", placeholder="Enter your real email address")
+            new_p = st.text_input("Password", type="password", key="signup_password", placeholder="Choose a strong password")
+
+            # Password strength meter
+            if new_p:
+                label, color, pct = password_strength(new_p)
+                st.markdown(f"""
+                <div style="margin-top:-8px;margin-bottom:8px;">
+                    <div style="background:#2a1230;border-radius:4px;height:5px;width:100%;overflow:hidden;">
+                        <div style="background:{color};height:5px;width:{pct}%;border-radius:4px;transition:width 0.3s;"></div>
+                    </div>
+                    <div style="text-align:right;font-size:12px;color:{color};margin-top:3px;font-weight:600;">{label}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            confirm_p = st.text_input("Confirm Password", type="password", key="signup_confirm", placeholder="Re-enter your password")
+
+            # Password match indicator
+            if confirm_p:
+                if new_p == confirm_p:
+                    st.markdown("<div style='font-size:12px;color:#22c55e;margin-top:-8px;margin-bottom:8px;'>✓ Passwords match</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='font-size:12px;color:#ef4444;margin-top:-8px;margin-bottom:8px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
+
+            # Terms of service
+            agree = st.checkbox("I agree to the Terms of Service and Privacy Policy", key="agree_terms")
+            st.markdown("""
+            <div style='font-size:11px;color:#5a3858;margin-top:-8px;margin-bottom:12px;line-height:1.5;'>
+                By creating an account you agree to our
+                <span style='color:#f472b6;cursor:pointer;'>Terms of Service</span> and
+                <span style='color:#f472b6;cursor:pointer;'>Privacy Policy</span>.
+                Your data is kept private and never sold.
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button("Create Account", key="do_signup", use_container_width=True):
+                if not new_u or not new_e or not new_p:
+                    st.error("Please fill in all fields")
+                elif "@" not in new_e or "." not in new_e:
+                    st.error("Please enter a valid email address")
+                elif new_p != confirm_p:
+                    st.error("Passwords do not match")
+                elif not agree:
+                    st.error("Please agree to the Terms of Service to continue")
+                elif password_strength(new_p)[0] == "Weak":
+                    st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
+                else:
+                    ok, err = sign_up_user(new_u, new_p, new_e)
+                    if ok:
+                        st.success("Account created! Check your email to confirm, then sign in.")
+                        st.session_state["login_tab"] = "login"
+                        st.rerun()
+                    else:
+                        st.error(f"Sign up failed: {err}")
+
+            st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
+            if st.button("Sign in →", key="go_login", use_container_width=True):
+                st.session_state["login_tab"] = "login"
+                st.rerun()
 
 # ── MAIN APP ───────────────────────────────────────────────────────────────────
 
 if st.session_state["logged_in"]:
 
-    t1, t2 = st.columns([6, 1])
-
-    with t1:
-        st.title("Job Tracker")
-
-    st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
-
-    with t2:
-        if st.button("Sign Out"):
+    # ── Header ──
+    st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
+    h1, h2 = st.columns([6, 1])
+    with h1:
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <span style="font-size:28px;font-family:'Playfair Display',serif;font-weight:700;color:#ead8ee;">✦ Job Tracker</span>
+            <span style="font-size:13px;color:#7a5878;background:#2a1230;border:1px solid #4a2248;
+                border-radius:20px;padding:3px 12px;">
+                {st.session_state.get('username','') }
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+        st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
+    with h2:
+        if st.button("Sign Out", use_container_width=True):
             st.session_state.clear()
             st.rerun()
 
@@ -204,6 +415,7 @@ if st.session_state["logged_in"]:
 
     # ── STAT CARDS ──
     jobs_list = load_jobs()
+
     if jobs_list:
         df_stats = pd.DataFrame(jobs_list)
         total = len(df_stats)
@@ -214,22 +426,32 @@ if st.session_state["logged_in"]:
             except: return None
         scores = df_stats["match_score"].apply(parse_score).dropna() if "match_score" in df_stats else pd.Series()
         avg_score = f"{scores.mean():.0f}%" if len(scores) > 0 else "—"
+    else:
+        total, interviews, offers, avg_score = 0, 0, 0, "—"
 
-        sc1, sc2, sc3, sc4 = st.columns(4)
-        card_style = "background:#3d2040;border:1.5px solid #5a2a55;border-radius:10px;padding:16px 20px;margin-bottom:8px;"
-        lbl_color = "#8a6a88"
+    sc1, sc2, sc3, sc4 = st.columns(4)
+    cards = [
+        (sc1, "📋", total,       "#e8d8ec", "Total Applications"),
+        (sc2, "🗓️", interviews,  "#f472b6", "Interviews"),
+        (sc3, "✅", offers,      "#34d399", "Offers"),
+        (sc4, "🎯", avg_score,   "#c084fc", "Avg AI Match"),
+    ]
+    for col, icon, val, color, label in cards:
+        with col:
+            st.markdown(f"""
+            <div style="background:#2a1230;border:1px solid #4a2050;border-radius:12px;
+                        padding:20px 22px;margin-bottom:12px;position:relative;overflow:hidden;">
+                <div style="position:absolute;top:16px;right:18px;font-size:22px;opacity:0.25;">{icon}</div>
+                <div style="font-size:30px;font-weight:700;color:{color};line-height:1;margin-bottom:6px;">{val}</div>
+                <div style="font-size:11px;font-weight:600;color:#7a5878;text-transform:uppercase;
+                            letter-spacing:0.06em;">{label}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        with sc1:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#e8d8ec;line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Applications</div></div>', unsafe_allow_html=True)
-        with sc2:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#f472b6;line-height:1;margin-bottom:4px;">{interviews}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Interviews</div></div>', unsafe_allow_html=True)
-        with sc3:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#34d399;line-height:1;margin-bottom:4px;">{offers}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Offers</div></div>', unsafe_allow_html=True)
-        with sc4:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#c084fc;line-height:1;margin-bottom:4px;">{avg_score}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Avg match</div></div>', unsafe_allow_html=True)
+    st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
-    # ADD JOB
-    with st.expander("➕ Add New Application"):
+    # ── ADD JOB ──
+    with st.expander("➕  Add New Application"):
         c1, c2 = st.columns(2)
         with c1:
             comp = st.text_input("Company Name")
@@ -238,9 +460,9 @@ if st.session_state["logged_in"]:
 
         url_in = st.text_input("Job Posting URL")
 
-        if st.button("✨ Auto-Fill Details"):
+        if st.button("✨ Auto-Fill from URL"):
             if url_in:
-                with st.spinner("Doing the heavy lifting... just a few moments more while we set things up..."):
+                with st.spinner("Scraping job details..."):
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
@@ -254,9 +476,9 @@ if st.session_state["logged_in"]:
         with col2:
             applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
 
-        if st.button("🔍 Scan Resume"):
+        if st.button("🔍 Scan Resume vs Job"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
+                with st.spinner("Analyzing match..."):
                     st.session_state["match_data"] = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
 
         if st.session_state["match_data"]:
@@ -267,21 +489,18 @@ if st.session_state["logged_in"]:
                 if not item.upper().startswith("SCORE:"):
                     st.write(item)
 
-        if st.button("💾 Save"):
+        if st.button("💾 Save Application"):
             resume_url = None
             score = "No score found... guess your skills just broke our algorithm."
-
             if up_file is not None:
                 resume_url = upload_resume(up_file, st.session_state["username"])
-
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Saving your results... time for a quick coffee break while we file this away."):
+                with st.spinner("Saving..."):
                     match_result = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
             elif st.session_state.get("match_data"):
                 score = st.session_state["match_data"].get("score", "N/A")
-
             success = save_job(
                 company=comp, position=pos, description=final_desc,
                 job_url=url_in, resume_url=resume_url,
@@ -291,17 +510,23 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = None
                 st.session_state["match_data"] = None
                 st.session_state["formatted_desc"] = ""
-                st.success("Application saved")
+                st.success("Application saved!")
                 st.rerun()
             else:
                 st.error("Save failed")
 
     st.divider()
-    st.header("📋 My Applied Jobs")
 
-    status_options = [
-        "📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"
-    ]
+    # ── JOBS TABLE ──
+    st.markdown("""
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:20px;font-family:'Playfair Display',serif;font-weight:700;color:#ead8ee;">
+            📋 My Applied Jobs
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    status_options = ["📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"]
 
     if jobs_list:
         df = pd.DataFrame(jobs_list)
@@ -331,10 +556,9 @@ if st.session_state["logged_in"]:
 
         hdr = st.columns(ratios)
         for col, label in zip(hdr, ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE APPLIED", "CV", "SNAP", "DEL"]):
-            col.markdown(f'<p style="font-size:11px;letter-spacing:0.08em;color:#7a5078;font-weight:700;margin-bottom:2px;margin-top:0px;">{label}</p>', unsafe_allow_html=True)
+            col.markdown(f'<p style="font-size:11px;letter-spacing:0.08em;color:#7a5078;font-weight:700;margin-bottom:2px;margin-top:0;">{label}</p>', unsafe_allow_html=True)
 
         for idx, row in df.iterrows():
-
             with st.container(border=True):
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
@@ -344,12 +568,7 @@ if st.session_state["logged_in"]:
                 raw_score = row.get("match_score", "N/A")
                 try:
                     score_num = int(str(raw_score).split("/")[0])
-                    if score_num >= 80:
-                        score_color = "#f472b6"
-                    elif score_num >= 65:
-                        score_color = "#c084fc"
-                    else:
-                        score_color = "#8a6888"
+                    score_color = "#f472b6" if score_num >= 80 else "#c084fc" if score_num >= 65 else "#8a6888"
                 except:
                     score_color = "#8a6888"
                 c3.markdown(f'<span style="font-size:16px;font-weight:700;color:{score_color};">{raw_score}</span>', unsafe_allow_html=True)
@@ -367,7 +586,6 @@ if st.session_state["logged_in"]:
 
                 raw_date = row.get("created_at", "")
                 try:
-                    from datetime import datetime
                     date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
                 except:
                     date_str = str(raw_date)[:10] if raw_date else "—"
@@ -390,6 +608,11 @@ if st.session_state["logged_in"]:
                 if c8.button("🗑", key=f"d_{row['id']}"):
                     delete_job(row["id"])
                     st.rerun()
-
     else:
-        st.write("You have no applications saved yet.")
+        st.markdown("""
+        <div style="text-align:center;padding:60px 20px;color:#7a5878;">
+            <div style="font-size:40px;margin-bottom:12px;">📭</div>
+            <div style="font-size:16px;font-weight:600;">No applications yet</div>
+            <div style="font-size:13px;margin-top:6px;">Add your first job above to get started</div>
+        </div>
+        """, unsafe_allow_html=True)
