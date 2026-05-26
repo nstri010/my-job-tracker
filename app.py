@@ -305,36 +305,6 @@ if not st.session_state["logged_in"]:
                 st.session_state["login_tab"] = "signup"
                 st.rerun()
 
-        # ── FORGOT PASSWORD ──
-        elif tab == "forgot":
-            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Reset Password</div>", unsafe_allow_html=True)
-            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;'>Enter your username and we'll send you a reset link</div>", unsafe_allow_html=True)
-
-            if st.session_state["reset_sent"]:
-                st.markdown("""
-                <div style="background:#1a3a2a;border:1px solid #2a6a4a;border-radius:10px;padding:20px;text-align:center;">
-                    <div style="font-size:28px;margin-bottom:8px;">📬</div>
-                    <div style="font-size:15px;font-weight:600;color:#34d399;margin-bottom:6px;">Reset email sent!</div>
-                    <div style="font-size:13px;color:#8a9888;">Check your inbox and follow the link to reset your password.</div>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                reset_u = st.text_input("Username", key="reset_username", placeholder="Enter your username")
-                if st.button("Send Reset Link", key="do_reset", use_container_width=True):
-                    if not reset_u:
-                        st.error("Please enter your username")
-                    else:
-                        send_password_reset(reset_u)
-                        # Always show success (don't reveal if user exists)
-                        st.session_state["reset_sent"] = True
-                        st.rerun()
-
-            st.markdown("<div style='text-align:center;margin-top:20px;font-size:13px;color:#7a5878;'>Remember your password?</div>", unsafe_allow_html=True)
-            if st.button("Back to Sign In →", key="back_login", use_container_width=True):
-                st.session_state["login_tab"] = "login"
-                st.session_state["reset_sent"] = False
-                st.rerun()
-
         # ── SIGN UP ──
         else:
             st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Create Account</div>", unsafe_allow_html=True)
