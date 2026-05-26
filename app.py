@@ -590,7 +590,7 @@ if st.session_state["logged_in"]:
         </div>
         """, unsafe_allow_html=True)
 
-        # ── Job rows ───────────────────────────────────────────────────
+        # ── Job rows — pure Streamlit columns, CSS handles styling ───
         ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
 
         for idx, row in df.iterrows():
@@ -600,61 +600,35 @@ if st.session_state["logged_in"]:
             company   = row.get("company", "—")
             position  = row.get("position", "—")
 
-            # ── Score pill + mini bar ──────────────────────────────────
+            # ── Score HTML ──────────────────────────────────────────────────────
             try:
-                parts   = str(raw_score).split("/")
-                num     = float(parts[0])
-                denom   = float(parts[1]) if len(parts) > 1 else 10
-                pct     = int((num / denom) * 100)
-                if pct >= 75:   score_color = "#34d399"
-                elif pct >= 50: score_color = "#fbbf24"
-                else:           score_color = "#f87171"
-                score_html = f"""
-                <div>
-                  <span style="font-size:15px;font-weight:700;color:{score_color};">{raw_score}</span>
-                  <div style="margin-top:4px;background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:52px;overflow:hidden;">
-                    <div style="height:4px;width:{pct}%;background:{score_color};border-radius:4px;"></div>
-                  </div>
-                </div>"""
+                parts = str(raw_score).split("/")
+                num   = float(parts[0])
+                denom = float(parts[1]) if len(parts) > 1 else 10
+                pct   = int((num / denom) * 100)
+                if pct >= 75:   sc = "#34d399"
+                elif pct >= 50: sc = "#fbbf24"
+                else:           sc = "#f87171"
+                score_html = (
+                    f'<span style="font-size:15px;font-weight:700;color:{sc};">{raw_score}</span>'
+                    f'<div style="margin-top:5px;background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:48px;overflow:hidden;">'
+                    f'<div style="height:4px;width:{pct}%;background:{sc};border-radius:4px;"></div></div>'
+                )
             except:
-                score_html = f'<span style="color:#64748b;font-size:14px;">—</span>'
+                score_html = '<span style="color:#64748b;">—</span>'
 
-            # ── Status badge (static display) ─────────────────────────
-            bg, clr = STATUS_STYLES.get(curr, ("rgba(148,163,184,0.12)", "#94a3b8"))
-            status_badge = f'<span style="background:{bg};color:{clr};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;">{curr}</span>'
-
-            # ── Date ──────────────────────────────────────────────────
+            # ── Date ────────────────────────────────────────────────────────────
             try:
                 date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except:
                 date_str = str(raw_date)[:10] if raw_date else "—"
 
-            # ── Card shell (HTML for left columns) ────────────────────
-            st.markdown(f"""
-            <div style="background:rgba(18,18,28,0.75);border:1px solid rgba(255,255,255,0.07);
-                        border-radius:14px;padding:0;margin-bottom:8px;overflow:hidden;">
-              <div style="display:grid;grid-template-columns:1.6fr 1.6fr 0.9fr 1.5fr 1fr 0.5fr 0.5fr 0.5fr;
-                          align-items:center;padding:14px 20px;gap:12px;">
-                <div>
-                  <div style="font-size:15px;font-weight:600;color:#e2e8f0;">{company}</div>
-                </div>
-                <div style="font-size:14px;color:#94a3b8;font-weight:400;">{position}</div>
-                <div>{score_html}</div>
-                <div>STATUS_PLACEHOLDER</div>
-                <div style="font-size:13px;color:#64748b;">{date_str}</div>
-                <div>RESUME_PLACEHOLDER</div>
-                <div>SNAP_PLACEHOLDER</div>
-                <div>DEL_PLACEHOLDER</div>
-              </div>
-            </div>
-            """.replace("STATUS_PLACEHOLDER", "").replace("RESUME_PLACEHOLDER", "").replace("SNAP_PLACEHOLDER", "").replace("DEL_PLACEHOLDER", ""), unsafe_allow_html=True)
-
-            # ── Streamlit interactive controls overlaid in columns ─────
-            with st.container():
+            with st.container(border=True):
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                # invisible spacers for static columns
-                c1.empty(); c2.empty(); c3.empty(); c5.empty()
+                c1.markdown(f'<span style="font-size:15px;font-weight:600;color:#e2e8f0;">{company}</span>', unsafe_allow_html=True)
+                c2.markdown(f'<span style="font-size:14px;color:#94a3b8;">{position}</span>', unsafe_allow_html=True)
+                c3.markdown(score_html, unsafe_allow_html=True)
 
                 with c4:
                     new_stat = st.selectbox(
@@ -667,6 +641,8 @@ if st.session_state["logged_in"]:
                     if new_stat != curr:
                         update_job_full(row["id"], {"status": new_stat})
                         st.rerun()
+
+                c5.markdown(f'<span style="font-size:13px;color:#64748b;">{date_str}</span>', unsafe_allow_html=True)
 
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
