@@ -101,35 +101,35 @@ if "username" not in st.session_state:
 
 # LOGIN
 
-if not st.session_state["logged_in"]:
+#if not st.session_state["logged_in"]:
 
-    st.title("🔐 Job Tracker Login")
+    #st.title("🔐 Job Tracker Login")
 
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
+    #tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
-    with tab1:
+    #with tab1:
 
-        u = st.text_input("Username", key="login_username")
-        p = st.text_input("Password", type="password", key="login_password")
+        #u = st.text_input("Username", key="login_username")
+        #p = st.text_input("Password", type="password", key="login_password")
 
-        if st.button("Login"):
-            if login_user(u, p):
-                st.session_state["logged_in"] = True
-                st.session_state["username"] = u
-                st.rerun()
-            else:
-                st.error("Invalid login")
+       # if st.button("Login"):
+            #if login_user(u, p):
+                #st.session_state["logged_in"] = True
+               # st.session_state["username"] = u
+               # st.rerun()
+           # else:
+                #st.error("Invalid login")
 
-    with tab2:
+   # with tab2:
 
-        new_u = st.text_input("Username", key="signup_username")
-        new_p = st.text_input("Password", type="password", key="signup_password")
+      #  new_u = st.text_input("Username", key="signup_username")
+       # new_p = st.text_input("Password", type="password", key="signup_password")
 
-        if st.button("Create Account"):
-            if sign_up_user(new_u, new_p):
-                st.success("Account created")
-            else:
-                st.error("Username exists")
+      #  if st.button("Create Account"):
+         #   if sign_up_user(new_u, new_p):
+           #     st.success("Account created")
+           # else:
+             #   st.error("Username exists")
 
 
 # MAIN APP
