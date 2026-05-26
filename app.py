@@ -21,6 +21,16 @@ st.markdown("""
 [data-testid="stHeader"] { background: transparent !important; }
 [data-testid="stMainBlockContainer"] { padding-top: 6rem !important; max-width: 1200px !important; }
 
+/* ── Glassmorphism Panels ── */
+.login-panel {
+    background: rgba(18, 18, 24, 0.7) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 24px !important;
+    padding: 50px 45px !important;
+    min-height: 600px;
+}
+
 /* Typography */
 * { font-family: 'Inter', sans-serif !important; }
 h1, h2 { font-family: 'Playfair Display', serif !important; color: #ffffff !important; margin-bottom: 1rem !important; }
