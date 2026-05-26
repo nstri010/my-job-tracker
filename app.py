@@ -158,6 +158,10 @@ hr { border-color: #4a2248 !important; }
 }
 
 [data-testid="stAlert"] { border-radius: 10px !important; }
+
+/* Collapse excess vertical gaps in the jobs table area */
+.stDivider { margin-top: 0.3rem !important; margin-bottom: 0.3rem !important; }
+div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] > div[data-testid="stVerticalBlock"] { gap: 0 !important; }
 </style>
 """
 
@@ -468,24 +472,25 @@ if st.session_state["logged_in"]:
 
         hdr = st.columns(ratios)
         for col, label in zip(hdr, ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE APPLIED", "CV", "SNAP", "DEL"]):
-            col.markdown(f'<p style="font-size:11px;letter-spacing:0.08em;color:{hdr_color};font-weight:700;margin-bottom:4px;">{label}</p>', unsafe_allow_html=True)
-
-        st.divider()
+            col.markdown(f'<p style="font-size:11px;letter-spacing:0.08em;color:{hdr_color};font-weight:700;margin-bottom:2px;margin-top:0px;">{label}</p>', unsafe_allow_html=True)
 
         # Row card styles
         if st.session_state["dark_mode"]:
             st.markdown("""<style>
+/* Kill the extra space Streamlit adds after columns/dividers */
+[data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] { margin-bottom: 0 !important; }
+.stDivider { margin-top: 0.4rem !important; margin-bottom: 0.4rem !important; }
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: #3a1e3c !important;
-    border: 1px solid #5a2d58 !important;
+    background: #3d1f42 !important;
+    border: 1px solid #7a3a78 !important;
     border-radius: 10px !important;
     padding: 4px 8px !important;
     margin-bottom: 8px !important;
     transition: background 0.18s, border-color 0.18s !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: #451f47 !important;
-    border-color: #8a3a80 !important;
+    background: #4a2450 !important;
+    border-color: #a050a0 !important;
 }
 </style>""", unsafe_allow_html=True)
         else:
