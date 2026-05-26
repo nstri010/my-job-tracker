@@ -1,204 +1,302 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import os
 
 from storage import (
-    load_jobs, save_job, delete_job, sign_up_user, 
-    login_user, upload_resume, update_job_full
-)
-from utils import (
-    scrape_job_link, clean_description_with_ai, 
-    get_ai_match_feedback, extract_text_from_upload
+    load_jobs,
+    save_job,
+    delete_job,
+    sign_up_user,
+    login_user,
+    upload_resume,
+    update_job_full
 )
 
+from utils import (
+    scrape_job_link,
+    clean_description_with_ai,
+    get_ai_match_feedback,
+    extract_text_from_upload
+)
+
+
 st.set_page_config(
-    page_title="Job Tracker | Pipeline",
-    page_icon="💜",
+    page_title="Job Tracker",
     layout="wide"
 )
 
-# ── CYBER-PLUM GRADIENT THEME ──────────────────────────────────────────────
-CYBER_PLUM_STYLE = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+# SESSION
 
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(135deg, #2d1b2e 0%, #1f1a35 100%) !important;
-    background-attachment: fixed !important;
-}
-
-[data-testid="stAppViewContainer"]::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 50% -20%, rgba(244, 114, 182, 0.15), transparent 80%);
-    pointer-events: none;
-}
-
-html, body, [class*="st-"] {
-    font-family: 'Inter', sans-serif !important;
-    color: #e8c8d8 !important;
-}
-
-.stat-box {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(244, 114, 182, 0.2);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: left;
-}
-.stat-number {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1;
-}
-.stat-label {
-    color: #f9a8d4;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-top: 4px;
-}
-
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(45, 27, 46, 0.6) !important;
-    border: 1px solid rgba(244, 114, 182, 0.15) !important;
-    border-radius: 12px !important;
-    padding: 1.2rem !important;
-    margin-bottom: 10px !important;
-}
-
-.stButton > button {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #f9a8d4 !important;
-    border: 1px solid rgba(244, 114, 182, 0.3) !important;
-    border-radius: 8px !important;
-}
-
-h1, h2, h3 { color: #fde8f0 !important; font-weight: 700 !important; }
-</style>
-"""
-st.markdown(CYBER_PLUM_STYLE, unsafe_allow_html=True)
-
-# ── SESSION STATE ──────────────────────────────────────────────────────────
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
-if "username" not in st.session_state:
-    st.session_state["username"] = None
+
 if "formatted_desc" not in st.session_state:
     st.session_state["formatted_desc"] = ""
+
 if "match_data" not in st.session_state:
     st.session_state["match_data"] = None
+
 if "resume_txt" not in st.session_state:
     st.session_state["resume_txt"] = None
 
-# ── AUTHENTICATION ──────────────────────────────────────────────────────────
-if not st.session_state["logged_in"]:
-    col1, col2, col3 = st.columns([1, 1.2, 1])
-    with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.title("Job Tracker")
-        with st.container(border=True):
-            u = st.text_input("Username")
-            p = st.text_input("Password", type="password")
-            if st.button("Sign In", use_container_width=True):
-                if login_user(u, p):
-                    st.session_state["logged_in"] = True
-                    st.session_state["username"] = u
-                    st.rerun()
+if "username" not in st.session_state:
+    st.session_state["username"] = None
 
-# ── MAIN DASHBOARD ──────────────────────────────────────────────────────────
+
+# LOGIN
+
+if not st.session_state["logged_in"]:
+
+    st.title("🔐 Job Tracker Login")
+
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
+
+    with tab1:
+
+        u = st.text_input("Username", key="login_username")
+        p = st.text_input("Password", type="password", key="login_password")
+
+        if st.button("Login"):
+            if login_user(u, p):
+                st.session_state["logged_in"] = True
+                st.session_state["username"] = u
+                st.rerun()
+            else:
+                st.error("Invalid login")
+
+    with tab2:
+
+        new_u = st.text_input("Username", key="signup_username")
+        new_p = st.text_input("Password", type="password", key="signup_password")
+
+        if st.button("Create Account"):
+            if sign_up_user(new_u, new_p):
+                st.success("Account created")
+            else:
+                st.error("Username exists")
+
+
+# MAIN APP
+
 if st.session_state["logged_in"]:
-    head_col, signout_col = st.columns([5, 1])
-    with head_col:
+
+    t1, t2 = st.columns([5, 1])
+
+    with t1:
         st.title("Job Tracker")
-    with signout_col:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Sign Out", use_container_width=True):
+    st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
+
+    with t2:
+        if st.button("Sign Out"):
             st.session_state.clear()
             st.rerun()
 
-    # ── STATS ──
-    jobs = load_jobs()
-    df = pd.DataFrame(jobs) if jobs else pd.DataFrame()
-    s1, s2, s3, s4 = st.columns(4)
-    with s1: st.markdown(f'<div class="stat-box"><div class="stat-number">{len(df)}</div><div class="stat-label">Applications</div></div>', unsafe_allow_html=True)
-    with s2: 
-        ints = len(df[df['status'].str.contains("Interview", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#f472b6">{ints}</div><div class="stat-label">Interviews</div></div>', unsafe_allow_html=True)
-    with s3:
-        offs = len(df[df['status'].str.contains("Offer", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#fbbf24">{offs}</div><div class="stat-label">Offers</div></div>', unsafe_allow_html=True)
-    with s4: st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#c084fc">74%</div><div class="stat-label">Avg match</div></div>', unsafe_allow_html=True)
+    # ADD JOB
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ── ADD NEW APPLICATION (THE MISSING PART) ──
     with st.expander("➕ Add New Application"):
+
         c1, c2 = st.columns(2)
-        comp = c1.text_input("Company Name")
-        pos = c2.text_input("Position Title")
+
+        with c1:
+            comp = st.text_input("Company Name")
+
+        with c2:
+            pos = st.text_input("Position Title")
+
         url_in = st.text_input("Job Posting URL")
 
         if st.button("✨ Auto-Fill Details"):
             if url_in:
-                with st.spinner("Scraping..."):
+                with st.spinner("Doing the heavy lifting... just a few moments more while we set things up..."):
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
-        final_desc = st.text_area("Job Description", value=st.session_state["formatted_desc"], height=200)
+        final_desc = st.text_area(
+            "Job Description",
+            value=st.session_state["formatted_desc"],
+            height=220
+        )
 
         col1, col2 = st.columns(2)
-        up_file = col1.file_uploader("Upload Resume", type=["pdf", "docx", "txt"])
-        if up_file: st.session_state["resume_txt"] = extract_text_from_upload(up_file)
-        applied_date = col2.date_input("Date Applied")
+
+        with col1:
+            up_file = st.file_uploader(
+                "Upload Resume",
+                type=["pdf", "docx", "txt"]
+            )
+            if up_file is not None:
+                st.session_state["resume_txt"] = extract_text_from_upload(up_file)
+
+        with col2:
+            applied_date = st.date_input("Date Applied")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Analyzing Match..."):
-                    st.session_state["match_data"] = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
+                with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
+                    st.session_state["match_data"] = get_ai_match_feedback(
+                        final_desc,
+                        st.session_state["resume_txt"]
+                    )
 
         if st.session_state["match_data"]:
-            st.success(f"Score: {st.session_state['match_data'].get('score', 'N/A')}")
+            match = st.session_state["match_data"]
+            st.markdown("## 🎯 How You Stack Up")
+            st.success(f"Your Rank: {match.get('score', 'N/A')}")
+            for item in match.get("feedback", []):
+                if not item.upper().startswith("SCORE:"):
+                    st.write(item)
 
-        if st.button("💾 Save Application", use_container_width=True):
-            res_url = upload_resume(up_file, st.session_state["username"]) if up_file else None
-            score = st.session_state["match_data"].get("score", "N/A") if st.session_state["match_data"] else "N/A"
-            
-            if save_job(company=comp, position=pos, description=final_desc, job_url=url_in, 
-                        resume_url=res_url, match_score=score, applied_date=applied_date):
-                st.session_state["formatted_desc"] = ""
+        # SAVE BUTTON
+        if st.button("💾 Save"):
+
+            resume_url = None
+            score = "No score found... guess your skills just broke our algorithm."
+
+            if up_file is not None:
+                resume_url = upload_resume(
+                    up_file,
+                    st.session_state["username"]
+                )
+
+            if st.session_state.get("resume_txt") and final_desc:
+                with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
+                    match_result = get_ai_match_feedback(
+                        final_desc,
+                        st.session_state["resume_txt"]
+                    )
+                    st.session_state["match_data"] = match_result
+                    score = match_result.get("score", "N/A")
+
+            elif st.session_state.get("match_data"):
+                score = st.session_state["match_data"].get("score", "N/A")
+
+            success = save_job(
+                company=comp,
+                position=pos,
+                description=final_desc,
+                job_url=url_in,
+                resume_url=resume_url,
+                match_score=score,
+                applied_date=applied_date
+            )
+
+            if success:
+                st.session_state["resume_txt"] = None
                 st.session_state["match_data"] = None
-                st.success("Saved!")
+                st.session_state["formatted_desc"] = ""
+                st.success("Application saved")
+                st.rerun()
+            else:
+                st.error("Save failed")
+
+    st.divider()
+
+    st.header("📋 My Applied Jobs")
+
+    jobs_list = load_jobs()
+
+    status_options = [
+        "📝 Applied",
+        "📨 Contacted",
+        "📅 Interview",
+        "✅ Offer",
+        "❌ Rejected"
+    ]
+
+    if jobs_list:
+
+        df = pd.DataFrame(jobs_list)
+
+        # SORT CONTROLS
+        sort_col, sort_dir_col = st.columns([2, 2])
+        with sort_col:
+            sort_by = st.selectbox(
+                "Sort by",
+                ["Date Applied", "Company", "Position", "Match Score", "Status"],
+                key="sort_by"
+            )
+        with sort_dir_col:
+            sort_dir = st.selectbox(
+                "Order",
+                ["Newest First", "Oldest First", "A → Z", "Z → A", "Highest First", "Lowest First"],
+                key="sort_dir"
+            )
+
+        # Apply sort
+        if sort_by == "Company":
+            df = df.sort_values("company", ascending=(sort_dir == "A → Z"))
+        elif sort_by == "Position":
+            df = df.sort_values("position", ascending=(sort_dir == "A → Z"))
+        elif sort_by == "Match Score":
+            def score_val(s):
+                try: return int(str(s).split("/")[0])
+                except: return 0
+            df["_score_num"] = df["match_score"].apply(score_val)
+            df = df.sort_values("_score_num", ascending=(sort_dir == "Lowest First"))
+        elif sort_by == "Status":
+            df = df.sort_values("status", ascending=(sort_dir == "A → Z"))
+        else:
+            df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
+
+        ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
+        headers = ["Company", "Position", "Match", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
+
+        cols = st.columns(ratios)
+        for c, h in zip(cols, headers):
+            c.markdown(f"**{h}**")
+
+        st.divider()
+
+        for idx, row in df.iterrows():
+
+            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+
+            c1.write(row.get("company", ""))
+            c2.write(row.get("position", ""))
+            c3.write(row.get("match_score", "N/A"))
+
+            curr = row.get("status", "📝 Applied")
+
+            with c4:
+                new_stat = st.selectbox(
+                    "Status",
+                    status_options,
+                    index=(status_options.index(curr) if curr in status_options else 0),
+                    key=f"s_{row['id']}",
+                    label_visibility="collapsed"
+                )
+                if new_stat != curr:
+                    update_job_full(row["id"], {"status": new_stat})
+                    st.rerun()
+
+            # DATE APPLIED
+            raw_date = row.get("created_at", "")
+            try:
+                from datetime import datetime
+                date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
+            except:
+                date_str = str(raw_date)[:10] if raw_date else "—"
+            c5.write(date_str)
+
+            resume_link = str(row.get("resume_link") or "")
+            with c6:
+                if resume_link:
+                    st.link_button("📄", resume_link)
+                else:
+                    st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+            pdf_url = str(row.get("pdf_url") or "")
+            with c7:
+                if pdf_url:
+                    st.link_button("📸", pdf_url)
+                else:
+                    st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+            if c8.button("❌", key=f"d_{row['id']}"):
+                delete_job(row["id"])
                 st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+            st.divider()
 
-    # ── PIPELINE TABLE ──
-    if not df.empty:
-        h1, h2, h3, h4, h5, h6, h7 = st.columns([1.5, 1.5, 0.8, 1.2, 1, 0.5, 0.5])
-        for col, label in zip([h1, h2, h3, h4, h5, h6, h7], ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE", "CV", "DEL"]):
-            col.caption(label)
-
-        for _, row in df.iterrows():
-            with st.container(border=True):
-                r1, r2, r3, r4, r5, r6, r7 = st.columns([1.5, 1.5, 0.8, 1.2, 1, 0.5, 0.5])
-                r1.markdown(f"**{row['company']}**")
-                r2.markdown(f"<span style='color:#f9a8d4'>{row['position']}</span>", unsafe_allow_html=True)
-                r3.markdown(f"**{row.get('match_score', 'N/A')}**")
-                
-                with r4:
-                    opts = ["📝 Applied", "📅 Interview", "✅ Offer", "❌ Rejected"]
-                    curr = row.get('status', '📝 Applied')
-                    new_s = st.selectbox("S", opts, index=opts.index(curr) if curr in opts else 0, key=f"s_{row['id']}", label_visibility="collapsed")
-                    if new_s != curr:
-                        update_job_full(row['id'], {"status": new_s})
-                        st.rerun()
-
-                r5.write(str(row.get('created_at'))[:10])
-                if r6.button("📄", key=f"cv_{row['id']}"): pass
-                if r7.button("🗑️", key=f"del_{row['id']}"):
-                    delete_job(row['id'])
-                    st.rerun()
     else:
-        st.info("No applications yet.")
+        st.write("You have no applications saved yet.")
