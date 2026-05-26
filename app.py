@@ -363,7 +363,7 @@ if st.session_state["logged_in"]:
         with sort_col:
             sort_by = st.selectbox(
                 "Sort by",
-                ["Date Applied", "Company", "Position", "Match Score", "Status"],
+                ["Date Applied", "Company", "Position", "Match Rank", "Application Status"],
                 key="sort_by"
             )
         with sort_dir_col:
