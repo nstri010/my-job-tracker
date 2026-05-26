@@ -282,23 +282,33 @@ if not st.session_state["logged_in"]:
                 new_e = st.text_input("Email", key="s_e")
                 new_p = st.text_input("Password", type="password", key="s_p")
 
-                # Password strength indicator
-                if new_p:
-                    label, color, pct = password_strength(new_p)
-                    if label:
-                        st.markdown(f"""
-                        <div style="margin-top:6px;margin-bottom:12px;">
-                            <div style="background:#1f1f1f;border-radius:4px;height:4px;width:100%;">
-                                <div style="background:{color};width:{pct}%;height:4px;border-radius:4px;"></div>
-                            </div>
-                            <div style="font-size:11px;color:{color};margin-top:4px;">{label}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                # Password strength bar — always rendered, empty state when no password
+                strength_label, strength_color, strength_pct = password_strength(new_p) if new_p else ("", "#1f1f1f", 0)
+                bar_color = strength_color if new_p else "#1f1f1f"
+                st.markdown(f"""
+                <div style="margin-top:4px;margin-bottom:14px;">
+                    <div style="background:#1f1f1f;border-radius:4px;height:4px;width:100%;">
+                        <div style="background:{bar_color};width:{strength_pct}%;height:4px;border-radius:4px;"></div>
+                    </div>
+                    <div style="font-size:11px;color:{bar_color};margin-top:4px;min-height:16px;">{strength_label or ""}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                new_p2 = st.text_input("Confirm Password", type="password", key="s_p2")
+
+                # Confirm password match indicator
+                if new_p2:
+                    if new_p == new_p2:
+                        st.markdown("<div style='font-size:11px;color:#22c55e;margin-top:-8px;margin-bottom:12px;'>✓ Passwords match</div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<div style='font-size:11px;color:#ef4444;margin-top:-8px;margin-bottom:12px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
 
                 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                 if st.button("Sign Up", use_container_width=True):
-                    if not new_u or not new_e or not new_p:
+                    if not new_u or not new_e or not new_p or not new_p2:
                         st.error("Please fill in all fields.")
+                    elif new_p != new_p2:
+                        st.error("Passwords do not match.")
                     elif len(new_p) < 6:
                         st.error("Password must be at least 6 characters.")
                     else:
