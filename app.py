@@ -46,7 +46,7 @@ DARK_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
 
 [data-testid="stAppViewContainer"] {
-    background: #2d1b2e !important;
+    background: linear-gradient(135deg, #2d1b2e 0%, #3b1f45 40%, #1a1a3e 100%) !important;
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
