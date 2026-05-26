@@ -215,6 +215,23 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 </style>
 """, unsafe_allow_html=True)
 
+# ── PASSWORD STRENGTH HELPER ───────────────────────────────────────────────────
+
+def password_strength(pw):
+    if not pw:
+        return None, None, None
+    score = 0
+    if len(pw) >= 8:  score += 1
+    if len(pw) >= 12: score += 1
+    if any(c.isupper() for c in pw): score += 1
+    if any(c.isdigit() for c in pw): score += 1
+    if any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in pw): score += 1
+    if score <= 1:   return "Weak",   "#ef4444", 20
+    elif score == 2: return "Fair",   "#f97316", 40
+    elif score == 3: return "Medium", "#eab308", 65
+    elif score == 4: return "Strong", "#22c55e", 85
+    else:            return "Very Strong", "#10b981", 100
+
 # ── LOGIN PAGE ─────────────────────────────────────────────────────────────────
 
 if not st.session_state["logged_in"]:
