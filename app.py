@@ -157,6 +157,23 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     margin-bottom: 8px !important;
 }
 
+
+/* ── Fix file uploader button ghost text ── */
+[data-testid="stFileUploaderDropzoneInput"] + div span {
+    display: none !important;
+}
+[data-testid="baseButton-secondary"] span[data-testid="stIconMaterial"] {
+    display: none !important;
+}
+/* Hide the "upload" icon label on the browse button */
+[data-testid="stFileUploader"] button span {
+    display: none !important;
+}
+[data-testid="stFileUploader"] button::before {
+    content: "Browse files" !important;
+    color: white !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
