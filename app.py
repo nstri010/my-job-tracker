@@ -105,43 +105,59 @@ if not st.session_state["logged_in"]:
     with right:
         tab = st.session_state["login_tab"]
 
-        # ── SIGN IN ──
-        if tab == "login":
-            st.markdown("<div class='login-welcome'>Welcome Back</div>", unsafe_allow_html=True)
-            st.markdown("<div class='login-sub'>Sign in to continue your journey</div>", unsafe_allow_html=True)
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+       # ── SIGN IN ──
+if tab == "login":
+    st.markdown("<div class='login-welcome'>Welcome Back</div>", unsafe_allow_html=True)
+    st.markdown("<div class='login-sub'>Sign in to continue your journey</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-            u = st.text_input("Username", key="login_username", placeholder="Enter your username")
-            p = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+    u = st.text_input("Username", key="login_username", placeholder="Enter your username")
+    p = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
 
-            rm_col, fp_col = st.columns([1, 1])
-            with rm_col:
-                st.checkbox("Remember me", key="remember_me")
-            with fp_col:
-                st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-                if st.button("Forgot password?", key="go_forgot", use_container_width=True):
-                    st.session_state["login_tab"] = "forgot"
-                    st.session_state["reset_sent"] = False
-                    st.rerun()
+    # CUSTOM CSS FOR HYPERLINK EFFECT
+    st.markdown("""
+        <style>
+        .forgot-link {
+            text-align: right;
+            margin-top: -15px; /* Pull it closer to the password box */
+        }
+        .forgot-link button {
+            background-color: transparent !important;
+            border: none !important;
+            color: #f472b6 !important; /* Your signature pink */
+            padding: 0 !important;
+            font-size: 14px !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
+        .forgot-link button:hover {
+            color: #fb923c !important; /* Glows/lights up to orange on hover */
+            text-decoration: underline !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            if st.button("Sign In", key="do_login", use_container_width=True):
-                if login_user(u, p):
-                    st.session_state["logged_in"] = True
-                    st.session_state["username"] = u
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password")
+    # Placing the "Forgot password?" link right below the password field
+    col_left, col_right = st.columns([1, 1])
+    with col_left:
+        st.checkbox("Remember me", key="remember_me")
+    with col_right:
+        st.markdown('<div class="forgot-link">', unsafe_allow_html=True)
+        if st.button("Forgot password?", key="link_forgot"):
+            st.session_state["login_tab"] = "forgot"
+            st.session_state["reset_sent"] = False
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown("""
-            <div style='text-align:center;margin-top:24px;font-size:14px;color:#6a4868;'>
-                Don't have an account?
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Create a free account →", key="go_signup", use_container_width=True):
-                st.session_state["login_tab"] = "signup"
-                st.rerun()
-
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    if st.button("Sign In", key="do_login", use_container_width=True):
+        if login_user(u, p):
+            st.session_state["logged_in"] = True
+            st.session_state["username"] = u
+            st.rerun()
+        else:
+            st.error("Invalid username or password")
+            
         # ── FORGOT PASSWORD ──
         elif tab == "forgot":
             st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Reset Password</div>", unsafe_allow_html=True)
