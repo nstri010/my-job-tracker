@@ -244,7 +244,7 @@ if st.session_state["logged_in"]:
 
     # ADD JOB
 
-    with st.expander("➕ Add New Application"):
+    with st.expander("➕ Add New Application", expanded=True):
 
         c1, c2 = st.columns(2)
 
@@ -389,8 +389,8 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
-        headers = ["Company", "Position/Role", "Match Score", "Applicarion Status", "Date Applied", "Resume", "Snapshot", "Delete"]
+        ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.7, 0.7, 0.7]
+        headers = ["Company", "Position/Role", "Match Score", "Application Status", "Date Applied", "Resume", "Snapshot", "Delete"]
 
         cols = st.columns(ratios)
         for c, h in zip(cols, headers):
