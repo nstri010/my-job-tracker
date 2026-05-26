@@ -151,54 +151,75 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 
 /* ── Job row cards ── */
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(18, 18, 24, 0.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 14px !important;
-    padding: 4px 16px !important;
-    margin-bottom: 8px !important;
+    background: rgba(22, 22, 32, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 12px !important;
+    padding: 0 8px !important;
+    margin-bottom: 6px !important;
+    transition: border-color 0.2s ease !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    border-color: rgba(255, 255, 255, 0.13) !important;
 }
 
-/* Force every column cell to flex-center vertically */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div {
+/* Every column inside a card: flex center, fixed height */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] {
     display: flex !important;
     align-items: center !important;
-    min-height: 56px !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div:first-child {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 60px !important;
 }
 
-/* Selectbox inside row: remove extra top padding Streamlit adds */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
+/* Strip paragraph margin/padding inside cards */
+[data-testid="stVerticalBlockBorderWrapper"] p {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.3 !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label {
+
+/* Selectbox inside card: shrink label gap */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] {
+    width: 100% !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > label {
     display: none !important;
 }
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > div {
+    margin-top: 0 !important;
+}
 
-/* Buttons inside row: vertically center */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"] button,
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stLinkButton"] a {
+/* Buttons inside card */
+[data-testid="stVerticalBlockBorderWrapper"] button,
+[data-testid="stVerticalBlockBorderWrapper"] a[data-testid="stLinkButton"] {
+    width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    font-size: 15px !important;
+    border-radius: 8px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] button:hover {
+    background: rgba(255,255,255,0.09) !important;
+    border-color: rgba(255,255,255,0.18) !important;
 }
 
-/* ── Delete button red styling ── */
-button[kind="secondary"][data-testid*="d_"],
-div[data-testid*="d_"] button {
+/* ── Delete button (last button in each card row) ── */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"]:last-of-type button {
     color: #f87171 !important;
-    border-color: rgba(248,113,113,0.25) !important;
+    border-color: rgba(248,113,113,0.2) !important;
 }
-div[data-testid*="d_"] button:hover {
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"]:last-of-type button:hover {
     background: rgba(248,113,113,0.12) !important;
     border-color: #f87171 !important;
-}
-
-/* ── Vault row: hide Streamlit container border for inline rows ── */
-.vault-row-inner [data-testid="stVerticalBlockBorderWrapper"] {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
 }
 
 
@@ -597,22 +618,17 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
         # ── Column header row ──────────────────────────────────────────
-        st.markdown("""
-        <div style="display:grid;grid-template-columns:1.6fr 1.6fr 0.9fr 1.5fr 1fr 0.5fr 0.5fr 0.5fr;
-                    padding:0 20px 8px 20px;gap:12px;">
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Company</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Position</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Match</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Status</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Applied</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;text-align:center;">CV</span>
-            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;text-align:center;">📸</span>
-            <span></span>
-        </div>
-        """, unsafe_allow_html=True)
+        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(ratios)
+        for col, label in zip([h1,h2,h3,h4,h5,h6,h7,h8],
+                               ["Company","Position","Match","Status","Applied","CV","Snap",""]):
+            col.markdown(
+                f'<span style="font-size:10px;font-weight:700;color:#374151;'
+                f'text-transform:uppercase;letter-spacing:0.1em;">{label}</span>',
+                unsafe_allow_html=True
+            )
 
         # ── Job rows — pure Streamlit columns, CSS handles styling ───
         ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
@@ -652,8 +668,12 @@ if st.session_state["logged_in"]:
             with st.container(border=True):
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                c1.markdown(f'<span style="font-size:15px;font-weight:600;color:#e2e8f0;">{company}</span>', unsafe_allow_html=True)
-                c2.markdown(f'<span style="font-size:14px;color:#94a3b8;">{position}</span>', unsafe_allow_html=True)
+                c1.markdown(
+                    f'<div style="font-size:14px;font-weight:600;color:#f1f5f9;letter-spacing:-0.01em;">{company}</div>',
+                    unsafe_allow_html=True)
+                c2.markdown(
+                    f'<div style="font-size:13px;color:#64748b;">{position}</div>',
+                    unsafe_allow_html=True)
                 c3.markdown(score_html, unsafe_allow_html=True)
 
                 with c4:
@@ -668,7 +688,9 @@ if st.session_state["logged_in"]:
                         update_job_full(row["id"], {"status": new_stat})
                         st.rerun()
 
-                c5.markdown(f'<span style="font-size:13px;color:#64748b;">{date_str}</span>', unsafe_allow_html=True)
+                c5.markdown(
+                    f'<div style="font-size:12px;color:#475569;">{date_str}</div>',
+                    unsafe_allow_html=True)
 
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
