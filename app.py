@@ -279,6 +279,10 @@ if not st.session_state["logged_in"]:
                     " onclick=\"\">Forgot password?</span></div>",
                     unsafe_allow_html=True
                 )
+                if st.button("→ Reset password", key="go_forgot", use_container_width=True):
+                    st.session_state["login_tab"] = "forgot"
+                    st.session_state["reset_sent"] = False
+                    st.rerun()
 
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             st.markdown('<div class="signin-btn">', unsafe_allow_html=True)
@@ -321,6 +325,7 @@ if not st.session_state["logged_in"]:
                         st.error("Please enter your username")
                     else:
                         send_password_reset(reset_u)
+                        # Always show success (don't reveal if user exists)
                         st.session_state["reset_sent"] = True
                         st.rerun()
 
@@ -329,7 +334,7 @@ if not st.session_state["logged_in"]:
                 st.session_state["login_tab"] = "login"
                 st.session_state["reset_sent"] = False
                 st.rerun()
-        
+
         # ── SIGN UP ──
         else:
             st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Create Account</div>", unsafe_allow_html=True)
