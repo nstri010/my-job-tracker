@@ -146,7 +146,7 @@ Resume:
 
 Job Description:
 {job_desc}"""
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(
             prompt,
             generation_config=genai.GenerationConfig(temperature=0)
