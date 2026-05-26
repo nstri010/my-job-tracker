@@ -11,18 +11,34 @@ except:
     st.error("Secrets Error.")
     st.stop()
 
-def sign_up_user(username, password):
-    email = f"{username}@tracker.com"
+def sign_up_user(username, password, email):
     try:
         supabase.auth.sign_up({"email": email, "password": password})
+        # Store username → email mapping in a profiles table
+        user = supabase.auth.get_user()
+        supabase.table("profiles").insert({"username": username, "email": email}).execute()
         return True
     except: return False
 
 def login_user(username, password):
-    email = f"{username}@tracker.com"
     try:
+        # Look up real email from profiles table
+        res = supabase.table("profiles").select("email").eq("username", username).execute()
+        if not res.data:
+            return False
+        email = res.data[0]["email"]
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         return response.user is not None
+    except: return False
+
+def send_password_reset(username):
+    try:
+        res = supabase.table("profiles").select("email").eq("username", username).execute()
+        if not res.data:
+            return False
+        email = res.data[0]["email"]
+        supabase.auth.reset_password_email(email)
+        return True
     except: return False
 
 def upload_resume(file_obj, username):
