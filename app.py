@@ -52,7 +52,6 @@ DARK_CSS = """
 
 h1 {
     font-family: 'Playfair Display', serif !important;
-    font-style: italic !important;
     color: #ead8ee !important;
 }
 h2, h3 {
