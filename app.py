@@ -317,6 +317,7 @@ if not st.session_state["logged_in"]:
             st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:24px;'>Start your job tracking journey today</div>", unsafe_allow_html=True)
 
             new_u = st.text_input("Username", key="signup_username", placeholder="Choose a username")
+            new_e = st.text_input("Email", key="signup_email", placeholder="Enter your real email address")
             new_p = st.text_input("Password", type="password", key="signup_password", placeholder="Choose a strong password")
 
             # Password strength meter
@@ -352,8 +353,10 @@ if not st.session_state["logged_in"]:
             """, unsafe_allow_html=True)
 
             if st.button("Create Account", key="do_signup", use_container_width=True):
-                if not new_u or not new_p:
+                if not new_u or not new_e or not new_p:
                     st.error("Please fill in all fields")
+                elif "@" not in new_e or "." not in new_e:
+                    st.error("Please enter a valid email address")
                 elif new_p != confirm_p:
                     st.error("Passwords do not match")
                 elif not agree:
@@ -361,12 +364,12 @@ if not st.session_state["logged_in"]:
                 elif password_strength(new_p)[0] == "Weak":
                     st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
                 else:
-                    if sign_up_user(new_u, new_p):
-                        st.success("Account created! You can now sign in.")
+                    if sign_up_user(new_u, new_p, new_e):
+                        st.success("Account created! Check your email to confirm, then sign in.")
                         st.session_state["login_tab"] = "login"
                         st.rerun()
                     else:
-                        st.error("Username already exists — please choose another")
+                        st.error("Username or email already exists — please try another")
 
             st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
             if st.button("Sign in →", key="go_login", use_container_width=True):
