@@ -174,6 +174,15 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     color: white !important;
 }
 
+
+/* ── Shorter date input bar ── */
+[data-testid="stDateInput"] input {
+    max-width: 140px !important;
+}
+[data-testid="stDateInput"] > div {
+    max-width: 140px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -325,7 +334,7 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
-            applied_date = st.date_input("Date Applied")
+            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
