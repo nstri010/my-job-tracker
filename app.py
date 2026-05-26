@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -64,7 +63,7 @@ html, body, [class*="st-"] {
     margin-top: 4px;
 }
 
-/* Job Rows - Exactly like the screenshot */
+/* Job Rows */
 [data-testid="stVerticalBlockBorderWrapper"] {
     background: rgba(45, 27, 46, 0.6) !important;
     border: 1px solid rgba(244, 114, 182, 0.15) !important;
@@ -76,15 +75,6 @@ html, body, [class*="st-"] {
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
     border-color: rgba(244, 114, 182, 0.5) !important;
     background: rgba(61, 31, 58, 0.8) !important;
-}
-
-/* Status Badges - Pill Style */
-.status-pill {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
 }
 
 /* Buttons and UI Elements */
@@ -108,14 +98,11 @@ p { color: #d1d5db !important; }
 
 st.markdown(CYBER_PLUM_STYLE, unsafe_allow_html=True)
 
-# Session State
-for key in ["logged_in", "username"]:
-    if key not in st.session_state: st.session_state[key] = False
-
-# Sign Out Button
-    if st.button("Sign Out"):
-        st.session_state.clear()
-        st.rerun()
+# Session State Initialization
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "username" not in st.session_state:
+    st.session_state["username"] = None
         
 # ── AUTHENTICATION ──────────────────────────────────────────────────────────
 if not st.session_state["logged_in"]:
@@ -130,13 +117,24 @@ if not st.session_state["logged_in"]:
             p = st.text_input("Password", type="password")
             if st.button("Sign In", use_container_width=True):
                 if login_user(u, p):
-                    st.session_state["logged_in"], st.session_state["username"] = True, u
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = u
                     st.rerun()
+                else:
+                    st.error("Invalid Username or Password")
 
 # ── MAIN DASHBOARD ──────────────────────────────────────────────────────────
 if st.session_state["logged_in"]:
-    st.title("Job Tracker")
-    st.caption("This website uses AI which may make errors. Make sure to double-check all results.")
+    # Top Header Bar
+    head_col, signout_col = st.columns([5, 1])
+    with head_col:
+        st.title("Job Tracker")
+        st.caption(f"Logged in as {st.session_state['username']} • AI results should be verified.")
+    with signout_col:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Sign Out", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
 
     # ── STATS CARDS ──
     jobs = load_jobs()
@@ -173,11 +171,21 @@ if st.session_state["logged_in"]:
                 r3.markdown(f"**{row.get('match_score', '90')}**")
                 
                 with r4:
-                    # Status badges with pill styling
-                    status = row.get('status', '📝 Applied')
-                    st.selectbox("Status", 
-                        ["📝 Applied", "📅 Interview", "✅ Offer", "❌ Rejected"],
-                        index=0, key=f"s_{row['id']}", label_visibility="collapsed")
+                    curr_status = row.get('status', '📝 Applied')
+                    status_options = ["📝 Applied", "📅 Interview", "✅ Offer", "❌ Rejected"]
+                    # Ensure current status is in the list to avoid index errors
+                    try:
+                        idx = status_options.index(curr_status)
+                    except ValueError:
+                        idx = 0
+
+                    new_status = st.selectbox("Status", 
+                        status_options,
+                        index=idx, key=f"s_{row['id']}", label_visibility="collapsed")
+                    
+                    if new_status != curr_status:
+                        update_job_full(row['id'], {"status": new_status})
+                        st.rerun()
 
                 r5.write(str(row.get('applied_date'))[:10])
                 
