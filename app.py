@@ -604,21 +604,24 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
+        # Same ratios used for BOTH headers and data rows — guarantees alignment
+        col_ratios = [2, 2, 1, 2, 1.5, 1, 1, 1]
+
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
-        ratios = [1.2, 1.4, 0.8, 1.4, 1, 0.4, 0.4, 0.4]
-
-        # ── Column headers ─────────────────────────────────────────────
-        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(ratios)
-        for col, label in zip([h1,h2,h3,h4,h5,h6,h7,h8],
-                               ["Company","Position","Match","Status","Applied","CV","Snap",""]):
+        # ── Headers ────────────────────────────────────────────────────
+        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
+        for col, label in zip(
+            [h1, h2, h3, h4, h5, h6, h7, h8],
+            ["Company", "Position", "Match", "Status", "Date Applied", "CV", "Snapshot", ""]
+        ):
             col.markdown(
-                f'<span style="font-size:10px;font-weight:700;color:#374151;'
-                f'text-transform:uppercase;letter-spacing:0.1em;">{label}</span>',
+                f'<span style="font-size:10px;font-weight:700;color:#4b5563;'
+                f'text-transform:uppercase;letter-spacing:0.08em;">{label}</span>',
                 unsafe_allow_html=True)
 
         # ── Job rows ───────────────────────────────────────────────────
-        for idx, row in df.iterrows():
+        for _, row in df.iterrows():
             curr      = row.get("status", "📝 Applied")
             raw_score = row.get("match_score", "")
             raw_date  = row.get("created_at", "")
@@ -634,12 +637,12 @@ if st.session_state["logged_in"]:
                 score_html = (
                     f'<div style="display:inline-flex;flex-direction:column;gap:4px;">'
                     f'<span style="font-size:14px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
-                    f'<div style="background:rgba(255,255,255,0.07);border-radius:3px;height:3px;width:40px;">'
+                    f'<div style="background:rgba(255,255,255,0.08);border-radius:3px;height:3px;width:40px;">'
                     f'<div style="height:3px;width:{pct}%;background:{sc};border-radius:3px;"></div></div>'
                     f'</div>'
                 )
             except:
-                score_html = '<span style="color:#64748b;">—</span>'
+                score_html = '<span style="color:#64748b;font-size:13px;">—</span>'
 
             try:
                 date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
@@ -647,14 +650,10 @@ if st.session_state["logged_in"]:
                 date_str = str(raw_date)[:10] if raw_date else "—"
 
             with st.container(border=True):
-                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(col_ratios, vertical_alignment="center")
 
-                c1.markdown(
-                    f'<p style="font-size:14px;font-weight:600;color:#f1f5f9;margin:0;">{company}</p>',
-                    unsafe_allow_html=True)
-                c2.markdown(
-                    f'<p style="font-size:13px;color:#64748b;margin:0;">{position}</p>',
-                    unsafe_allow_html=True)
+                c1.write(company)
+                c2.write(position)
                 c3.markdown(score_html, unsafe_allow_html=True)
 
                 with c4:
@@ -667,9 +666,7 @@ if st.session_state["logged_in"]:
                         update_job_full(row["id"], {"status": new_stat})
                         st.rerun()
 
-                c5.markdown(
-                    f'<p style="font-size:12px;color:#475569;margin:0;">{date_str}</p>',
-                    unsafe_allow_html=True)
+                c5.write(date_str)
 
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
