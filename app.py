@@ -122,8 +122,8 @@ if not st.session_state["logged_in"]:
                 The smarter, organized way to career hunt. No more overwhelming spreadsheets or disorganized files.
             </p>
             <div class="stat-row">
-                <div><div class="stat-val">98%</div><div class="stat-lbl">Match Accuracy</div></div>
-                <div><div class="stat-val">24/7</div><div class="stat-lbl">Auto Tracking</div></div>
+                <div><div class="stat-val">Fit Score</div><div class="stat-lbl">Check Your Rank</div></div>
+                <div><div class="stat-val">AI</div><div class="stat-lbl">Analysis</div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
