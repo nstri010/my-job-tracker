@@ -226,7 +226,7 @@ if not st.session_state["logged_in"]:
             <div style="font-size:15px;font-weight:700;color:#f472b6;margin-bottom:4px;">✦ Career Hunt HQ</div>
             <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:28px;">AI Resume Tracking Tool</div>
             <div style="font-size:38px;font-weight:800;color:#fafafa;line-height:1.05;letter-spacing:-0.04em;margin-bottom:14px;">Find.<br><span style="color:#f472b6;">Match.</span><br>File.</div>
-            <div style="font-size:13px;color:#52525b;line-height:1.6;margin-bottom:28px;">A smarter way to career hunt. No more spreadsheets or disorganized files.</div>
+            <div style="font-size:13px;color:#52525b;line-height:1.6;margin-bottom:28px;">The smarter way to career hunt. No more spreadsheets or disorganized files.</div>
             <div style="display:flex;gap:32px;">
                 <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">Fit Score</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Check Your Rank</div></div>
                 <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">AI</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Gemini Backed</div></div>
@@ -258,19 +258,52 @@ if not st.session_state["logged_in"]:
                     st.session_state["login_tab"] = "signup"; st.rerun()
 
             elif tab == "signup":
-                st.markdown("<h2 style='font-size:40px; margin-bottom:8px;'>Create Account</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='margin-bottom:24px;'>Join the AI-powered career revolution</p>", unsafe_allow_html=True)
-                
+                st.markdown("<h2 style='font-size:36px; margin-bottom:4px;'>Create Account</h2>", unsafe_allow_html=True)
+                st.markdown("<p style='margin-bottom:20px;'>Join the AI-powered career revolution</p>", unsafe_allow_html=True)
+
                 new_u = st.text_input("Username", key="s_u")
                 new_e = st.text_input("Email", key="s_e")
                 new_p = st.text_input("Password", type="password", key="s_p")
-                
-                st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+
+                # Password strength indicator
+                if new_p:
+                    length = len(new_p)
+                    has_upper = any(c.isupper() for c in new_p)
+                    has_digit = any(c.isdigit() for c in new_p)
+                    has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in new_p)
+                    score = sum([length >= 8, has_upper, has_digit, has_special])
+                    labels = ["", "Weak", "Fair", "Good", "Strong"]
+                    colors = ["", "#ef4444", "#f97316", "#eab308", "#22c55e"]
+                    widths = ["", "25%", "50%", "75%", "100%"]
+                    label = labels[score]
+                    color = colors[score]
+                    width = widths[score]
+                    st.markdown(f"""
+                    <div style="margin-top:6px;margin-bottom:12px;">
+                        <div style="background:#1f1f1f;border-radius:4px;height:4px;width:100%;">
+                            <div style="background:{color};width:{width};height:4px;border-radius:4px;transition:width 0.3s;"></div>
+                        </div>
+                        <div style="font-size:11px;color:{color};margin-top:4px;">{label}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                 if st.button("Sign Up", use_container_width=True):
-                    ok, err = sign_up_user(new_u, new_p, new_e)
-                    if ok: st.session_state["login_tab"] = "login"; st.rerun()
-                    else: st.error(err)
-                
+                    if not new_u or not new_e or not new_p:
+                        st.error("Please fill in all fields.")
+                    elif len(new_p) < 6:
+                        st.error("Password must be at least 6 characters.")
+                    else:
+                        ok, err = sign_up_user(new_u, new_p, new_e)
+                        if ok:
+                            st.session_state["login_tab"] = "login"
+                            st.rerun()
+                        else:
+                            if "duplicate" in str(err).lower() or "already exists" in str(err).lower():
+                                st.error("That username or email is already taken. Please choose another.")
+                            else:
+                                st.error("Something went wrong. Please try again.")
+
                 if st.button("← Back to Login", use_container_width=True):
                     st.session_state["login_tab"] = "login"; st.rerun()
 
