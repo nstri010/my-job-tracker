@@ -116,8 +116,8 @@ if not st.session_state["logged_in"]:
         st.markdown("""
         <div class="login-panel">
             <div style="font-size:32px; color:#f472b6; margin-bottom:8px; font-family:'Playfair Display'">✦ Career Hunt HQ</div>
-            <div style="color:#64748b; font-size:12px; margin-bottom:40px; letter-spacing:2px; text-transform:uppercase;">AI Career Intelligence</div>
-            <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Land Your<br>Dream Career.</h1>
+            <div style="color:#64748b; font-size:12px; margin-bottom:40px; letter-spacing:2px; text-transform:uppercase;">AI Resume Tracking Tool</div>
+            <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Find. Match. File.</h1>
             <p style="font-size:17px; line-height:1.6; max-width:400px;">
                 The modern command center for your career search. Track applications and optimize your resume with AI-driven matching.
             </p>
