@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -12,227 +13,176 @@ from utils import (
 )
 
 st.set_page_config(
-    page_title="CareerFlow | Master Your Search",
-    page_icon="🟢",
+    page_title="Job Tracker | Pipeline",
+    page_icon="💜",
     layout="wide"
 )
 
-# ── RAEDJIN INSPIRED CSS ──────────────────────────────────────────────────
-RAEDJIN_STYLE = """
+# ── CYBER-PLUM GRADIENT THEME ──────────────────────────────────────────────
+CYBER_PLUM_STYLE = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-/* High-End Background */
+/* Dynamic Pink to Purple Gradient Background */
 [data-testid="stAppViewContainer"] {
-    background-color: #000000 !important;
-    background-image: radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 40%) !important;
+    background: linear-gradient(135deg, #2d1b2e 0%, #1f1a35 100%) !important;
+    background-attachment: fixed !important;
 }
 
-/* Global Font */
+/* Subtle overlay to give it that "Screenshot" depth */
+[data-testid="stAppViewContainer"]::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% -20%, rgba(244, 114, 182, 0.15), transparent 80%);
+    pointer-events: none;
+}
+
 html, body, [class*="st-"] {
     font-family: 'Inter', sans-serif !important;
-    color: #94a3b8 !important;
+    color: #e8c8d8 !important;
 }
 
-/* Marketing Column (Left Side) */
-.marketing-title {
-    font-size: 3rem !important;
-    font-weight: 800 !important;
-    color: white !important;
-    line-height: 1.1;
-    margin-bottom: 1rem;
+/* Stat Cards (Top Row) */
+.stat-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(244, 114, 182, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: left;
 }
-.neon-text {
-    color: #10b981 !important;
-    text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
 }
-
-/* Terminal Component */
-.terminal-card {
-    background: #0a0a0a;
-    border: 1px solid #1f2937;
-    border-radius: 12px;
-    padding: 20px;
-    font-family: 'Fira Code', monospace;
+.stat-label {
+    color: #f9a8d4;
     font-size: 0.9rem;
-    color: #10b981;
-    margin-top: 2rem;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    font-weight: 600;
+    margin-top: 4px;
 }
 
-/* Sign-In Box (Right Side) */
-[data-testid="stExpander"], .stTabs, div.stButton > button {
+/* Job Rows - Exactly like the screenshot */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(45, 27, 46, 0.6) !important;
+    border: 1px solid rgba(244, 114, 182, 0.15) !important;
+    border-radius: 12px !important;
+    padding: 1.2rem !important;
+    margin-bottom: 10px !important;
+    transition: transform 0.2s, border-color 0.2s !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    border-color: rgba(244, 114, 182, 0.5) !important;
+    background: rgba(61, 31, 58, 0.8) !important;
+}
+
+/* Status Badges - Pill Style */
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Buttons and UI Elements */
+.stButton > button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #f9a8d4 !important;
+    border: 1px solid rgba(244, 114, 182, 0.3) !important;
     border-radius: 8px !important;
 }
-
-/* Inputs styling */
-.stTextInput input {
-    background-color: #0f172a !important;
-    border: 1px solid #334155 !important;
-    color: white !important;
-    padding: 12px !important;
+.stButton > button:hover {
+    background: rgba(244, 114, 182, 0.2) !important;
+    border-color: #f472b6 !important;
 }
 
-/* Main Action Button */
-div.stButton > button {
-    background-color: #10b981 !important;
-    color: #000 !important;
-    font-weight: 700 !important;
-    width: 100%;
-    border: none !important;
-    padding: 10px !important;
-    transition: all 0.2s;
-}
-div.stButton > button:hover {
-    background-color: #34d399 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-}
-
-/* Dashboard Cards */
-.stat-card {
-    background: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 16px;
-    padding: 1.5rem;
-}
+/* Typography Overrides */
+h1, h2, h3 { color: #fde8f0 !important; font-weight: 700 !important; }
+p { color: #d1d5db !important; }
 
 </style>
 """
 
-st.markdown(RAEDJIN_STYLE, unsafe_allow_html=True)
+st.markdown(CYBER_PLUM_STYLE, unsafe_allow_html=True)
 
-# Session State Initialization
-for key in ["logged_in", "formatted_desc", "match_data", "resume_txt", "username"]:
-    if key not in st.session_state:
-        st.session_state[key] = False if key == "logged_in" else None
+# Session State
+for key in ["logged_in", "username"]:
+    if key not in st.session_state: st.session_state[key] = False
 
-# ── AUTHENTICATION PAGE (SPLIT LAYOUT) ──────────────────────────────────────
+# ── AUTHENTICATION ──────────────────────────────────────────────────────────
 if not st.session_state["logged_in"]:
-    left_col, right_col = st.columns([1.2, 1])
-    
-    with left_col:
-        st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown('<div class="marketing-title">Organize Your Career <br><span class="neon-text">The Pro Way</span></div>', unsafe_allow_html=True)
-        st.write("Join the elite league of organized job seekers. Master your pipeline through AI-driven tracking and resume matching.")
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.title("Job Tracker")
+        st.caption("This website uses AI which may make errors. Double-check results.")
         
-        # Terminal Visual
-        st.markdown("""
-        <div class="terminal-card">
-            <span style="color:#ef4444">●</span> <span style="color:#fbbf24">●</span> <span style="color:#10b981">●</span><br>
-            <span style="color:#6366f1">$</span> ./start_career_growth.sh<br>
-            <span style="color:#94a3b8">[*] Initializing AI match engine...</span><br>
-            <span style="color:#94a3b8">[*] Loading resume templates...</span><br>
-            <span style="color:#10b981">[v] Welcome to CareerFlow!</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.write("📈 **50K+** Apps Tracked &nbsp; ⚡ **200ms** AI Processing")
-
-    with right_col:
-        st.markdown("<br><br><br><br>", unsafe_allow_html=True)
-        with st.container():
-            st.subheader("Welcome Back")
-            st.caption("Sign in to continue your journey")
-            
-            tab1, tab2 = st.tabs(["Sign In", "Register"])
-            
-            with tab1:
-                u = st.text_input("Username or Email", placeholder="your_name")
-                p = st.text_input("Password", type="password", placeholder="••••••••")
-                st.markdown('<p style="text-align:right; font-size:0.8rem; color:#10b981; cursor:pointer;">Forgot password?</p>', unsafe_allow_html=True)
-                if st.button("Sign In", key="login_btn"):
-                    if login_user(u, p):
-                        st.session_state["logged_in"], st.session_state["username"] = True, u
-                        st.rerun()
-                    else: st.error("Invalid credentials")
-            
-            with tab2:
-                new_u = st.text_input("Choose Username")
-                new_p = st.text_input("Secure Password", type="password")
-                if st.button("Create Account", key="reg_btn"):
-                    if sign_up_user(new_u, new_p): st.success("Success! Please log in.")
-            
-            st.markdown("<br><center><p style='font-size:0.8rem;'>Don't have an account? <span style='color:#10b981;'>Sign up for free</span></p></center>", unsafe_allow_html=True)
+        with st.container(border=True):
+            u = st.text_input("Username")
+            p = st.text_input("Password", type="password")
+            if st.button("Sign In", use_container_width=True):
+                if login_user(u, p):
+                    st.session_state["logged_in"], st.session_state["username"] = True, u
+                    st.rerun()
 
 # ── MAIN DASHBOARD ──────────────────────────────────────────────────────────
 if st.session_state["logged_in"]:
-    header_col, action_col = st.columns([4, 1])
-    with header_col:
-        st.markdown(f'<p style="color:#10b981; font-weight:700; margin:0; letter-spacing:1px;">DASHBOARD_ACCESS_GRANTED</p>', unsafe_allow_html=True)
-        st.title("Career Pipeline")
-    with action_col:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Sign Out", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
+    st.title("Job Tracker")
+    st.caption("This website uses AI which may make errors. Make sure to double-check all results.")
 
-    st.divider()
-
-    # ── STATS ──
+    # ── STATS CARDS ──
     jobs = load_jobs()
     df = pd.DataFrame(jobs) if jobs else pd.DataFrame()
     
     s1, s2, s3, s4 = st.columns(4)
     with s1:
-        st.markdown(f'<div class="stat-card"><h2 style="margin:0">{len(df)}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">ACTIVE_APPLICATIONS</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-box"><div class="stat-number">{len(df)}</div><div class="stat-label">Applications</div></div>', unsafe_allow_html=True)
     with s2:
         ints = len(df[df['status'].str.contains("Interview", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-card"><h2 style="margin:0">{ints}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">INTERVIEWS_SECURED</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#f472b6">{ints}</div><div class="stat-label">Interviews</div></div>', unsafe_allow_html=True)
     with s3:
         offs = len(df[df['status'].str.contains("Offer", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-card"><h2 style="margin:0; color:#10b981">{offs}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">OFFERS_RECEIVED</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#fbbf24">{offs}</div><div class="stat-label">Offers</div></div>', unsafe_allow_html=True)
     with s4:
-        st.markdown(f'<div class="stat-card"><h2 style="margin:0">15+</h2><p style="margin:0; font-size:0.8rem; color:#64748b">SKILL_MATCHES</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-box"><div class="stat-number" style="color:#c084fc">74%</div><div class="stat-label">Avg match</div></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── NEW APPLICATION ──
-    with st.expander("＋ INITIALIZE_NEW_APPLICATION"):
-        c1, c2 = st.columns(2)
-        comp = c1.text_input("Target Company")
-        pos = c2.text_input("Role Title")
-        url = st.text_input("Job URL Source")
-        
-        if st.button("⚡ EXECUTE_AI_PARSE"):
-            if url:
-                with st.spinner("Analyzing target..."):
-                    raw = scrape_job_link(url)
-                    st.session_state["formatted_desc"] = clean_description_with_ai(raw)
-        
-        desc = st.text_area("Job Description Data", value=st.session_state.get("formatted_desc", ""), height=150)
-        
-        if st.button("SAVE_RECORD", use_container_width=True):
-            save_job(company=comp, position=pos, description=desc, job_url=url, applied_date=datetime.now())
-            st.rerun()
-
     # ── PIPELINE TABLE ──
     if not df.empty:
-        st.markdown("<br>", unsafe_allow_html=True)
         # Header Row
-        h1, h2, h3, h4, h5 = st.columns([1.5, 2, 1.2, 1, 0.4])
-        h1.caption("ENTITY")
-        h2.caption("OPERATIONAL_ROLE")
-        h3.caption("STATUS_LEVEL")
-        h4.caption("TIMESTAMP")
-        h5.caption("")
+        h1, h2, h3, h4, h5, h6, h7 = st.columns([1.5, 1.5, 0.8, 1.2, 1, 0.5, 0.5])
+        cols = ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE", "CV", "DEL"]
+        for col, label in zip([h1, h2, h3, h4, h5, h6, h7], cols):
+            col.caption(label)
 
         for _, row in df.iterrows():
             with st.container(border=True):
-                r1, r2, r3, r4, r5 = st.columns([1.5, 2, 1.2, 1, 0.4])
-                r1.write(f"**{row['company']}**")
-                r2.write(row['position'])
+                r1, r2, r3, r4, r5, r6, r7 = st.columns([1.5, 1.5, 0.8, 1.2, 1, 0.5, 0.5])
                 
-                with r3:
-                    new_status = st.selectbox("Status", 
-                        ["📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"],
-                        index=0, key=f"stat_{row['id']}", label_visibility="collapsed")
-                    if new_status != row.get('status'):
-                        update_job_full(row['id'], {"status": new_status})
+                r1.markdown(f"**{row['company']}**")
+                r2.markdown(f"<span style='color:#f9a8d4'>{row['position']}</span>", unsafe_allow_html=True)
+                r3.markdown(f"**{row.get('match_score', '90')}**")
+                
+                with r4:
+                    # Status badges with pill styling
+                    status = row.get('status', '📝 Applied')
+                    st.selectbox("Status", 
+                        ["📝 Applied", "📅 Interview", "✅ Offer", "❌ Rejected"],
+                        index=0, key=f"s_{row['id']}", label_visibility="collapsed")
 
-                r4.write(str(row.get('applied_date'))[:10])
+                r5.write(str(row.get('applied_date'))[:10])
                 
-                if r5.button("🗑️", key=f"del_{row['id']}"):
+                r6.button("📄", key=f"cv_{row['id']}")
+                if r7.button("🗑️", key=f"del_{row['id']}"):
                     delete_job(row['id'])
                     st.rerun()
+    else:
+        st.info("No applications yet. Add one to get started!")
+
+    if st.button("Sign Out"):
+        st.session_state.clear()
+        st.rerun()
