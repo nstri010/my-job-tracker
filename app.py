@@ -36,8 +36,6 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 if "login_tab" not in st.session_state:
     st.session_state["login_tab"] = "login"
-if "reset_sent" not in st.session_state:
-    st.session_state["reset_sent"] = False
 
 # ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -71,7 +69,7 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 24px !important;
     padding: 50px 45px !important;
-    min-height: 580px;
+    min-height: 600px;
 }
 
 /* ── Inputs (Terminal Style) ── */
@@ -129,7 +127,7 @@ if not st.session_state["logged_in"]:
         """, unsafe_allow_html=True)
 
     with r_col:
-        # WRAPPER FOR RIGHT BORDER
+        # OPEN THE PANEL
         st.markdown('<div class="login-panel">', unsafe_allow_html=True)
         
         tab = st.session_state["login_tab"]
@@ -170,6 +168,7 @@ if not st.session_state["logged_in"]:
             if st.button("← Back to Login", use_container_width=True):
                 st.session_state["login_tab"] = "login"; st.rerun()
         
+        # CLOSE THE PANEL
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ── DASHBOARD ──────────────────────────────────────────────────────────────────
