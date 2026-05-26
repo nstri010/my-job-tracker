@@ -475,7 +475,7 @@ if st.session_state["logged_in"]:
         if st.session_state["dark_mode"]:
             st.markdown("""<style>
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,182,213,0.07) !important;
+    background: rgba(255,182,213,0.08) !important;
     border: 1px solid rgba(244,114,182,0.22) !important;
     border-radius: 12px !important;
     padding: 4px 8px !important;
@@ -483,22 +483,22 @@ if st.session_state["logged_in"]:
     transition: background 0.18s, border-color 0.18s !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(244,114,182,0.15) !important;
+    background: rgba(255,182,213,0.16) !important;
     border-color: rgba(244,114,182,0.5) !important;
 }
 </style>""", unsafe_allow_html=True)
         else:
             st.markdown("""<style>
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.42) !important;
-    border: 1px solid rgba(255,255,255,0.75) !important;
+    background: rgba(255,255,255,0.38) !important;
+    border: 1px solid rgba(255,255,255,0.7) !important;
     border-radius: 12px !important;
     padding: 4px 8px !important;
     margin-bottom: 10px !important;
     transition: background 0.18s, border-color 0.18s !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(255,255,255,0.65) !important;
+    background: rgba(255,255,255,0.58) !important;
     border-color: rgba(226,115,150,0.45) !important;
 }
 </style>""", unsafe_allow_html=True)
