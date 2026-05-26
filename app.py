@@ -49,6 +49,8 @@ st.markdown("""
 }
 [data-testid="stHeader"] { background: transparent !important; }
 [data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
+/* Remove top gap Streamlit adds inside columns on the login page */
+[data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
 * { font-family: 'Inter', sans-serif !important; }
 h1 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
 h2, h3 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
@@ -197,7 +199,7 @@ hr { border-color: #4a2248 !important; }
 
 if not st.session_state["logged_in"]:
 
-    st.markdown("<div style='height:2rem'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
     left, right = st.columns([1, 1], gap="medium")
 
     with left:
@@ -229,10 +231,6 @@ if not st.session_state["logged_in"]:
         """, unsafe_allow_html=True)
 
     with right:
-        st.markdown("""
-        <div style="background:#1e0e28;border-radius:16px;padding:48px 40px;border:1px solid #3a1a45;min-height:520px;">
-        """, unsafe_allow_html=True)
-
         tab = st.session_state["login_tab"]
 
         col_a, col_b = st.columns(2)
@@ -272,8 +270,6 @@ if not st.session_state["logged_in"]:
                     st.session_state["login_tab"] = "login"
                 else:
                     st.error("Username already exists")
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
 # ── MAIN APP ───────────────────────────────────────────────────────────────────
 
