@@ -13,12 +13,20 @@ except:
 
 def sign_up_user(username, password, email):
     try:
-        supabase.auth.sign_up({"email": email, "password": password})
-        # Store username → email mapping in a profiles table
-        user = supabase.auth.get_user()
+        # Step 1: create auth user
+        res = supabase.auth.sign_up({"email": email, "password": password})
+        if not res.user:
+            return False, "Signup failed — please try again"
+    except Exception as e:
+        return False, f"Auth error: {str(e)}"
+
+    try:
+        # Step 2: store username→email in profiles
         supabase.table("profiles").insert({"username": username, "email": email}).execute()
-        return True
-    except: return False
+    except Exception as e:
+        return False, f"Profile error: {str(e)}"
+
+    return True, None
 
 def login_user(username, password):
     try:
