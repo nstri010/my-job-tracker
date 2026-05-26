@@ -63,13 +63,13 @@ st.markdown("""
 
 /* Left column padding */
 div[data-testid="stHorizontalBlock"] > div:nth-child(1) {
-    padding: 8vh 60px 40px 60px !important;
+    padding: 15vh 60px 60px 60px !important;
     border-right: 1px solid rgba(255,255,255,0.06) !important;
     min-height: 100vh !important;
 }
 /* Right column padding */
 div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
-    padding: 8vh 80px 40px 80px !important;
+    padding: 15vh 80px 60px 80px !important;
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -138,7 +138,7 @@ hr { border-color: #4a2248 !important; }
     border-radius: 10px !important;
     font-size: 15px !important;
     font-weight: 500 !important;
-    height: 44px !important;
+    height: 52px !important;
 }
 .stTextInput input:focus {
     border-color: #a060a0 !important;
@@ -192,17 +192,17 @@ hr { border-color: #4a2248 !important; }
 [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] { margin-bottom: 0 !important; }
 
 .login-left { display: flex; flex-direction: column; justify-content: center; }
-.login-logo { font-size: 16px; color: #ead8ee; font-weight: 700; margin-bottom: 40px; }
-.login-headline { font-size: 52px; font-weight: 800; color: #ead8ee; line-height: 1.15; margin-bottom: 16px; }
-.login-sub-text { font-size: 16px; color: #7a5888; line-height: 1.7; max-width: 400px; margin-bottom: 40px; }
+.login-logo { font-size: 18px; color: #ead8ee; font-weight: 700; margin-bottom: 60px; }
+.login-headline { font-size: 48px; font-weight: 800; color: #ead8ee; line-height: 1.15; margin-bottom: 20px; }
+.login-sub-text { font-size: 16px; color: #7a5888; line-height: 1.7; max-width: 400px; margin-bottom: 60px; }
 .login-stat-row { display: flex; gap: 48px; }
-.login-stat-num { font-size: 40px; font-weight: 800; color: #f472b6; line-height: 1; }
+.login-stat-num { font-size: 36px; font-weight: 800; color: #f472b6; line-height: 1; }
 .login-stat-num.green { color: #34d399; }
 .login-stat-num.purple { color: #c084fc; }
 .login-stat-lbl { font-size: 13px; color: #5a4068; margin-top: 4px; }
 .login-right { display: flex; flex-direction: column; justify-content: center; }
-.login-welcome { font-size: 36px; font-weight: 800; color: #ead8ee; margin-bottom: 6px; }
-.login-sub { font-size: 15px; color: #7a5888; margin-bottom: 24px; }
+.login-welcome { font-size: 36px; font-weight: 800; color: #ead8ee; margin-bottom: 8px; }
+.login-sub { font-size: 15px; color: #7a5888; margin-bottom: 32px; }
 </style>
 """, unsafe_allow_html=True)
 
