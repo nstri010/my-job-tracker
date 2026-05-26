@@ -86,3 +86,9 @@ def delete_job(job_id):
         return True
     except: return False
 
+def send_password_reset(username):
+    email = f"{username}@tracker.com"
+    try:
+        supabase.auth.reset_password_email(email)
+        return True
+    except: return False
