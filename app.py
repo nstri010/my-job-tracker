@@ -127,7 +127,7 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
-            applied_date = st.date_input("Date Applied")
+            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
