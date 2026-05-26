@@ -21,7 +21,7 @@ from utils import (
     extract_text_from_upload
 )
 
-st.set_page_config(page_title="Job Tracker", layout="wide")
+st.set_page_config(page_title="Career Hunt HQ", layout="wide")
 
 # SESSION
 if "logged_in" not in st.session_state:
@@ -115,11 +115,11 @@ if not st.session_state["logged_in"]:
     with l_col:
         st.markdown("""
         <div class="login-panel">
-            <div style="font-size:32px; color:#f472b6; margin-bottom:8px; font-family:'Playfair Display'">✦ Job Tracker</div>
+            <div style="font-size:32px; color:#f472b6; margin-bottom:8px; font-family:'Playfair Display'">✦ Career Hunt HQ</div>
             <div style="color:#64748b; font-size:12px; margin-bottom:40px; letter-spacing:2px; text-transform:uppercase;">AI Career Intelligence</div>
-            <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Land Your<br>Dream Job.</h1>
+            <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Land Your<br>Dream Career.</h1>
             <p style="font-size:17px; line-height:1.6; max-width:400px;">
-                The modern command center for your job search. Track applications and optimize your resume with AI-driven matching.
+                The modern command center for your career search. Track applications and optimize your resume with AI-driven matching.
             </p>
             <div class="stat-row">
                 <div><div class="stat-val">98%</div><div class="stat-lbl">Match Accuracy</div></div>
