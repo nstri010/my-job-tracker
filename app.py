@@ -49,7 +49,7 @@ if "dark_mode" not in st.session_state:
 
 DARK_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
 
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(160deg, #2d1b2e 0%, #3d1f3a 45%, #1f1a35 100%) !important;
@@ -59,7 +59,6 @@ DARK_CSS = """
 
 h1, h2, h3 {
     font-family: 'Playfair Display', serif !important;
-    font-style: italic !important;
     color: #fde8f0 !important;
 }
 p, label, .stMarkdown, [data-testid="stText"] {
@@ -116,6 +115,15 @@ hr { border-color: rgba(244,114,182,0.15) !important; }
     color: #f472b6 !important;
     border-radius: 6px !important;
     font-weight: 700 !important;
+}
+
+/* Row and card borders */
+[data-testid="stHorizontalBlock"] {
+    background: rgba(255,182,213,0.06) !important;
+    border: 1px solid rgba(244,114,182,0.2) !important;
+    border-radius: 12px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
 }
 
 /* Sidebar/metric */
@@ -194,6 +202,14 @@ hr { border-color: rgba(226,115,150,0.2) !important; }
     color: #6b1f38 !important;
     border-radius: 6px !important;
     font-weight: 700 !important;
+}
+/* Row and card borders */
+[data-testid="stHorizontalBlock"] {
+    background: rgba(255,255,255,0.35) !important;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    border-radius: 12px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
 }
 </style>
 """
