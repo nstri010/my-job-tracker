@@ -193,7 +193,7 @@ if st.session_state["logged_in"]:
 
     # ADD JOB
 
-    with st.expander("➕ Add New Application"):
+    with st.expander("Add New Application"):
 
         c1, c2 = st.columns(2)
 
@@ -217,18 +217,14 @@ if st.session_state["logged_in"]:
             height=220
         )
 
-        col1, col2 = st.columns(2)
+        applied_date = st.date_input("Date Applied")
 
-        with col1:
-            up_file = st.file_uploader(
-                "Upload Resume",
-                type=["pdf", "docx", "txt"]
-            )
-            if up_file is not None:
-                st.session_state["resume_txt"] = extract_text_from_upload(up_file)
-
-        with col2:
-            applied_date = st.date_input("Date Applied")
+        up_file = st.file_uploader(
+            "Upload Resume",
+            type=["pdf", "docx", "txt"]
+        )
+        if up_file is not None:
+            st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
