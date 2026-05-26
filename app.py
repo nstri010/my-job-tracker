@@ -158,6 +158,25 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     margin-bottom: 8px !important;
 }
 
+/* ── Delete button red styling ── */
+button[kind="secondary"][data-testid*="d_"],
+div[data-testid*="d_"] button {
+    color: #f87171 !important;
+    border-color: rgba(248,113,113,0.25) !important;
+}
+div[data-testid*="d_"] button:hover {
+    background: rgba(248,113,113,0.12) !important;
+    border-color: #f87171 !important;
+}
+
+/* ── Vault row: hide Streamlit container border for inline rows ── */
+.vault-row-inner [data-testid="stVerticalBlockBorderWrapper"] {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 
 /* ── Fix file uploader button ghost text ── */
 [data-testid="stFileUploaderDropzoneInput"] + div span {
@@ -496,7 +515,12 @@ if st.session_state["logged_in"]:
 
     st.divider()
 
-    st.header("📋 Your Career Vault")
+    st.markdown("""
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
+        <span style="font-size:32px;">📋</span>
+        <span style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:#fff;letter-spacing:-0.02em;">Your Career Vault</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     jobs_list = load_jobs()
 
@@ -508,11 +532,18 @@ if st.session_state["logged_in"]:
         "❌ Rejected"
     ]
 
-    if jobs_list:
+    STATUS_STYLES = {
+        "📝 Applied":   ("rgba(148,163,184,0.12)", "#94a3b8"),
+        "📨 Contacted": ("rgba(96,165,250,0.15)",  "#60a5fa"),
+        "📅 Interview": ("rgba(251,191,36,0.15)",  "#fbbf24"),
+        "✅ Offer":     ("rgba(52,211,153,0.15)",  "#34d399"),
+        "❌ Rejected":  ("rgba(248,113,113,0.12)", "#f87171"),
+    }
 
+    if jobs_list:
         df = pd.DataFrame(jobs_list)
 
-        # SORT CONTROLS
+        # ── Sort controls ──────────────────────────────────────────────
         sort_col, sort_dir_col = st.columns([2, 2])
         with sort_col:
             sort_by = st.selectbox(
@@ -527,7 +558,6 @@ if st.session_state["logged_in"]:
                 key="sort_dir"
             )
 
-        # Apply sort
         if sort_by == "Company":
             df = df.sort_values("company", ascending=(sort_dir == "A → Z"))
         elif sort_by == "Position":
@@ -543,25 +573,88 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.7, 0.7, 0.7]
-        headers = ["Company", "Position/Role", "Match Score", "Application Status", "Date Applied", "Resume", "Snapshot", "Delete"]
+        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-        cols = st.columns(ratios)
-        for c, h in zip(cols, headers):
-            c.markdown(f"**{h}**")
+        # ── Column header row ──────────────────────────────────────────
+        st.markdown("""
+        <div style="display:grid;grid-template-columns:1.6fr 1.6fr 0.9fr 1.5fr 1fr 0.5fr 0.5fr 0.5fr;
+                    padding:0 20px 8px 20px;gap:12px;">
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Company</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Position</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Match</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Status</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">Applied</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;text-align:center;">CV</span>
+            <span style="font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;text-align:center;">📸</span>
+            <span></span>
+        </div>
+        """, unsafe_allow_html=True)
 
-        st.divider()
+        # ── Job rows ───────────────────────────────────────────────────
+        ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
 
         for idx, row in df.iterrows():
+            curr      = row.get("status", "📝 Applied")
+            raw_score = row.get("match_score", "")
+            raw_date  = row.get("created_at", "")
+            company   = row.get("company", "—")
+            position  = row.get("position", "—")
 
-            with st.container(border=True):
+            # ── Score pill + mini bar ──────────────────────────────────
+            try:
+                parts   = str(raw_score).split("/")
+                num     = float(parts[0])
+                denom   = float(parts[1]) if len(parts) > 1 else 10
+                pct     = int((num / denom) * 100)
+                if pct >= 75:   score_color = "#34d399"
+                elif pct >= 50: score_color = "#fbbf24"
+                else:           score_color = "#f87171"
+                score_html = f"""
+                <div>
+                  <span style="font-size:15px;font-weight:700;color:{score_color};">{raw_score}</span>
+                  <div style="margin-top:4px;background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:52px;overflow:hidden;">
+                    <div style="height:4px;width:{pct}%;background:{score_color};border-radius:4px;"></div>
+                  </div>
+                </div>"""
+            except:
+                score_html = f'<span style="color:#64748b;font-size:14px;">—</span>'
+
+            # ── Status badge (static display) ─────────────────────────
+            bg, clr = STATUS_STYLES.get(curr, ("rgba(148,163,184,0.12)", "#94a3b8"))
+            status_badge = f'<span style="background:{bg};color:{clr};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;white-space:nowrap;">{curr}</span>'
+
+            # ── Date ──────────────────────────────────────────────────
+            try:
+                date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
+            except:
+                date_str = str(raw_date)[:10] if raw_date else "—"
+
+            # ── Card shell (HTML for left columns) ────────────────────
+            st.markdown(f"""
+            <div style="background:rgba(18,18,28,0.75);border:1px solid rgba(255,255,255,0.07);
+                        border-radius:14px;padding:0;margin-bottom:8px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:1.6fr 1.6fr 0.9fr 1.5fr 1fr 0.5fr 0.5fr 0.5fr;
+                          align-items:center;padding:14px 20px;gap:12px;">
+                <div>
+                  <div style="font-size:15px;font-weight:600;color:#e2e8f0;">{company}</div>
+                </div>
+                <div style="font-size:14px;color:#94a3b8;font-weight:400;">{position}</div>
+                <div>{score_html}</div>
+                <div>STATUS_PLACEHOLDER</div>
+                <div style="font-size:13px;color:#64748b;">{date_str}</div>
+                <div>RESUME_PLACEHOLDER</div>
+                <div>SNAP_PLACEHOLDER</div>
+                <div>DEL_PLACEHOLDER</div>
+              </div>
+            </div>
+            """.replace("STATUS_PLACEHOLDER", "").replace("RESUME_PLACEHOLDER", "").replace("SNAP_PLACEHOLDER", "").replace("DEL_PLACEHOLDER", ""), unsafe_allow_html=True)
+
+            # ── Streamlit interactive controls overlaid in columns ─────
+            with st.container():
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                c1.write(row.get("company", ""))
-                c2.write(row.get("position", ""))
-                c3.write(row.get("match_score", "N/A"))
-
-                curr = row.get("status", "📝 Applied")
+                # invisible spacers for static columns
+                c1.empty(); c2.empty(); c3.empty(); c5.empty()
 
                 with c4:
                     new_stat = st.selectbox(
@@ -575,32 +668,29 @@ if st.session_state["logged_in"]:
                         update_job_full(row["id"], {"status": new_stat})
                         st.rerun()
 
-                # DATE APPLIED
-                raw_date = row.get("created_at", "")
-                try:
-                    from datetime import datetime
-                    date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
-                except:
-                    date_str = str(raw_date)[:10] if raw_date else "—"
-                c5.write(date_str)
-
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
                     if resume_link:
-                        st.link_button("📄", resume_link)
+                        st.link_button("📄", resume_link, key=f"rl_{row['id']}")
                     else:
                         st.button("📄", key=f"r_{row['id']}", disabled=True)
 
                 pdf_url = str(row.get("pdf_url") or "")
                 with c7:
                     if pdf_url:
-                        st.link_button("📸", pdf_url)
+                        st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
                     else:
                         st.button("📸", key=f"p_{row['id']}", disabled=True)
 
-                if c8.button("❌", key=f"d_{row['id']}"):
+                if c8.button("✕", key=f"d_{row['id']}"):
                     delete_job(row["id"])
                     st.rerun()
 
     else:
-        st.write("You have no applications saved yet.")
+        st.markdown("""
+        <div style="text-align:center;padding:60px 20px;color:#4b5563;">
+            <div style="font-size:40px;margin-bottom:12px;">📭</div>
+            <div style="font-size:16px;font-weight:500;">No applications yet</div>
+            <div style="font-size:13px;margin-top:6px;">Add your first one above to get started.</div>
+        </div>
+        """, unsafe_allow_html=True)
