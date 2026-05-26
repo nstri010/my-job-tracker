@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import os
@@ -100,9 +101,9 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 }
 
 /* ── Stat Grid ── */
-.stat-row { display: flex; gap: 40px; margin-top: 40px; }
-.stat-val { font-size: 32px; font-weight: 700; color: #f472b6; }
-.stat-lbl { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+.stat-row { display: flex; gap: 32px; margin-top: 40px; }
+.stat-val { font-size: 22px; font-weight: 700; color: #f472b6; white-space: nowrap; }
+.stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
 
 
 /* ── Fix expander icon text showing as words ── */
