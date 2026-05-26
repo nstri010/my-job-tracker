@@ -12,134 +12,155 @@ from utils import (
 )
 
 st.set_page_config(
-    page_title="CareerFlow | Professional Job Tracker",
-    page_icon="💼",
+    page_title="CareerFlow | Master Your Search",
+    page_icon="🟢",
     layout="wide"
 )
 
-# ── PROFESSIONAL GRADIENT THEME CSS ──────────────────────────────────────────
-PROFESSIONAL_STYLE = """
+# ── RAEDJIN INSPIRED CSS ──────────────────────────────────────────────────
+RAEDJIN_STYLE = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
 
-/* High-End Gradient Background */
+/* High-End Background */
 [data-testid="stAppViewContainer"] {
-    background-color: #0f172a !important;
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%), 
-        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(67, 56, 202, 0.1) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(30, 58, 138, 0.1) 0px, transparent 50%) !important;
-    background-attachment: fixed !important;
+    background-color: #000000 !important;
+    background-image: radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 40%) !important;
 }
 
-/* Global Font Override */
+/* Global Font */
 html, body, [class*="st-"] {
     font-family: 'Inter', sans-serif !important;
+    color: #94a3b8 !important;
 }
 
-h1, h2, h3 {
-    color: #f8fafc !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
-}
-
-/* Transparent Header */
-[data-testid="stHeader"] { background: transparent !important; }
-
-/* Stat Cards with subtle Glassmorphism */
-.stat-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Job Row Containers */
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(30, 41, 59, 0.5) !important;
-    backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 12px !important;
-    padding: 1rem !important;
-    margin-bottom: 0.75rem !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    border-color: rgba(99, 102, 241, 0.5) !important;
-    background: rgba(30, 41, 59, 0.8) !important;
-    transform: translateY(-3px);
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Professional Buttons */
-.stButton > button {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+/* Marketing Column (Left Side) */
+.marketing-title {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
     color: white !important;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
+.neon-text {
+    color: #10b981 !important;
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Terminal Component */
+.terminal-card {
+    background: #0a0a0a;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 20px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: #10b981;
+    margin-top: 2rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* Sign-In Box (Right Side) */
+[data-testid="stExpander"], .stTabs, div.stButton > button {
+    border-radius: 8px !important;
+}
+
+/* Inputs styling */
+.stTextInput input {
+    background-color: #0f172a !important;
+    border: 1px solid #334155 !important;
+    color: white !important;
+    padding: 12px !important;
+}
+
+/* Main Action Button */
+div.stButton > button {
+    background-color: #10b981 !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    width: 100%;
     border: none !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    padding: 0.6rem 1.2rem !important;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3) !important;
+    padding: 10px !important;
+    transition: all 0.2s;
 }
-
-.stButton > button:hover {
-    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4) !important;
+div.stButton > button:hover {
+    background-color: #34d399 !important;
     transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
 }
 
-/* Inputs */
-.stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {
-    background: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #f1f5f9 !important;
-    border-radius: 8px !important;
+/* Dashboard Cards */
+.stat-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 1.5rem;
 }
-
-/* Dividers */
-hr { border-color: rgba(255, 255, 255, 0.05) !important; }
 
 </style>
 """
 
-st.markdown(PROFESSIONAL_STYLE, unsafe_allow_html=True)
+st.markdown(RAEDJIN_STYLE, unsafe_allow_html=True)
 
 # Session State Initialization
 for key in ["logged_in", "formatted_desc", "match_data", "resume_txt", "username"]:
     if key not in st.session_state:
         st.session_state[key] = False if key == "logged_in" else None
-if st.session_state["formatted_desc"] is None: st.session_state["formatted_desc"] = ""
 
-# ── AUTHENTICATION ──────────────────────────────────────────────────────────
+# ── AUTHENTICATION PAGE (SPLIT LAYOUT) ──────────────────────────────────────
 if not st.session_state["logged_in"]:
-    col1, col2, col3 = st.columns([1, 1.5, 1])
-    with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.title("CareerFlow")
-        st.write("Professional Job Pipeline")
-        tab1, tab2 = st.tabs(["Login", "Create Account"])
-        with tab1:
-            u = st.text_input("Username")
-            p = st.text_input("Password", type="password")
-            if st.button("Access Dashboard", use_container_width=True):
-                if login_user(u, p):
-                    st.session_state["logged_in"], st.session_state["username"] = True, u
-                    st.rerun()
-                else: st.error("Invalid credentials")
-        with tab2:
-            new_u = st.text_input("New Username")
-            new_p = st.text_input("New Password", type="password")
-            if st.button("Create Account", use_container_width=True):
-                if sign_up_user(new_u, new_p): st.success("Account Ready")
+    left_col, right_col = st.columns([1.2, 1])
+    
+    with left_col:
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        st.markdown('<div class="marketing-title">Organize Your Career <br><span class="neon-text">The Pro Way</span></div>', unsafe_allow_html=True)
+        st.write("Join the elite league of organized job seekers. Master your pipeline through AI-driven tracking and resume matching.")
+        
+        # Terminal Visual
+        st.markdown("""
+        <div class="terminal-card">
+            <span style="color:#ef4444">●</span> <span style="color:#fbbf24">●</span> <span style="color:#10b981">●</span><br>
+            <span style="color:#6366f1">$</span> ./start_career_growth.sh<br>
+            <span style="color:#94a3b8">[*] Initializing AI match engine...</span><br>
+            <span style="color:#94a3b8">[*] Loading resume templates...</span><br>
+            <span style="color:#10b981">[v] Welcome to CareerFlow!</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.write("📈 **50K+** Apps Tracked &nbsp; ⚡ **200ms** AI Processing")
+
+    with right_col:
+        st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+        with st.container():
+            st.subheader("Welcome Back")
+            st.caption("Sign in to continue your journey")
+            
+            tab1, tab2 = st.tabs(["Sign In", "Register"])
+            
+            with tab1:
+                u = st.text_input("Username or Email", placeholder="your_name")
+                p = st.text_input("Password", type="password", placeholder="••••••••")
+                st.markdown('<p style="text-align:right; font-size:0.8rem; color:#10b981; cursor:pointer;">Forgot password?</p>', unsafe_allow_html=True)
+                if st.button("Sign In", key="login_btn"):
+                    if login_user(u, p):
+                        st.session_state["logged_in"], st.session_state["username"] = True, u
+                        st.rerun()
+                    else: st.error("Invalid credentials")
+            
+            with tab2:
+                new_u = st.text_input("Choose Username")
+                new_p = st.text_input("Secure Password", type="password")
+                if st.button("Create Account", key="reg_btn"):
+                    if sign_up_user(new_u, new_p): st.success("Success! Please log in.")
+            
+            st.markdown("<br><center><p style='font-size:0.8rem;'>Don't have an account? <span style='color:#10b981;'>Sign up for free</span></p></center>", unsafe_allow_html=True)
 
 # ── MAIN DASHBOARD ──────────────────────────────────────────────────────────
 if st.session_state["logged_in"]:
     header_col, action_col = st.columns([4, 1])
     with header_col:
-        st.caption(f"CONNECTED AS {st.session_state['username'].upper()}")
+        st.markdown(f'<p style="color:#10b981; font-weight:700; margin:0; letter-spacing:1px;">DASHBOARD_ACCESS_GRANTED</p>', unsafe_allow_html=True)
         st.title("Career Pipeline")
     with action_col:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -147,56 +168,54 @@ if st.session_state["logged_in"]:
             st.session_state.clear()
             st.rerun()
 
+    st.divider()
+
     # ── STATS ──
     jobs = load_jobs()
     df = pd.DataFrame(jobs) if jobs else pd.DataFrame()
     
     s1, s2, s3, s4 = st.columns(4)
     with s1:
-        st.markdown(f'<div class="stat-card"><h3>{len(df)}</h3><p style="color:#94a3b8;margin:0">Active Apps</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><h2 style="margin:0">{len(df)}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">ACTIVE_APPLICATIONS</p></div>', unsafe_allow_html=True)
     with s2:
         ints = len(df[df['status'].str.contains("Interview", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-card"><h3>{ints}</h3><p style="color:#94a3b8;margin:0">Interviews</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><h2 style="margin:0">{ints}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">INTERVIEWS_SECURED</p></div>', unsafe_allow_html=True)
     with s3:
         offs = len(df[df['status'].str.contains("Offer", na=False)]) if not df.empty else 0
-        st.markdown(f'<div class="stat-card"><h3 style="color:#10b981">{offs}</h3><p style="color:#94a3b8;margin:0">Offers</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><h2 style="margin:0; color:#10b981">{offs}</h2><p style="margin:0; font-size:0.8rem; color:#64748b">OFFERS_RECEIVED</p></div>', unsafe_allow_html=True)
     with s4:
-        st.markdown(f'<div class="stat-card"><h3>—</h3><p style="color:#94a3b8;margin:0">Avg Score</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="stat-card"><h2 style="margin:0">15+</h2><p style="margin:0; font-size:0.8rem; color:#64748b">SKILL_MATCHES</p></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── NEW APPLICATION ──
-    with st.expander("＋ LOG NEW APPLICATION"):
+    with st.expander("＋ INITIALIZE_NEW_APPLICATION"):
         c1, c2 = st.columns(2)
-        comp = c1.text_input("Company Name")
-        pos = c2.text_input("Position Title")
-        url = st.text_input("Job URL (Optional)")
+        comp = c1.text_input("Target Company")
+        pos = c2.text_input("Role Title")
+        url = st.text_input("Job URL Source")
         
-        if st.button("✨ Auto-Fill with AI"):
+        if st.button("⚡ EXECUTE_AI_PARSE"):
             if url:
-                with st.spinner("Parsing job details..."):
+                with st.spinner("Analyzing target..."):
                     raw = scrape_job_link(url)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
         
-        desc = st.text_area("Job Description", value=st.session_state["formatted_desc"], height=180)
+        desc = st.text_area("Job Description Data", value=st.session_state.get("formatted_desc", ""), height=150)
         
-        if st.button("Save to Pipeline", use_container_width=True):
+        if st.button("SAVE_RECORD", use_container_width=True):
             save_job(company=comp, position=pos, description=desc, job_url=url, applied_date=datetime.now())
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
     # ── PIPELINE TABLE ──
     if not df.empty:
-        # Simple sorting
-        df = df.sort_values(by="id", ascending=False)
-        
+        st.markdown("<br>", unsafe_allow_html=True)
         # Header Row
         h1, h2, h3, h4, h5 = st.columns([1.5, 2, 1.2, 1, 0.4])
-        h1.caption("COMPANY")
-        h2.caption("POSITION")
-        h3.caption("STATUS")
-        h4.caption("DATE")
+        h1.caption("ENTITY")
+        h2.caption("OPERATIONAL_ROLE")
+        h3.caption("STATUS_LEVEL")
+        h4.caption("TIMESTAMP")
         h5.caption("")
 
         for _, row in df.iterrows():
@@ -217,5 +236,3 @@ if st.session_state["logged_in"]:
                 if r5.button("🗑️", key=f"del_{row['id']}"):
                     delete_job(row['id'])
                     st.rerun()
-    else:
-        st.info("Your pipeline is empty. Add your first application above.")
