@@ -279,10 +279,6 @@ if not st.session_state["logged_in"]:
                     " onclick=\"\">Forgot password?</span></div>",
                     unsafe_allow_html=True
                 )
-               # if st.button("→ Reset password", key="go_forgot", use_container_width=True):
-                  #  st.session_state["login_tab"] = "forgot"
-                  #  st.session_state["reset_sent"] = False
-                  #  st.rerun()
 
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             st.markdown('<div class="signin-btn">', unsafe_allow_html=True)
