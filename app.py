@@ -46,7 +46,7 @@ DARK_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
 
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(160deg, #2d1b2e 0%, #3d1f3a 45%, #1f1a35 100%) !important;
+    background: #2d1b2e !important;
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
@@ -55,108 +55,108 @@ DARK_CSS = """
 h1 {
     font-family: 'Playfair Display', serif !important;
     font-style: italic !important;
-    color: #fde8f0 !important;
+    color: #ead8ee !important;
 }
 h2, h3 {
     font-family: 'Playfair Display', serif !important;
-    color: #fde8f0 !important;
+    color: #ead8ee !important;
 }
 p, label, div[data-testid="stText"] > p {
-    color: #e8c8d8 !important;
+    color: #c0a0c4 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
 }
 [data-testid="stCaptionContainer"] p {
-    color: #c084fc !important;
+    color: #e879a0 !important;
     font-weight: 600 !important;
 }
-strong { color: #fde8f0 !important; }
+strong { color: #ead8ee !important; }
 
-/* Mode + sign out buttons — keep subtle */
+/* Buttons */
 .stButton > button {
-    background: rgba(244,114,182,0.15) !important;
-    color: #f9a8d4 !important;
-    border: 1px solid rgba(244,114,182,0.3) !important;
-    border-radius: 20px !important;
+    background: #4a2248 !important;
+    color: #c090be !important;
+    border: 1px solid #6e3868 !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
     font-family: 'Inter', sans-serif !important;
     transition: background 0.2s !important;
 }
 .stButton > button:hover {
-    background: rgba(244,114,182,0.28) !important;
+    background: #5a2a58 !important;
+    border-color: #8a4a88 !important;
 }
 .stButton > button:disabled {
-    background: rgba(255,182,213,0.05) !important;
-    border-color: rgba(244,114,182,0.15) !important;
-    color: rgba(249,168,212,0.35) !important;
+    background: #2e1a2e !important;
+    border-color: #4a2248 !important;
+    color: rgba(192,144,190,0.3) !important;
 }
 
 /* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
-    background: rgba(255,182,213,0.07) !important;
-    border: 1px solid rgba(244,114,182,0.25) !important;
-    color: #fde8f0 !important;
+    background: #3a1e3c !important;
+    border: 1px solid #5a2d58 !important;
+    color: #ead8ee !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
 }
 .stSelectbox > div > div {
-    background: rgba(255,182,213,0.07) !important;
-    border: 1px solid rgba(244,114,182,0.25) !important;
-    color: #fde8f0 !important;
+    background: #3a1e3c !important;
+    border: 1px solid #5a2d58 !important;
+    color: #ead8ee !important;
     border-radius: 8px !important;
 }
 
 /* Expander */
 [data-testid="stExpander"] {
-    background: rgba(255,182,213,0.06) !important;
-    border: 1px solid rgba(244,114,182,0.2) !important;
+    background: #3a1e3c !important;
+    border: 1px solid #5a2d58 !important;
     border-radius: 12px !important;
 }
 
 /* Divider */
-hr { border-color: rgba(244,114,182,0.12) !important; }
+hr { border-color: #4a2248 !important; }
 
 /* Tabs */
-.stTabs [data-baseweb="tab"] { color: #f9a8d4 !important; font-weight: 600 !important; }
+.stTabs [data-baseweb="tab"] { color: #c090be !important; font-weight: 600 !important; }
 .stTabs [aria-selected="true"] { color: #f472b6 !important; border-bottom-color: #f472b6 !important; }
 
-/* Link buttons (Resume / Snapshot) */
+/* Link buttons */
 .stLinkButton a {
-    background: rgba(255,182,213,0.08) !important;
-    border: 1px solid rgba(244,114,182,0.3) !important;
-    color: #f9a8d4 !important;
+    background: #4a2248 !important;
+    border: 1px solid #6e3868 !important;
+    color: #c090be !important;
     border-radius: 8px !important;
     font-weight: 700 !important;
     padding: 6px 12px !important;
 }
 .stLinkButton a:hover {
-    background: rgba(244,114,182,0.18) !important;
+    background: #5a2a58 !important;
 }
 
-/* Row hover effect */
-.job-row {
-    background: rgba(255,182,213,0.07);
-    border: 1px solid rgba(244,114,182,0.22);
-    border-radius: 12px;
-    padding: 4px 16px;
-    margin-bottom: 10px;
-    transition: background 0.2s;
+/* Row cards */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: #3a1e3c !important;
+    border: 1px solid #5a2d58 !important;
+    border-radius: 10px !important;
+    padding: 4px 8px !important;
+    margin-bottom: 8px !important;
+    transition: background 0.18s, border-color 0.18s !important;
 }
-.job-row:hover {
-    background: rgba(244,114,182,0.14);
-    border-color: rgba(244,114,182,0.4);
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    background: #451f47 !important;
+    border-color: #8a3a80 !important;
 }
 
 /* Stat cards */
 .stat-card {
-    background: rgba(255,182,213,0.08);
-    border: 1px solid rgba(244,114,182,0.2);
-    border-radius: 12px;
+    background: #3d2040;
+    border: 1.5px solid #5a2a55;
+    border-radius: 10px;
     padding: 16px 20px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
-/* Success/error */
 [data-testid="stAlert"] { border-radius: 10px !important; }
 </style>
 """
@@ -234,17 +234,18 @@ hr { border-color: rgba(226,115,150,0.18) !important; }
 }
 .stLinkButton a:hover { background: rgba(255,255,255,0.7) !important; }
 
-.job-row {
-    background: rgba(255,255,255,0.38);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 12px;
-    padding: 4px 16px;
-    margin-bottom: 10px;
-    transition: background 0.2s;
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(255,255,255,0.55) !important;
+    border: 1.5px solid rgba(255,255,255,0.85) !important;
+    border-radius: 12px !important;
+    padding: 4px 8px !important;
+    margin-bottom: 10px !important;
+    transition: background 0.18s, border-color 0.18s !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
 }
-.job-row:hover {
-    background: rgba(255,255,255,0.6);
-    border-color: rgba(226,115,150,0.4);
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    background: rgba(255,255,255,0.72) !important;
+    border-color: rgba(226,115,150,0.5) !important;
 }
 
 .stat-card {
@@ -335,12 +336,12 @@ if st.session_state["logged_in"]:
 
         sc1, sc2, sc3, sc4 = st.columns(4)
         if st.session_state["dark_mode"]:
-            card_style = "background:rgba(255,182,213,0.08);border:1px solid rgba(244,114,182,0.22);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
-            num_color_default = "#fde8f0"
+            card_style = "background:#3d2040;border:1.5px solid #5a2a55;border-radius:10px;padding:16px 20px;margin-bottom:8px;"
+            num_color_default = "#e8d8ec"
             num_color_int = "#f472b6"
-            num_color_off = "#6ee7b7"
+            num_color_off = "#34d399"
             num_color_avg = "#c084fc"
-            lbl_color = "rgba(249,168,212,0.55)"
+            lbl_color = "#8a6a88"
         else:
             card_style = "background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
             num_color_default = "#6b1f38"
@@ -350,13 +351,13 @@ if st.session_state["logged_in"]:
             lbl_color = "rgba(42,74,56,0.6)"
 
         with sc1:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_default};line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Applications</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_default};line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Applications</div></div>', unsafe_allow_html=True)
         with sc2:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_int};line-height:1;margin-bottom:4px;">{interviews}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Interviews</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_int};line-height:1;margin-bottom:4px;">{interviews}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Interviews</div></div>', unsafe_allow_html=True)
         with sc3:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_off};line-height:1;margin-bottom:4px;">{offers}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Offers</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_off};line-height:1;margin-bottom:4px;">{offers}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Offers</div></div>', unsafe_allow_html=True)
         with sc4:
-            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_avg};line-height:1;margin-bottom:4px;">{avg_score}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Avg match</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_avg};line-height:1;margin-bottom:4px;">{avg_score}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Avg match</div></div>', unsafe_allow_html=True)
 
     # ADD JOB
     with st.expander("➕ Add New Application"):
@@ -461,7 +462,7 @@ if st.session_state["logged_in"]:
 
         # Column headers
         if st.session_state["dark_mode"]:
-            hdr_color = "rgba(249,168,212,0.5)"
+            hdr_color = "#7a5078"
         else:
             hdr_color = "rgba(42,74,56,0.55)"
 
@@ -471,20 +472,20 @@ if st.session_state["logged_in"]:
 
         st.divider()
 
-        # Row card CSS using st.container(border=True) + theme override
+        # Row card styles
         if st.session_state["dark_mode"]:
             st.markdown("""<style>
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.08) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    border-radius: 12px !important;
+    background: #3a1e3c !important;
+    border: 1px solid #5a2d58 !important;
+    border-radius: 10px !important;
     padding: 4px 8px !important;
-    margin-bottom: 10px !important;
+    margin-bottom: 8px !important;
     transition: background 0.18s, border-color 0.18s !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(255,255,255,0.14) !important;
-    border-color: rgba(244,114,182,0.5) !important;
+    background: #451f47 !important;
+    border-color: #8a3a80 !important;
 }
 </style>""", unsafe_allow_html=True)
         else:
@@ -509,9 +510,24 @@ if st.session_state["logged_in"]:
             with st.container(border=True):
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                c1.write(row.get("company", ""))
-                c2.write(row.get("position", ""))
-                c3.write(row.get("match_score", "N/A"))
+                # Company — bold white
+                c1.markdown(f'<span style="font-size:15px;font-weight:700;color:#ead8ee;">{row.get("company","")}</span>', unsafe_allow_html=True)
+                # Position — muted
+                c2.markdown(f'<span style="font-size:14px;color:#c0a0c4;">{row.get("position","")}</span>', unsafe_allow_html=True)
+
+                # Match score — colored by value
+                raw_score = row.get("match_score", "N/A")
+                try:
+                    score_num = int(str(raw_score).split("/")[0])
+                    if score_num >= 80:
+                        score_color = "#f472b6"
+                    elif score_num >= 65:
+                        score_color = "#c084fc"
+                    else:
+                        score_color = "#8a6888"
+                except:
+                    score_color = "#8a6888"
+                c3.markdown(f'<span style="font-size:16px;font-weight:700;color:{score_color};">{raw_score}</span>', unsafe_allow_html=True)
 
                 curr = row.get("status", "📝 Applied")
                 with c4:
@@ -530,7 +546,7 @@ if st.session_state["logged_in"]:
                     date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
                 except:
                     date_str = str(raw_date)[:10] if raw_date else "—"
-                c5.write(date_str)
+                c5.markdown(f'<span style="font-size:13px;color:#8a6888;">{date_str}</span>', unsafe_allow_html=True)
 
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
