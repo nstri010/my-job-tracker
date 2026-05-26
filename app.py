@@ -342,7 +342,7 @@ if st.session_state["logged_in"]:
 
     st.divider()
 
-    st.header("📋 My Applied Jobs")
+    st.header("📋 Your Career Vault")
 
     jobs_list = load_jobs()
 
