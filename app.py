@@ -84,6 +84,7 @@ if st.session_state["logged_in"]:
 
     with t1:
         st.title("Job Tracker")
+    st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
         if st.button("Sign Out"):
@@ -127,7 +128,7 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
-            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
+            applied_date = st.date_input("Date Applied")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
