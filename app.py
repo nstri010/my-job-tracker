@@ -43,7 +43,7 @@ if "dark_mode" not in st.session_state:
 
 DARK_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
 
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(160deg, #2d1b2e 0%, #3d1f3a 45%, #1f1a35 100%) !important;
@@ -52,28 +52,44 @@ DARK_CSS = """
 [data-testid="stHeader"] { background: transparent !important; }
 [data-testid="stMainBlockContainer"] { padding-top: 2rem !important; }
 
-h1, h2, h3 {
+h1 {
+    font-family: 'Playfair Display', serif !important;
+    font-style: italic !important;
+    color: #fde8f0 !important;
+}
+h2, h3 {
     font-family: 'Playfair Display', serif !important;
     color: #fde8f0 !important;
 }
-p, label, .stMarkdown p, [data-testid="stText"] {
-    color: #f9a8d4 !important;
+p, label, div[data-testid="stText"] > p {
+    color: #e8c8d8 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
 }
-[data-testid="stCaptionContainer"] p { color: #c084fc !important; font-weight: 600 !important; }
+[data-testid="stCaptionContainer"] p {
+    color: #c084fc !important;
+    font-weight: 600 !important;
+}
+strong { color: #fde8f0 !important; }
 
-/* Buttons */
+/* Mode + sign out buttons — keep subtle */
 .stButton > button {
-    background: linear-gradient(135deg, #f472b6, #c084fc) !important;
-    color: #fff !important;
-    border: none !important;
+    background: rgba(244,114,182,0.15) !important;
+    color: #f9a8d4 !important;
+    border: 1px solid rgba(244,114,182,0.3) !important;
     border-radius: 20px !important;
     font-weight: 700 !important;
     font-family: 'Inter', sans-serif !important;
+    transition: background 0.2s !important;
 }
-.stButton > button:hover { opacity: 0.88 !important; }
-.stButton > button:disabled { opacity: 0.35 !important; }
+.stButton > button:hover {
+    background: rgba(244,114,182,0.28) !important;
+}
+.stButton > button:disabled {
+    background: rgba(255,182,213,0.05) !important;
+    border-color: rgba(244,114,182,0.15) !important;
+    color: rgba(249,168,212,0.35) !important;
+}
 
 /* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
@@ -104,23 +120,40 @@ hr { border-color: rgba(244,114,182,0.12) !important; }
 .stTabs [data-baseweb="tab"] { color: #f9a8d4 !important; font-weight: 600 !important; }
 .stTabs [aria-selected="true"] { color: #f472b6 !important; border-bottom-color: #f472b6 !important; }
 
-/* Link buttons */
+/* Link buttons (Resume / Snapshot) */
 .stLinkButton a {
     background: rgba(255,182,213,0.08) !important;
-    border: 2px solid rgba(244,114,182,0.4) !important;
-    color: #f472b6 !important;
+    border: 1px solid rgba(244,114,182,0.3) !important;
+    color: #f9a8d4 !important;
     border-radius: 8px !important;
     font-weight: 700 !important;
-    padding: 4px 10px !important;
+    padding: 6px 12px !important;
+}
+.stLinkButton a:hover {
+    background: rgba(244,114,182,0.18) !important;
 }
 
-/* Job row cards — target only rows inside the jobs list */
-div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:first-child > div > div > p) {
-    background: rgba(255,182,213,0.07) !important;
-    border: 1px solid rgba(244,114,182,0.22) !important;
-    border-radius: 12px !important;
-    padding: 8px 14px !important;
-    margin-bottom: 8px !important;
+/* Row hover effect */
+.job-row {
+    background: rgba(255,182,213,0.07);
+    border: 1px solid rgba(244,114,182,0.22);
+    border-radius: 12px;
+    padding: 4px 16px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+.job-row:hover {
+    background: rgba(244,114,182,0.14);
+    border-color: rgba(244,114,182,0.4);
+}
+
+/* Stat cards */
+.stat-card {
+    background: rgba(255,182,213,0.08);
+    border: 1px solid rgba(244,114,182,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
 }
 
 /* Success/error */
@@ -143,26 +176,29 @@ h1, h2, h3 {
     font-family: 'Playfair Display', serif !important;
     color: #6b1f38 !important;
 }
-p, label, .stMarkdown p, [data-testid="stText"] {
+p, label, div[data-testid="stText"] > p {
     color: #2a4a38 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
 }
 [data-testid="stCaptionContainer"] p { color: #2a4a38 !important; font-weight: 600 !important; }
+strong { color: #6b1f38 !important; }
 
-/* Buttons */
 .stButton > button {
-    background: #E27396 !important;
-    color: #fff !important;
-    border: none !important;
+    background: rgba(226,115,150,0.15) !important;
+    color: #6b1f38 !important;
+    border: 1px solid rgba(226,115,150,0.35) !important;
     border-radius: 20px !important;
     font-weight: 700 !important;
     font-family: 'Inter', sans-serif !important;
 }
-.stButton > button:hover { opacity: 0.88 !important; }
-.stButton > button:disabled { opacity: 0.35 !important; }
+.stButton > button:hover { background: rgba(226,115,150,0.28) !important; }
+.stButton > button:disabled {
+    background: rgba(255,255,255,0.2) !important;
+    border-color: rgba(226,115,150,0.15) !important;
+    color: rgba(107,31,56,0.35) !important;
+}
 
-/* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
     background: rgba(255,255,255,0.55) !important;
     border: 1px solid rgba(226,115,150,0.3) !important;
@@ -177,40 +213,48 @@ p, label, .stMarkdown p, [data-testid="stText"] {
     border-radius: 8px !important;
 }
 
-/* Expander */
 [data-testid="stExpander"] {
     background: rgba(255,255,255,0.38) !important;
     border: 1px solid rgba(255,255,255,0.65) !important;
     border-radius: 12px !important;
 }
 
-/* Divider */
 hr { border-color: rgba(226,115,150,0.18) !important; }
 
-/* Tabs */
 .stTabs [data-baseweb="tab"] { color: #6b1f38 !important; font-weight: 600 !important; }
 .stTabs [aria-selected="true"] { color: #E27396 !important; border-bottom-color: #E27396 !important; }
 
-/* Link buttons */
 .stLinkButton a {
     background: rgba(255,255,255,0.45) !important;
-    border: 2px solid rgba(107,31,56,0.4) !important;
+    border: 1px solid rgba(107,31,56,0.35) !important;
     color: #6b1f38 !important;
     border-radius: 8px !important;
     font-weight: 700 !important;
-    padding: 4px 10px !important;
+    padding: 6px 12px !important;
+}
+.stLinkButton a:hover { background: rgba(255,255,255,0.7) !important; }
+
+.job-row {
+    background: rgba(255,255,255,0.38);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 12px;
+    padding: 4px 16px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+.job-row:hover {
+    background: rgba(255,255,255,0.6);
+    border-color: rgba(226,115,150,0.4);
 }
 
-/* Job row cards */
-div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:first-child > div > div > p) {
-    background: rgba(255,255,255,0.38) !important;
-    border: 1px solid rgba(255,255,255,0.7) !important;
-    border-radius: 12px !important;
-    padding: 8px 14px !important;
-    margin-bottom: 8px !important;
+.stat-card {
+    background: rgba(255,255,255,0.38);
+    border: 1px solid rgba(255,255,255,0.65);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
 }
 
-/* Success/error */
 [data-testid="stAlert"] { border-radius: 10px !important; }
 </style>
 """
@@ -257,7 +301,10 @@ if st.session_state["logged_in"]:
     t1, t2, t3 = st.columns([5, 1, 1])
 
     with t1:
+        if st.session_state["dark_mode"]:
+            st.markdown("✦ **CAREER DASHBOARD** ✦", unsafe_allow_html=True)
         st.title("Job Tracker")
+
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
@@ -271,9 +318,48 @@ if st.session_state["logged_in"]:
             st.session_state.clear()
             st.rerun()
 
+    st.divider()
+
+    # ── STAT CARDS ──
+    jobs_list = load_jobs()
+    if jobs_list:
+        df_stats = pd.DataFrame(jobs_list)
+        total = len(df_stats)
+        interviews = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Interview", na=False)]) if "status" in df_stats else 0
+        offers = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Offer", na=False)]) if "status" in df_stats else 0
+        def parse_score(s):
+            try: return float(str(s).split("/")[0])
+            except: return None
+        scores = df_stats["match_score"].apply(parse_score).dropna() if "match_score" in df_stats else pd.Series()
+        avg_score = f"{scores.mean():.0f}%" if len(scores) > 0 else "—"
+
+        sc1, sc2, sc3, sc4 = st.columns(4)
+        if st.session_state["dark_mode"]:
+            card_style = "background:rgba(255,182,213,0.08);border:1px solid rgba(244,114,182,0.22);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
+            num_color_default = "#fde8f0"
+            num_color_int = "#f472b6"
+            num_color_off = "#6ee7b7"
+            num_color_avg = "#c084fc"
+            lbl_color = "rgba(249,168,212,0.55)"
+        else:
+            card_style = "background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
+            num_color_default = "#6b1f38"
+            num_color_int = "#E27396"
+            num_color_off = "#3a9aa8"
+            num_color_avg = "#6a8030"
+            lbl_color = "rgba(42,74,56,0.6)"
+
+        with sc1:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_default};line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Applications</div></div>', unsafe_allow_html=True)
+        with sc2:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_int};line-height:1;margin-bottom:4px;">{interviews}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Interviews</div></div>', unsafe_allow_html=True)
+        with sc3:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_off};line-height:1;margin-bottom:4px;">{offers}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Offers</div></div>', unsafe_allow_html=True)
+        with sc4:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_avg};line-height:1;margin-bottom:4px;">{avg_score}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Avg match</div></div>', unsafe_allow_html=True)
+
     # ADD JOB
     with st.expander("➕ Add New Application"):
-
         c1, c2 = st.columns(2)
         with c1:
             comp = st.text_input("Company Name")
@@ -288,11 +374,7 @@ if st.session_state["logged_in"]:
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
-        final_desc = st.text_area(
-            "Job Description",
-            value=st.session_state["formatted_desc"],
-            height=220
-        )
+        final_desc = st.text_area("Job Description", value=st.session_state["formatted_desc"], height=220)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -305,9 +387,7 @@ if st.session_state["logged_in"]:
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
                 with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
-                    st.session_state["match_data"] = get_ai_match_feedback(
-                        final_desc, st.session_state["resume_txt"]
-                    )
+                    st.session_state["match_data"] = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
 
         if st.session_state["match_data"]:
             match = st.session_state["match_data"]
@@ -337,7 +417,6 @@ if st.session_state["logged_in"]:
                 job_url=url_in, resume_url=resume_url,
                 match_score=score, applied_date=applied_date
             )
-
             if success:
                 st.session_state["resume_txt"] = None
                 st.session_state["match_data"] = None
@@ -350,8 +429,6 @@ if st.session_state["logged_in"]:
     st.divider()
     st.header("📋 My Applied Jobs")
 
-    jobs_list = load_jobs()
-
     status_options = [
         "📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"
     ]
@@ -361,17 +438,9 @@ if st.session_state["logged_in"]:
 
         sort_col, sort_dir_col = st.columns([2, 2])
         with sort_col:
-            sort_by = st.selectbox(
-                "Sort by",
-                ["Date Applied", "Company", "Position", "Match Score", "Status"],
-                key="sort_by"
-            )
+            sort_by = st.selectbox("Sort by", ["Date Applied", "Company", "Position", "Match Score", "Status"], key="sort_by")
         with sort_dir_col:
-            sort_dir = st.selectbox(
-                "Order",
-                ["Newest First", "Oldest First", "A → Z", "Z → A", "Highest First", "Lowest First"],
-                key="sort_dir"
-            )
+            sort_dir = st.selectbox("Order", ["Newest First", "Oldest First", "A → Z", "Z → A", "Highest First", "Lowest First"], key="sort_dir")
 
         if sort_by == "Company":
             df = df.sort_values("company", ascending=(sort_dir == "A → Z"))
@@ -389,73 +458,71 @@ if st.session_state["logged_in"]:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
         ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
-        headers = ["Company", "Position", "Match", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
 
-        cols = st.columns(ratios)
-        for c, h in zip(cols, headers):
-            c.markdown(f"**{h}**")
+        # Column headers
+        if st.session_state["dark_mode"]:
+            hdr_color = "rgba(249,168,212,0.5)"
+        else:
+            hdr_color = "rgba(42,74,56,0.55)"
+
+        hdr = st.columns(ratios)
+        for col, label in zip(hdr, ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE APPLIED", "CV", "SNAP", "DEL"]):
+            col.markdown(f'<p style="font-size:11px;letter-spacing:0.08em;color:{hdr_color};font-weight:700;margin-bottom:4px;">{label}</p>', unsafe_allow_html=True)
 
         st.divider()
 
         for idx, row in df.iterrows():
+            if st.session_state["dark_mode"]:
+                row_bg = "background:rgba(255,182,213,0.07);border:1px solid rgba(244,114,182,0.22);border-radius:12px;padding:4px 16px;margin-bottom:10px;"
+            else:
+                row_bg = "background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:4px 16px;margin-bottom:10px;"
 
-            with st.container():
-                # wrap each row in a styled container via markdown
-                if st.session_state["dark_mode"]:
-                    st.markdown(
-                        '<div style="background:rgba(255,182,213,0.07);border:1px solid rgba(244,114,182,0.25);border-radius:12px;padding:2px 14px;margin-bottom:8px;">',
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.markdown(
-                        '<div style="background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:2px 14px;margin-bottom:8px;">',
-                        unsafe_allow_html=True
-                    )
+            st.markdown(f'<div style="{row_bg}" onmouseenter="this.style.background=\'rgba(244,114,182,0.14)\'" onmouseleave="this.style.background=\'rgba(255,182,213,0.07)\'">', unsafe_allow_html=True)
 
-                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                c1.write(row.get("company", ""))
-                c2.write(row.get("position", ""))
-                c3.write(row.get("match_score", "N/A"))
+            c1.write(row.get("company", ""))
+            c2.write(row.get("position", ""))
+            c3.write(row.get("match_score", "N/A"))
 
-                curr = row.get("status", "📝 Applied")
-                with c4:
-                    new_stat = st.selectbox(
-                        "Status", status_options,
-                        index=(status_options.index(curr) if curr in status_options else 0),
-                        key=f"s_{row['id']}", label_visibility="collapsed"
-                    )
-                    if new_stat != curr:
-                        update_job_full(row["id"], {"status": new_stat})
-                        st.rerun()
-
-                raw_date = row.get("created_at", "")
-                try:
-                    from datetime import datetime
-                    date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
-                except:
-                    date_str = str(raw_date)[:10] if raw_date else "—"
-                c5.write(date_str)
-
-                resume_link = str(row.get("resume_link") or "")
-                with c6:
-                    if resume_link:
-                        st.link_button("📄", resume_link)
-                    else:
-                        st.button("📄", key=f"r_{row['id']}", disabled=True)
-
-                pdf_url = str(row.get("pdf_url") or "")
-                with c7:
-                    if pdf_url:
-                        st.link_button("📸", pdf_url)
-                    else:
-                        st.button("📸", key=f"p_{row['id']}", disabled=True)
-
-                if c8.button("❌", key=f"d_{row['id']}"):
-                    delete_job(row["id"])
+            curr = row.get("status", "📝 Applied")
+            with c4:
+                new_stat = st.selectbox(
+                    "Status", status_options,
+                    index=(status_options.index(curr) if curr in status_options else 0),
+                    key=f"s_{row['id']}", label_visibility="collapsed"
+                )
+                if new_stat != curr:
+                    update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
 
-                st.markdown('</div>', unsafe_allow_html=True)
+            raw_date = row.get("created_at", "")
+            try:
+                from datetime import datetime
+                date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
+            except:
+                date_str = str(raw_date)[:10] if raw_date else "—"
+            c5.write(date_str)
+
+            resume_link = str(row.get("resume_link") or "")
+            with c6:
+                if resume_link:
+                    st.link_button("📄", resume_link)
+                else:
+                    st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+            pdf_url = str(row.get("pdf_url") or "")
+            with c7:
+                if pdf_url:
+                    st.link_button("📸", pdf_url)
+                else:
+                    st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+            if c8.button("🗑", key=f"d_{row['id']}"):
+                delete_job(row["id"])
+                st.rerun()
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
     else:
         st.write("You have no applications saved yet.")
