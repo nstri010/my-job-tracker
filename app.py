@@ -51,9 +51,23 @@ st.markdown("""
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
+/* ── Login page column styling ── */
 [data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
-/* Remove top gap Streamlit adds inside columns on the login page */
 [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
+
+/* Make the right login column look like a card */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) > div[data-testid="stVerticalBlock"] {
+    background: #1e0e28 !important;
+    border: 1px solid #3a1a45 !important;
+    border-radius: 16px !important;
+    padding: 2rem 2.5rem !important;
+    margin-top: 0 !important;
+}
+
+/* Make the left login column also fill height */
+div[data-testid="stHorizontalBlock"] > div:first-child > div[data-testid="stVerticalBlock"] {
+    height: 100% !important;
+}
 * { font-family: 'Inter', sans-serif !important; }
 h1 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
 h2, h3 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
@@ -246,6 +260,7 @@ if not st.session_state["logged_in"]:
 
         # ── SIGN IN ──
         if tab == "login":
+            st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
             st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;text-align:center;'>Welcome Back</div>", unsafe_allow_html=True)
             st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;text-align:center;'>Sign in to continue your journey</div>", unsafe_allow_html=True)
 
