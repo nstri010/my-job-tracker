@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import os
@@ -646,46 +647,48 @@ if st.session_state["logged_in"]:
             except:
                 date_str = str(raw_date)[:10] if raw_date else "—"
 
-            # Marker div so CSS can target this specific row
-            st.markdown(f'<div class="vault-row" id="vr-{row["id"]}"></div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+                c1.markdown(
+                    f'<p style="font-size:14px;font-weight:600;color:#f1f5f9;margin:0;">{company}</p>',
+                    unsafe_allow_html=True)
+                c2.markdown(
+                    f'<p style="font-size:13px;color:#64748b;margin:0;">{position}</p>',
+                    unsafe_allow_html=True)
+                c3.markdown(score_html, unsafe_allow_html=True)
 
-            c1.markdown(f'<p class="vr-company">{company}</p>', unsafe_allow_html=True)
-            c2.markdown(f'<p class="vr-pos">{position}</p>', unsafe_allow_html=True)
-            c3.markdown(score_html, unsafe_allow_html=True)
+                with c4:
+                    new_stat = st.selectbox(
+                        "Status", status_options,
+                        index=(status_options.index(curr) if curr in status_options else 0),
+                        key=f"s_{row['id']}", label_visibility="collapsed"
+                    )
+                    if new_stat != curr:
+                        update_job_full(row["id"], {"status": new_stat})
+                        st.rerun()
 
-            with c4:
-                new_stat = st.selectbox(
-                    "Status", status_options,
-                    index=(status_options.index(curr) if curr in status_options else 0),
-                    key=f"s_{row['id']}", label_visibility="collapsed"
-                )
-                if new_stat != curr:
-                    update_job_full(row["id"], {"status": new_stat})
+                c5.markdown(
+                    f'<p style="font-size:12px;color:#475569;margin:0;">{date_str}</p>',
+                    unsafe_allow_html=True)
+
+                resume_link = str(row.get("resume_link") or "")
+                with c6:
+                    if resume_link:
+                        st.link_button("📄", resume_link, key=f"rl_{row['id']}")
+                    else:
+                        st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+                pdf_url = str(row.get("pdf_url") or "")
+                with c7:
+                    if pdf_url:
+                        st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
+                    else:
+                        st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+                if c8.button("✕", key=f"d_{row['id']}"):
+                    delete_job(row["id"])
                     st.rerun()
-
-            c5.markdown(f'<p class="vr-date">{date_str}</p>', unsafe_allow_html=True)
-
-            resume_link = str(row.get("resume_link") or "")
-            with c6:
-                if resume_link:
-                    st.link_button("📄", resume_link, key=f"rl_{row['id']}")
-                else:
-                    st.button("📄", key=f"r_{row['id']}", disabled=True)
-
-            pdf_url = str(row.get("pdf_url") or "")
-            with c7:
-                if pdf_url:
-                    st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
-                else:
-                    st.button("📸", key=f"p_{row['id']}", disabled=True)
-
-            if c8.button("✕", key=f"d_{row['id']}"):
-                delete_job(row["id"])
-                st.rerun()
-
-            st.markdown('<div class="vault-row-end"></div>', unsafe_allow_html=True)
 
     else:
         st.markdown("""
