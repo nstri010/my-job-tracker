@@ -203,6 +203,15 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     overflow: visible !important;
 }
 
+
+/* ── Login panel native container ── */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(18, 18, 24, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 20px !important;
+    padding: 8px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -212,21 +221,18 @@ if not st.session_state["logged_in"]:
     l_col, r_col = st.columns([1.1, 1], gap="large")
 
     with l_col:
-        st.markdown("""
-        <div class="login-panel">
-            <div style="font-size:32px; color:#f472b6; margin-bottom:8px; font-family:'Playfair Display'">✦ Career Hunt HQ</div>
-            <div style="color:#64748b; font-size:12px; margin-bottom:40px; letter-spacing:2px; text-transform:uppercase;">AI Resume Tracking Tool</div>
-            <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Find. Match. File.</h1>
-            <p style="font-size:17px; line-height:1.6; max-width:400px;">
-                The smarter, organized way to career hunt. No more overwhelming spreadsheets or disorganized files.
-            </p>
+        with st.container(border=True):
+            st.markdown("<div style='font-size:16px;font-weight:700;color:#f472b6;margin-bottom:4px;'>✦ Career Hunt HQ</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:28px;'>AI Resume Tracking Tool</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:42px;font-weight:800;color:#fafafa;line-height:1.1;letter-spacing:-0.03em;margin-bottom:16px;'>Find. Match.<br>File.</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:14px;color:#52525b;line-height:1.6;margin-bottom:32px;'>The smarter way to career hunt. No more spreadsheets or disorganized files.</div>", unsafe_allow_html=True)
+            st.markdown("""
             <div class="stat-row">
-                <div><div class="stat-val">Fit Score</div><div class="stat-lbl">Check Your Rank</div></div>
-                <div><div class="stat-val">AI</div><div class="stat-lbl">Gemini Backed Analysis</div></div>
-                <div><div class="stat-val">Hassel Free</div><div class="stat-lbl">Saved In One Location </div></div>
+                <div><div class="stat-val">Fit Score</div><div class="stat-lbl">Match Rank</div></div>
+                <div><div class="stat-val">AI</div><div class="stat-lbl">Gemini Backed</div></div>
+                <div><div class="stat-val">1-Click</div><div class="stat-lbl">Auto-Fill</div></div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
     with r_col:
         with st.container():
