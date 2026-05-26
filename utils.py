@@ -113,24 +113,13 @@ Job Text:
 # RESUME MATCH
 def get_ai_match_feedback(job_desc, resume_text):
     try:
-        prompt = f"""You are a resume scoring system. Score the resume against the job description using this fixed rubric:
-
-Count how many of the job's REQUIRED skills/qualifications appear in the resume.
-- 90-100% matched = 10/10
-- 80-89% matched = 9/10
-- 70-79% matched = 8/10
-- 60-69% matched = 7/10
-- 50-59% matched = 6/10
-- 40-49% matched = 5/10
-- 30-39% matched = 4/10
-- 20-29% matched = 3/10
-- 10-19% matched = 2/10
-- 0-9% matched = 1/10
+        prompt = f"""
+You are a resume evaluator. Compare the resume against the job description.
 
 Your response MUST start with this exact line:
 SCORE: X/10
 
-Then provide:
+Where X is a whole number from 1 to 10. Then provide:
 
 Strengths:
 - item
@@ -145,14 +134,12 @@ Resume:
 {resume_text}
 
 Job Description:
-{job_desc}"""
+{job_desc}
+"""
         model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             prompt,
-            generation_config=genai.GenerationConfig(
-                temperature=0,
-                thinking_config={"thinking_budget": 0}
-            )
+            generation_config=genai.GenerationConfig(temperature=0)
         )
         result = response.text
 
