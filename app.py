@@ -112,6 +112,11 @@ st.markdown(CYBER_PLUM_STYLE, unsafe_allow_html=True)
 for key in ["logged_in", "username"]:
     if key not in st.session_state: st.session_state[key] = False
 
+# Sign Out Button
+    if st.button("Sign Out"):
+        st.session_state.clear()
+        st.rerun()
+        
 # ── AUTHENTICATION ──────────────────────────────────────────────────────────
 if not st.session_state["logged_in"]:
     col1, col2, col3 = st.columns([1, 1.2, 1])
@@ -182,7 +187,3 @@ if st.session_state["logged_in"]:
                     st.rerun()
     else:
         st.info("No applications yet. Add one to get started!")
-
-    if st.button("Sign Out"):
-        st.session_state.clear()
-        st.rerun()
