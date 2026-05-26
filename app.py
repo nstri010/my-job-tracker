@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import os
@@ -71,8 +70,8 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 24px !important;
-    padding: 60px 50px !important;
-    height: 600px;
+    padding: 48px 44px !important;
+    height: auto;
 }
 
 /* ── Inputs (Terminal Style) ── */
