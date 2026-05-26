@@ -149,13 +149,37 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 }
 
 
-/* ── Job row cards — match stat card style ── */
+/* ── Job row cards ── */
 [data-testid="stVerticalBlockBorderWrapper"] {
     background: rgba(18, 18, 24, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 14px !important;
-    padding: 6px 12px !important;
+    padding: 4px 16px !important;
     margin-bottom: 8px !important;
+}
+
+/* Force every column cell to flex-center vertically */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 56px !important;
+}
+
+/* Selectbox inside row: remove extra top padding Streamlit adds */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label {
+    display: none !important;
+}
+
+/* Buttons inside row: vertically center */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"] button,
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stLinkButton"] a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* ── Delete button red styling ── */
@@ -610,9 +634,11 @@ if st.session_state["logged_in"]:
                 elif pct >= 50: sc = "#fbbf24"
                 else:           sc = "#f87171"
                 score_html = (
-                    f'<span style="font-size:15px;font-weight:700;color:{sc};">{raw_score}</span>'
-                    f'<div style="margin-top:5px;background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:48px;overflow:hidden;">'
+                    f'<div style="display:flex;flex-direction:column;gap:5px;">'
+                    f'<span style="font-size:15px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
+                    f'<div style="background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:48px;overflow:hidden;">'
                     f'<div style="height:4px;width:{pct}%;background:{sc};border-radius:4px;"></div></div>'
+                    f'</div>'
                 )
             except:
                 score_html = '<span style="color:#64748b;">—</span>'
