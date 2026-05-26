@@ -149,8 +149,7 @@ if not st.session_state["logged_in"]:
                         st.rerun()
                     else: st.error("Invalid credentials")
                 
-                st.markdown("<p style='text-align:center; margin-top:20px;'>New here? <span style='color:#f472b6;'</p>", unsafe_allow_html=True)
-                if st.button("Create Account →", use_container_width=True):
+                if st.button("New Here? Create Account →", use_container_width=True):
                     st.session_state["login_tab"] = "signup"; st.rerun()
 
             elif tab == "signup":
