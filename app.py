@@ -128,6 +128,35 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 * { caret-color: transparent !important; }
 input, textarea { caret-color: white !important; }
 
+
+/* ── Job row cards ── */
+div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-row-card {
+    background: rgba(18, 18, 24, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 10px !important;
+}
+
+/* Style every job row via container hack */
+.job-card-wrap {
+    background: rgba(18, 18, 24, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px 20px;
+    margin-bottom: 10px;
+}
+
+
+/* ── Job row cards — match stat card style ── */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(18, 18, 24, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 8px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -400,54 +429,53 @@ if st.session_state["logged_in"]:
 
         for idx, row in df.iterrows():
 
-            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+            with st.container(border=True):
+                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-            c1.write(row.get("company", ""))
-            c2.write(row.get("position", ""))
-            c3.write(row.get("match_score", "N/A"))
+                c1.write(row.get("company", ""))
+                c2.write(row.get("position", ""))
+                c3.write(row.get("match_score", "N/A"))
 
-            curr = row.get("status", "📝 Applied")
+                curr = row.get("status", "📝 Applied")
 
-            with c4:
-                new_stat = st.selectbox(
-                    "Status",
-                    status_options,
-                    index=(status_options.index(curr) if curr in status_options else 0),
-                    key=f"s_{row['id']}",
-                    label_visibility="collapsed"
-                )
-                if new_stat != curr:
-                    update_job_full(row["id"], {"status": new_stat})
+                with c4:
+                    new_stat = st.selectbox(
+                        "Status",
+                        status_options,
+                        index=(status_options.index(curr) if curr in status_options else 0),
+                        key=f"s_{row['id']}",
+                        label_visibility="collapsed"
+                    )
+                    if new_stat != curr:
+                        update_job_full(row["id"], {"status": new_stat})
+                        st.rerun()
+
+                # DATE APPLIED
+                raw_date = row.get("created_at", "")
+                try:
+                    from datetime import datetime
+                    date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
+                except:
+                    date_str = str(raw_date)[:10] if raw_date else "—"
+                c5.write(date_str)
+
+                resume_link = str(row.get("resume_link") or "")
+                with c6:
+                    if resume_link:
+                        st.link_button("📄", resume_link)
+                    else:
+                        st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+                pdf_url = str(row.get("pdf_url") or "")
+                with c7:
+                    if pdf_url:
+                        st.link_button("📸", pdf_url)
+                    else:
+                        st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+                if c8.button("❌", key=f"d_{row['id']}"):
+                    delete_job(row["id"])
                     st.rerun()
-
-            # DATE APPLIED
-            raw_date = row.get("created_at", "")
-            try:
-                from datetime import datetime
-                date_str = datetime.fromisoformat(str(raw_date)).strftime("%m/%d/%Y")
-            except:
-                date_str = str(raw_date)[:10] if raw_date else "—"
-            c5.write(date_str)
-
-            resume_link = str(row.get("resume_link") or "")
-            with c6:
-                if resume_link:
-                    st.link_button("📄", resume_link)
-                else:
-                    st.button("📄", key=f"r_{row['id']}", disabled=True)
-
-            pdf_url = str(row.get("pdf_url") or "")
-            with c7:
-                if pdf_url:
-                    st.link_button("📸", pdf_url)
-                else:
-                    st.button("📸", key=f"p_{row['id']}", disabled=True)
-
-            if c8.button("❌", key=f"d_{row['id']}"):
-                delete_job(row["id"])
-                st.rerun()
-
-            st.divider()
 
     else:
         st.write("You have no applications saved yet.")
