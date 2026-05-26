@@ -97,10 +97,10 @@ if st.session_state["logged_in"]:
         c1, c2 = st.columns(2)
 
         with c1:
-            comp = st.text_input("Company Name", key="input_comp")
+            comp = st.text_input("Company Name")
 
         with c2:
-            pos = st.text_input("Position Title", key="input_pos")
+            pos = st.text_input("Position Title")
 
         url_in = st.text_input("Job Posting URL")
 
@@ -127,7 +127,7 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
-            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
+            applied_date = st.date_input("Date Applied")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
@@ -157,9 +157,7 @@ if st.session_state["logged_in"]:
                     st.session_state["username"]
                 )
 
-            if st.session_state.get("match_data"):
-                score = st.session_state["match_data"].get("score", "N/A")
-            elif st.session_state.get("resume_txt") and final_desc:
+            if st.session_state.get("resume_txt") and final_desc:
                 with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
                     match_result = get_ai_match_feedback(
                         final_desc,
@@ -168,9 +166,12 @@ if st.session_state["logged_in"]:
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
 
+            elif st.session_state.get("match_data"):
+                score = st.session_state["match_data"].get("score", "N/A")
+
             success = save_job(
-                company=st.session_state.get("input_comp", comp),
-                position=st.session_state.get("input_pos", pos),
+                company=comp,
+                position=pos,
                 description=final_desc,
                 job_url=url_in,
                 resume_url=resume_url,
