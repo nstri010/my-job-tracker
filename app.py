@@ -225,7 +225,7 @@ if not st.session_state["logged_in"]:
         <div style="background:rgba(18,18,24,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:36px 36px 40px 36px;">
             <div style="font-size:15px;font-weight:700;color:#f472b6;margin-bottom:4px;">✦ Career Hunt HQ</div>
             <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:28px;">AI Resume Tracking Tool</div>
-            <div style="font-size:38px;font-weight:800;color:#fafafa;line-height:1.1;letter-spacing:-0.03em;margin-bottom:14px;">Find. Match. File.</div>
+            <div style="font-size:38px;font-weight:800;color:#fafafa;line-height:1.05;letter-spacing:-0.04em;margin-bottom:14px;">Find.<br><span style="color:#f472b6;">Match.</span><br>File.</div>
             <div style="font-size:13px;color:#52525b;line-height:1.6;margin-bottom:28px;">The smarter way to career hunt. No more spreadsheets or disorganized files.</div>
             <div style="display:flex;gap:32px;">
                 <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">Fit Score</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Check Your Rank</div></div>
