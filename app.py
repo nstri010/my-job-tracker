@@ -53,19 +53,16 @@ st.markdown("""
 [data-testid="stHeader"] { background: transparent !important; }
 /* ── Login page column styling ── */
 [data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
-[data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
 
-/* Right login column card */
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stVerticalBlock"] {
-    background: #1e0e28 !important;
-    border: 1px solid #4a2248 !important;
+/* Kill ALL vertical gaps globally on login */
+[data-testid="stVerticalBlock"] { gap: 0 !important; }
+
+/* Right column card background */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%) !important;
+    border: 1px solid #3a1a45 !important;
     border-radius: 16px !important;
-    padding: 2rem 2rem !important;
-}
-
-/* Left login column — match height */
-div[data-testid="stHorizontalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] {
-    height: 100% !important;
+    padding: 1.5rem !important;
 }
 * { font-family: 'Inter', sans-serif !important; }
 h1 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
@@ -256,11 +253,10 @@ if not st.session_state["logged_in"]:
 
     with right:
         tab = st.session_state["login_tab"]
-        st.markdown('<div class="login-right">', unsafe_allow_html=True)
 
         # ── SIGN IN ──
         if tab == "login":
-            st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
             st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;text-align:center;'>Welcome Back</div>", unsafe_allow_html=True)
             st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;text-align:center;'>Sign in to continue your journey</div>", unsafe_allow_html=True)
 
