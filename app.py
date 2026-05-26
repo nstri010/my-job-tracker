@@ -55,16 +55,33 @@ st.markdown("""
     padding-top: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    padding-bottom: 0 !important;
     max-width: 100% !important;
 }
 [data-testid="stVerticalBlock"] { gap: 0 !important; }
 
-/* Remove card from right column */
+/* Full height columns */
+[data-testid="stHorizontalBlock"] {
+    align-items: stretch !important;
+    min-height: 100vh !important;
+    gap: 0 !important;
+}
+div[data-testid="stHorizontalBlock"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+/* Subtle divider between columns */
+div[data-testid="stHorizontalBlock"] > div:nth-child(1) {
+    border-right: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 60px 60px !important;
+}
 div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+    padding: 60px 80px !important;
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
-    padding: 0 !important;
 }
 
 * { font-family: 'Inter', sans-serif !important; }
@@ -182,15 +199,7 @@ hr { border-color: #4a2248 !important; }
 .stDivider { margin-top: 0.3rem !important; margin-bottom: 0.3rem !important; }
 [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] { margin-bottom: 0 !important; }
 
-/* ── Login left panel ── */
-.login-left {
-    padding: 80px 60px 60px 60px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-right: 1px solid rgba(255,255,255,0.06);
-}
+.login-left { display: flex; flex-direction: column; justify-content: center; }
 .login-logo { font-size: 18px; color: #ead8ee; font-weight: 700; margin-bottom: 60px; }
 .login-headline { font-size: 48px; font-weight: 800; color: #ead8ee; line-height: 1.15; margin-bottom: 20px; }
 .login-sub-text { font-size: 16px; color: #7a5888; line-height: 1.7; max-width: 400px; margin-bottom: 60px; }
@@ -199,23 +208,9 @@ hr { border-color: #4a2248 !important; }
 .login-stat-num.green { color: #34d399; }
 .login-stat-num.purple { color: #c084fc; }
 .login-stat-lbl { font-size: 13px; color: #5a4068; margin-top: 4px; }
-
-/* ── Login right panel ── */
-.login-right {
-    padding: 80px 80px 60px 80px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+.login-right { display: flex; flex-direction: column; justify-content: center; }
 .login-welcome { font-size: 36px; font-weight: 800; color: #ead8ee; margin-bottom: 8px; }
-.login-sub { font-size: 15px; color: #7a5888; margin-bottom: 40px; }
-.tab-btn {
-    background: none; border: none; padding: 10px 24px;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    color: #7a5878; border-bottom: 2px solid transparent; margin-bottom: -1px;
-}
-.tab-btn.active { color: #f472b6; border-bottom-color: #f472b6; }
+.login-sub { font-size: 15px; color: #7a5888; margin-bottom: 32px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -272,7 +267,6 @@ if not st.session_state["logged_in"]:
 
     with right:
         tab = st.session_state["login_tab"]
-        st.markdown('<div class="login-right">', unsafe_allow_html=True)
 
         # ── SIGN IN ──
         if tab == "login":
