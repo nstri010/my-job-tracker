@@ -162,23 +162,33 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     border-color: rgba(255, 255, 255, 0.13) !important;
 }
 
-/* Every column inside a card: flex center, fixed height */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] {
-    display: flex !important;
-    align-items: center !important;
+/* Kill ALL the default Streamlit block padding inside cards */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+    padding: 0 !important;
 }
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stHorizontalBlock"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    gap: 8px !important;
+    align-items: center !important;
+    min-height: 52px !important;
+}
+
+/* Every column inside a card: flex center */
 [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div:first-child {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
-    min-height: 60px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 /* Strip paragraph margin/padding inside cards */
 [data-testid="stVerticalBlockBorderWrapper"] p {
     margin: 0 !important;
     padding: 0 !important;
-    line-height: 1.3 !important;
+    line-height: 1 !important;
 }
 
 /* Selectbox inside card: shrink label gap */
@@ -195,12 +205,12 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 /* Buttons inside card */
 [data-testid="stVerticalBlockBorderWrapper"] button,
 [data-testid="stVerticalBlockBorderWrapper"] a[data-testid="stLinkButton"] {
-    width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
     padding: 0 !important;
-    font-size: 15px !important;
-    border-radius: 8px !important;
+    font-size: 14px !important;
+    border-radius: 7px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -651,10 +661,10 @@ if st.session_state["logged_in"]:
                 elif pct >= 50: sc = "#fbbf24"
                 else:           sc = "#f87171"
                 score_html = (
-                    f'<div style="display:flex;flex-direction:column;gap:5px;">'
-                    f'<span style="font-size:15px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
-                    f'<div style="background:rgba(255,255,255,0.07);border-radius:4px;height:4px;width:48px;overflow:hidden;">'
-                    f'<div style="height:4px;width:{pct}%;background:{sc};border-radius:4px;"></div></div>'
+                    f'<div style="display:inline-flex;flex-direction:column;gap:4px;">'
+                    f'<span style="font-size:14px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
+                    f'<div style="background:rgba(255,255,255,0.07);border-radius:3px;height:3px;width:40px;">'
+                    f'<div style="height:3px;width:{pct}%;background:{sc};border-radius:3px;"></div></div>'
                     f'</div>'
                 )
             except:
