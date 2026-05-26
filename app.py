@@ -363,7 +363,7 @@ if st.session_state["logged_in"]:
         with sort_col:
             sort_by = st.selectbox(
                 "Sort by",
-                ["Date Applied", "Company", "Position", "Match Rank", "Application Status"],
+                ["Date Applied", "Company", "Position", "Match Score", "Application Status"],
                 key="sort_by"
             )
         with sort_dir_col:
@@ -390,7 +390,7 @@ if st.session_state["logged_in"]:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
         ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
-        headers = ["Company", "Position", "Match", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
+        headers = ["Company", "Position", "Match Score", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
 
         cols = st.columns(ratios)
         for c, h in zip(cols, headers):
