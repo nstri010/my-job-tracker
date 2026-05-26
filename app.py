@@ -150,61 +150,42 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 
 
 /* ── Job row cards ── */
-[data-testid="stVerticalBlockBorderWrapper"] {
+.vault-row + div [data-testid="stHorizontalBlock"] {
     background: rgba(22, 22, 32, 0.85) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
     border-radius: 12px !important;
-    padding: 0 8px !important;
+    padding: 0 16px !important;
     margin-bottom: 6px !important;
-    transition: border-color 0.2s ease !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    border-color: rgba(255, 255, 255, 0.13) !important;
-}
-
-/* Kill ALL the default Streamlit block padding inside cards */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
-    gap: 0 !important;
-    padding: 0 !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stHorizontalBlock"] {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    gap: 8px !important;
+    min-height: 56px !important;
     align-items: center !important;
-    min-height: 52px !important;
+    transition: border-color 0.2s !important;
+}
+.vault-row + div [data-testid="stHorizontalBlock"]:hover {
+    border-color: rgba(255,255,255,0.13) !important;
 }
 
-/* Every column inside a card: flex center */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div:first-child {
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* Strip paragraph margin/padding inside cards */
-[data-testid="stVerticalBlockBorderWrapper"] p {
+/* Strip all paragraph margins inside rows */
+.vault-row + div p {
     margin: 0 !important;
     padding: 0 !important;
-    line-height: 1 !important;
+    line-height: 1.2 !important;
 }
 
-/* Selectbox inside card: shrink label gap */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] {
-    width: 100% !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > label {
-    display: none !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > div {
-    margin-top: 0 !important;
+/* Column inner div — center content */
+.vault-row + div [data-testid="stColumn"] > div {
+    display: flex !important;
+    align-items: center !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
-/* Buttons inside card */
-[data-testid="stVerticalBlockBorderWrapper"] button,
-[data-testid="stVerticalBlockBorderWrapper"] a[data-testid="stLinkButton"] {
+/* Hide selectbox label */
+.vault-row + div [data-testid="stSelectbox"] label { display: none !important; }
+.vault-row + div [data-testid="stSelectbox"] > div { margin-top: 0 !important; }
+
+/* Uniform icon buttons */
+.vault-row + div button,
+.vault-row + div a[data-testid="stLinkButton"] {
     width: 32px !important;
     height: 32px !important;
     min-height: 32px !important;
@@ -217,20 +198,15 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     background: rgba(255,255,255,0.04) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"] button:hover {
+.vault-row + div button:hover {
     background: rgba(255,255,255,0.09) !important;
-    border-color: rgba(255,255,255,0.18) !important;
+    border-color: rgba(255,255,255,0.2) !important;
 }
 
-/* ── Delete button (last button in each card row) ── */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"]:last-of-type button {
-    color: #f87171 !important;
-    border-color: rgba(248,113,113,0.2) !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"]:last-of-type button:hover {
-    background: rgba(248,113,113,0.12) !important;
-    border-color: #f87171 !important;
-}
+/* Text helpers */
+p.vr-company { font-size: 14px !important; font-weight: 600 !important; color: #f1f5f9 !important; }
+p.vr-pos     { font-size: 13px !important; color: #64748b !important; }
+p.vr-date    { font-size: 12px !important; color: #475569 !important; }
 
 
 /* ── Fix file uploader button ghost text ── */
@@ -632,18 +608,16 @@ if st.session_state["logged_in"]:
 
         ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
 
-        # ── Column header row ──────────────────────────────────────────
+        # ── Column headers ─────────────────────────────────────────────
         h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(ratios)
         for col, label in zip([h1,h2,h3,h4,h5,h6,h7,h8],
                                ["Company","Position","Match","Status","Applied","CV","Snap",""]):
             col.markdown(
                 f'<span style="font-size:10px;font-weight:700;color:#374151;'
                 f'text-transform:uppercase;letter-spacing:0.1em;">{label}</span>',
-                unsafe_allow_html=True
-            )
+                unsafe_allow_html=True)
 
         # ── Job rows ───────────────────────────────────────────────────
-
         for idx, row in df.iterrows():
             curr      = row.get("status", "📝 Applied")
             raw_score = row.get("match_score", "")
@@ -651,15 +625,12 @@ if st.session_state["logged_in"]:
             company   = row.get("company", "—")
             position  = row.get("position", "—")
 
-            # ── Score HTML ──────────────────────────────────────────────────────
             try:
                 parts = str(raw_score).split("/")
                 num   = float(parts[0])
                 denom = float(parts[1]) if len(parts) > 1 else 10
                 pct   = int((num / denom) * 100)
-                if pct >= 75:   sc = "#34d399"
-                elif pct >= 50: sc = "#fbbf24"
-                else:           sc = "#f87171"
+                sc    = "#34d399" if pct >= 75 else "#fbbf24" if pct >= 50 else "#f87171"
                 score_html = (
                     f'<div style="display:inline-flex;flex-direction:column;gap:4px;">'
                     f'<span style="font-size:14px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
@@ -670,56 +641,51 @@ if st.session_state["logged_in"]:
             except:
                 score_html = '<span style="color:#64748b;">—</span>'
 
-            # ── Date ────────────────────────────────────────────────────────────
             try:
                 date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except:
                 date_str = str(raw_date)[:10] if raw_date else "—"
 
-            with st.container(border=True):
-                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
+            # Marker div so CSS can target this specific row
+            st.markdown(f'<div class="vault-row" id="vr-{row["id"]}"></div>', unsafe_allow_html=True)
 
-                c1.markdown(
-                    f'<div style="font-size:14px;font-weight:600;color:#f1f5f9;letter-spacing:-0.01em;">{company}</div>',
-                    unsafe_allow_html=True)
-                c2.markdown(
-                    f'<div style="font-size:13px;color:#64748b;">{position}</div>',
-                    unsafe_allow_html=True)
-                c3.markdown(score_html, unsafe_allow_html=True)
+            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
-                with c4:
-                    new_stat = st.selectbox(
-                        "Status",
-                        status_options,
-                        index=(status_options.index(curr) if curr in status_options else 0),
-                        key=f"s_{row['id']}",
-                        label_visibility="collapsed"
-                    )
-                    if new_stat != curr:
-                        update_job_full(row["id"], {"status": new_stat})
-                        st.rerun()
+            c1.markdown(f'<p class="vr-company">{company}</p>', unsafe_allow_html=True)
+            c2.markdown(f'<p class="vr-pos">{position}</p>', unsafe_allow_html=True)
+            c3.markdown(score_html, unsafe_allow_html=True)
 
-                c5.markdown(
-                    f'<div style="font-size:12px;color:#475569;">{date_str}</div>',
-                    unsafe_allow_html=True)
-
-                resume_link = str(row.get("resume_link") or "")
-                with c6:
-                    if resume_link:
-                        st.link_button("📄", resume_link, key=f"rl_{row['id']}")
-                    else:
-                        st.button("📄", key=f"r_{row['id']}", disabled=True)
-
-                pdf_url = str(row.get("pdf_url") or "")
-                with c7:
-                    if pdf_url:
-                        st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
-                    else:
-                        st.button("📸", key=f"p_{row['id']}", disabled=True)
-
-                if c8.button("✕", key=f"d_{row['id']}"):
-                    delete_job(row["id"])
+            with c4:
+                new_stat = st.selectbox(
+                    "Status", status_options,
+                    index=(status_options.index(curr) if curr in status_options else 0),
+                    key=f"s_{row['id']}", label_visibility="collapsed"
+                )
+                if new_stat != curr:
+                    update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
+
+            c5.markdown(f'<p class="vr-date">{date_str}</p>', unsafe_allow_html=True)
+
+            resume_link = str(row.get("resume_link") or "")
+            with c6:
+                if resume_link:
+                    st.link_button("📄", resume_link, key=f"rl_{row['id']}")
+                else:
+                    st.button("📄", key=f"r_{row['id']}", disabled=True)
+
+            pdf_url = str(row.get("pdf_url") or "")
+            with c7:
+                if pdf_url:
+                    st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
+                else:
+                    st.button("📸", key=f"p_{row['id']}", disabled=True)
+
+            if c8.button("✕", key=f"d_{row['id']}"):
+                delete_job(row["id"])
+                st.rerun()
+
+            st.markdown('<div class="vault-row-end"></div>', unsafe_allow_html=True)
 
     else:
         st.markdown("""
