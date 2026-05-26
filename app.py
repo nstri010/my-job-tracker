@@ -70,8 +70,9 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 24px !important;
-    padding: 48px 44px !important;
+    padding: 48px 44px 52px 44px !important;
     height: auto;
+    overflow: visible;
 }
 
 /* ── Inputs (Terminal Style) ── */
@@ -191,6 +192,15 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
     max-width: 400px !important;
     padding: 8px 12px !important;
     min-height: 50px !important;
+}
+
+
+/* ── Prevent login panel from being clipped by column ── */
+[data-testid="stHorizontalBlock"] > div:first-child {
+    overflow: visible !important;
+}
+[data-testid="stVerticalBlock"] {
+    overflow: visible !important;
 }
 
 </style>
