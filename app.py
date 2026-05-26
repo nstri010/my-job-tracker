@@ -165,8 +165,14 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-ro
 [data-testid="baseButton-secondary"] span[data-testid="stIconMaterial"] {
     display: none !important;
 }
-
-
+/* Hide the "upload" icon label on the browse button */
+[data-testid="stFileUploader"] button span {
+    display: none !important;
+}
+[data-testid="stFileUploader"] button::before {
+    content: "Browse files" !important;
+    color: white !important;
+}
 
 /* ── Shorter date input bar ── */
 [data-testid="stDateInput"] input {
