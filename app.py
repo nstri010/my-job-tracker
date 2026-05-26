@@ -25,62 +25,6 @@ st.set_page_config(
     layout="wide"
 )
 
-#AUTHENTICATION Page
-
-if not st.session_state["logged_in"]:
-    # Center the login box using columns
-    col1, col2, col3 = st.columns([1, 1.3, 1])
-    
-    with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.title("Job Tracker")
-        st.caption("Secure Career Pipeline Management")
-        
-        # Mode Selector: Controls which form is displayed
-        auth_choice = st.radio(
-            "Select Mode", 
-            ["Login", "Sign Up", "Forgot Password"], 
-            horizontal=True, 
-            label_visibility="collapsed"
-        )
-        
-        with st.container(border=True):
-            # 1. LOGIN FORM
-            if auth_choice == "Login":
-                u = st.text_input("Username")
-                p = st.text_input("Password", type="password")
-                if st.button("Sign In", use_container_width=True):
-                    if login_user(u, p):
-                        st.session_state["logged_in"] = True
-                        st.session_state["username"] = u
-                        st.rerun()
-                    else:
-                        st.error("Authentication failed. Check your credentials.")
-
-            # 2. CREATE ACCOUNT FORM
-            elif auth_choice == "Sign Up":
-                new_u = st.text_input("Choose Username")
-                new_p = st.text_input("Choose Password", type="password")
-                if st.button("Create Account", use_container_width=True):
-                    # Calls the sign_up_user function from storage.py
-                    if sign_up_user(new_u, new_p):
-                        st.success("Account created! You can now log in.")
-                        # Optionally switch back to login mode automatically
-                        st.session_state["auth_mode"] = "Login" 
-                    else:
-                        st.error("Username already exists or sign-up failed.")
-
-            # 3. FORGOT PASSWORD FORM
-            elif auth_choice == "Forgot Password":
-                reset_u = st.text_input("Username to Reset")
-                if st.button("Request Password Reset", use_container_width=True):
-                    # Calls the send_password_reset function from storage.py
-                    if send_password_reset(reset_u):
-                        st.success("Reset instructions sent to your account's email.")
-                    else:
-                        st.error("Username not found.")
-
-
 # SESSION
 
 if "logged_in" not in st.session_state:
@@ -99,37 +43,200 @@ if "username" not in st.session_state:
     st.session_state["username"] = None
 
 
-# LOGIN
+# ── PASSWORD STRENGTH HELPER ───────────────────────────────────────────────────
 
-#if not st.session_state["logged_in"]:
+def password_strength(pw):
+    if not pw:
+        return None, None, None
+    score = 0
+    if len(pw) >= 8:  score += 1
+    if len(pw) >= 12: score += 1
+    if any(c.isupper() for c in pw): score += 1
+    if any(c.isdigit() for c in pw): score += 1
+    if any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in pw): score += 1
+    if score <= 1:   return "Weak",   "#ef4444", 20
+    elif score == 2: return "Fair",   "#f97316", 40
+    elif score == 3: return "Medium", "#eab308", 65
+    elif score == 4: return "Strong", "#22c55e", 85
+    else:            return "Very Strong", "#10b981", 100
 
-    #st.title("🔐 Job Tracker Login")
+# ── LOGIN PAGE ─────────────────────────────────────────────────────────────────
 
-    #tab1, tab2 = st.tabs(["Login", "Sign Up"])
+if not st.session_state["logged_in"]:
 
-    #with tab1:
+    left, right = st.columns([1, 1], gap="small")
 
-        #u = st.text_input("Username", key="login_username")
-        #p = st.text_input("Password", type="password", key="login_password")
+    with left:
+        st.markdown("""
+        <div class="login-left">
+            <div class="login-logo">✦ Job Tracker</div>
+            <div class="login-headline">
+                Land Your<br><span style="color:#f472b6;">Dream Job</span>
+            </div>
+            <div class="login-sub-text">
+                Track applications, scan your resume against job descriptions,
+                and get AI-powered match scores — all in one place.
+            </div>
+            <div class="login-stat-row">
+                <div>
+                    <div class="login-stat-num">AI</div>
+                    <div class="login-stat-lbl">Match Scoring</div>
+                </div>
+                <div>
+                    <div class="login-stat-num green">Auto</div>
+                    <div class="login-stat-lbl">Job Scraping</div>
+                </div>
+                <div>
+                    <div class="login-stat-num purple">Live</div>
+                    <div class="login-stat-lbl">Status Tracking</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-       # if st.button("Login"):
-            #if login_user(u, p):
-                #st.session_state["logged_in"] = True
-               # st.session_state["username"] = u
-               # st.rerun()
-           # else:
-                #st.error("Invalid login")
+    with right:
+        tab = st.session_state["login_tab"]
 
-   # with tab2:
+        # ── SIGN IN ──
+        if tab == "login":
+            st.markdown("<div class='login-welcome'>Welcome Back</div>", unsafe_allow_html=True)
+            st.markdown("<div class='login-sub'>Sign in to continue your journey</div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-      #  new_u = st.text_input("Username", key="signup_username")
-       # new_p = st.text_input("Password", type="password", key="signup_password")
+            u = st.text_input("Username", key="login_username", placeholder="Enter your username")
+            p = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
 
-      #  if st.button("Create Account"):
-         #   if sign_up_user(new_u, new_p):
-           #     st.success("Account created")
-           # else:
-             #   st.error("Username exists")
+            rm_col, fp_col = st.columns([1, 1])
+            with rm_col:
+                st.checkbox("Remember me", key="remember_me")
+            with fp_col:
+                st.markdown(
+                    "<div style='text-align:right;padding-top:8px;'>"
+                    "<span style='font-size:14px;color:#f472b6;cursor:pointer;font-weight:600;'"
+                    " onclick=\"\">Forgot password?</span></div>",
+                    unsafe_allow_html=True
+                )
+                if st.button("→ Reset password", key="go_forgot", use_container_width=True):
+                    st.session_state["login_tab"] = "forgot"
+                    st.session_state["reset_sent"] = False
+                    st.rerun()
+
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="signin-btn">', unsafe_allow_html=True)
+            if st.button("Sign In", key="do_login", use_container_width=True):
+                if login_user(u, p):
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = u
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style='text-align:center;margin-top:24px;font-size:14px;color:#6a4868;'>
+                Don't have an account?
+                <span style='color:#f472b6;font-weight:600;cursor:pointer;'> Sign up for free</span>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Create a free account →", key="go_signup", use_container_width=True):
+                st.session_state["login_tab"] = "signup"
+                st.rerun()
+
+        # ── FORGOT PASSWORD ──
+        elif tab == "forgot":
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Reset Password</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;'>Enter your username and we'll send you a reset link</div>", unsafe_allow_html=True)
+
+            if st.session_state["reset_sent"]:
+                st.markdown("""
+                <div style="background:#1a3a2a;border:1px solid #2a6a4a;border-radius:10px;padding:20px;text-align:center;">
+                    <div style="font-size:28px;margin-bottom:8px;">📬</div>
+                    <div style="font-size:15px;font-weight:600;color:#34d399;margin-bottom:6px;">Reset email sent!</div>
+                    <div style="font-size:13px;color:#8a9888;">Check your inbox and follow the link to reset your password.</div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                reset_u = st.text_input("Username", key="reset_username", placeholder="Enter your username")
+                if st.button("Send Reset Link", key="do_reset", use_container_width=True):
+                    if not reset_u:
+                        st.error("Please enter your username")
+                    else:
+                        send_password_reset(reset_u)
+                        # Always show success (don't reveal if user exists)
+                        st.session_state["reset_sent"] = True
+                        st.rerun()
+
+            st.markdown("<div style='text-align:center;margin-top:20px;font-size:13px;color:#7a5878;'>Remember your password?</div>", unsafe_allow_html=True)
+            if st.button("Back to Sign In →", key="back_login", use_container_width=True):
+                st.session_state["login_tab"] = "login"
+                st.session_state["reset_sent"] = False
+                st.rerun()
+
+        # ── SIGN UP ──
+        else:
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;'>Create Account</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:24px;'>Start your job tracking journey today</div>", unsafe_allow_html=True)
+
+            new_u = st.text_input("Username", key="signup_username", placeholder="Choose a username")
+            new_e = st.text_input("Email", key="signup_email", placeholder="Enter your real email address")
+            new_p = st.text_input("Password", type="password", key="signup_password", placeholder="Choose a strong password")
+
+            # Password strength meter
+            if new_p:
+                label, color, pct = password_strength(new_p)
+                st.markdown(f"""
+                <div style="margin-top:-8px;margin-bottom:8px;">
+                    <div style="background:#2a1230;border-radius:4px;height:5px;width:100%;overflow:hidden;">
+                        <div style="background:{color};height:5px;width:{pct}%;border-radius:4px;transition:width 0.3s;"></div>
+                    </div>
+                    <div style="text-align:right;font-size:12px;color:{color};margin-top:3px;font-weight:600;">{label}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            confirm_p = st.text_input("Confirm Password", type="password", key="signup_confirm", placeholder="Re-enter your password")
+
+            # Password match indicator
+            if confirm_p:
+                if new_p == confirm_p:
+                    st.markdown("<div style='font-size:12px;color:#22c55e;margin-top:-8px;margin-bottom:8px;'>✓ Passwords match</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='font-size:12px;color:#ef4444;margin-top:-8px;margin-bottom:8px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
+
+            # Terms of service
+            agree = st.checkbox("I agree to the Terms of Service and Privacy Policy", key="agree_terms")
+            st.markdown("""
+            <div style='font-size:11px;color:#5a3858;margin-top:-8px;margin-bottom:12px;line-height:1.5;'>
+                By creating an account you agree to our
+                <span style='color:#f472b6;cursor:pointer;'>Terms of Service</span> and
+                <span style='color:#f472b6;cursor:pointer;'>Privacy Policy</span>.
+                Your data is kept private and never sold.
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button("Create Account", key="do_signup", use_container_width=True):
+                if not new_u or not new_e or not new_p:
+                    st.error("Please fill in all fields")
+                elif "@" not in new_e or "." not in new_e:
+                    st.error("Please enter a valid email address")
+                elif new_p != confirm_p:
+                    st.error("Passwords do not match")
+                elif not agree:
+                    st.error("Please agree to the Terms of Service to continue")
+                elif password_strength(new_p)[0] == "Weak":
+                    st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
+                else:
+                    ok, err = sign_up_user(new_u, new_p, new_e)
+                    if ok:
+                        st.success("Account created! Check your email to confirm, then sign in.")
+                        st.session_state["login_tab"] = "login"
+                        st.rerun()
+                    else:
+                        st.error(f"Sign up failed: {err}")
+
+            st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
+            if st.button("Sign in →", key="go_login", use_container_width=True):
+                st.session_state["login_tab"] = "login"
+                st.rerun()
 
 
 # MAIN APP
