@@ -168,6 +168,16 @@ if not st.session_state["logged_in"]:
                 if st.button("← Back to Login", use_container_width=True):
                     st.session_state["login_tab"] = "login"; st.rerun()
 
+
+# ── DASHBOARD ──────────────────────────────────────────────────────────────────
+
+if st.session_state["logged_in"]:
+    st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
+    # FIXED: Added unique key
+    if st.button("Sign Out", key="sign_out_dashboard_bottom"): 
+        st.session_state.clear(); st.rerun()
+
+
 # MAIN APP
 
 if st.session_state["logged_in"]:
@@ -393,11 +403,3 @@ if st.session_state["logged_in"]:
 
     else:
         st.write("You have no applications saved yet.")
-
-# ── DASHBOARD ──────────────────────────────────────────────────────────────────
-
-if st.session_state["logged_in"]:
-    st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
-    # FIXED: Added unique key
-    if st.button("Sign Out", key="sign_out_dashboard_bottom"): 
-        st.session_state.clear(); st.rerun()
