@@ -130,3 +130,9 @@ if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
             if st.button("← Back to Login", use_container_width=True):
                 st.session_state["login_tab"] = "login"
                 st.rerun()
+# ── DASHBOARD ──────────────────────────────────────────────────────────────────
+
+if st.session_state["logged_in"]:
+    st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
+    if st.button("Sign Out"):
+        st.session_state.clear(); st.rerun()
