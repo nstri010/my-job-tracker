@@ -228,9 +228,9 @@ if not st.session_state["logged_in"]:
             <div style="font-size:38px;font-weight:800;color:#fafafa;line-height:1.1;letter-spacing:-0.03em;margin-bottom:14px;">Find. Match. File.</div>
             <div style="font-size:13px;color:#52525b;line-height:1.6;margin-bottom:28px;">The smarter way to career hunt. No more spreadsheets or disorganized files.</div>
             <div style="display:flex;gap:32px;">
-                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">Fit Score</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Check Your Rank</div></div>
-                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">AI</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Gemini Backed</div></div>
-                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">1-Click</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Auto-Fill</div></div>
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">Fit Score</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Check Your Rank</div></div>
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">AI</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Gemini Backed</div></div>
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">1-Click</div><div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Auto-Fill</div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
