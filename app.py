@@ -136,7 +136,7 @@ if not st.session_state["logged_in"]:
             
             if tab == "login":
                 st.markdown("<h2 style='font-size:36px; margin-bottom:8px;'>Welcome Back</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='margin-bottom:32px;'>Enter your credentials to access your dashboard</p>", unsafe_allow_html=True)
+                st.markdown("<p style='margin-bottom:32px;'>Sign in to access your dashboard</p>", unsafe_allow_html=True)
                 
                 u = st.text_input("Username", key="login_username")
                 p = st.text_input("Password", type="password", key="login_password")
