@@ -19,7 +19,6 @@ from utils import (
     extract_text_from_upload
 )
 
-
 st.set_page_config(
     page_title="Job Tracker",
     layout="wide"
@@ -36,10 +35,8 @@ if "resume_txt" not in st.session_state:
     st.session_state["resume_txt"] = None
 if "username" not in st.session_state:
     st.session_state["username"] = None
-if "dark_mode" not in st.session_state:
-    st.session_state["dark_mode"] = False
 
-# ── THEME CSS ──────────────────────────────────────────────────────────────────
+# ── THEME CSS (DARK ONLY) ──────────────────────────────────────────────────────
 
 DARK_CSS = """
 <style>
@@ -72,7 +69,6 @@ p, label, div[data-testid="stText"] > p {
 }
 strong { color: #fde8f0 !important; }
 
-/* Mode + sign out buttons — keep subtle */
 .stButton > button {
     background: rgba(244,114,182,0.15) !important;
     color: #f9a8d4 !important;
@@ -85,13 +81,7 @@ strong { color: #fde8f0 !important; }
 .stButton > button:hover {
     background: rgba(244,114,182,0.28) !important;
 }
-.stButton > button:disabled {
-    background: rgba(255,182,213,0.05) !important;
-    border-color: rgba(244,114,182,0.15) !important;
-    color: rgba(249,168,212,0.35) !important;
-}
 
-/* Inputs */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
     background: rgba(255,182,213,0.07) !important;
     border: 1px solid rgba(244,114,182,0.25) !important;
@@ -106,21 +96,17 @@ strong { color: #fde8f0 !important; }
     border-radius: 8px !important;
 }
 
-/* Expander */
 [data-testid="stExpander"] {
     background: rgba(255,182,213,0.06) !important;
     border: 1px solid rgba(244,114,182,0.2) !important;
     border-radius: 12px !important;
 }
 
-/* Divider */
 hr { border-color: rgba(244,114,182,0.12) !important; }
 
-/* Tabs */
 .stTabs [data-baseweb="tab"] { color: #f9a8d4 !important; font-weight: 600 !important; }
 .stTabs [aria-selected="true"] { color: #f472b6 !important; border-bottom-color: #f472b6 !important; }
 
-/* Link buttons (Resume / Snapshot) */
 .stLinkButton a {
     background: rgba(255,182,213,0.08) !important;
     border: 1px solid rgba(244,114,182,0.3) !important;
@@ -129,148 +115,30 @@ hr { border-color: rgba(244,114,182,0.12) !important; }
     font-weight: 700 !important;
     padding: 6px 12px !important;
 }
-.stLinkButton a:hover {
-    background: rgba(244,114,182,0.18) !important;
-}
 
-/* Row hover effect */
-.job-row {
-    background: rgba(255,182,213,0.07);
-    border: 1px solid rgba(244,114,182,0.22);
-    border-radius: 12px;
-    padding: 4px 16px;
-    margin-bottom: 10px;
-    transition: background 0.2s;
-}
-.job-row:hover {
-    background: rgba(244,114,182,0.14);
-    border-color: rgba(244,114,182,0.4);
-}
-
-/* Stat cards */
-.stat-card {
-    background: rgba(255,182,213,0.08);
-    border: 1px solid rgba(244,114,182,0.2);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-}
-
-/* Success/error */
-[data-testid="stAlert"] { border-radius: 10px !important; }
-</style>
-"""
-
-LIGHT_CSS = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
-
-[data-testid="stAppViewContainer"] {
-    background: linear-gradient(145deg, #c9a0bb 0%, #b8c98a 60%, #7bbec4 100%) !important;
-    min-height: 100vh;
-}
-[data-testid="stHeader"] { background: transparent !important; }
-[data-testid="stMainBlockContainer"] { padding-top: 2rem !important; }
-
-h1, h2, h3 {
-    font-family: 'Playfair Display', serif !important;
-    color: #6b1f38 !important;
-}
-p, label, div[data-testid="stText"] > p {
-    color: #2a4a38 !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 600 !important;
-}
-[data-testid="stCaptionContainer"] p { color: #2a4a38 !important; font-weight: 600 !important; }
-strong { color: #6b1f38 !important; }
-
-.stButton > button {
-    background: rgba(226,115,150,0.15) !important;
-    color: #6b1f38 !important;
-    border: 1px solid rgba(226,115,150,0.35) !important;
-    border-radius: 20px !important;
-    font-weight: 700 !important;
-    font-family: 'Inter', sans-serif !important;
-}
-.stButton > button:hover { background: rgba(226,115,150,0.28) !important; }
-.stButton > button:disabled {
-    background: rgba(255,255,255,0.2) !important;
-    border-color: rgba(226,115,150,0.15) !important;
-    color: rgba(107,31,56,0.35) !important;
-}
-
-.stTextInput input, .stTextArea textarea, .stDateInput input {
-    background: rgba(255,255,255,0.55) !important;
-    border: 1px solid rgba(226,115,150,0.3) !important;
-    color: #2a0a18 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-}
-.stSelectbox > div > div {
-    background: rgba(255,255,255,0.55) !important;
-    border: 1px solid rgba(226,115,150,0.3) !important;
-    color: #2a0a18 !important;
-    border-radius: 8px !important;
-}
-
-[data-testid="stExpander"] {
-    background: rgba(255,255,255,0.38) !important;
-    border: 1px solid rgba(255,255,255,0.65) !important;
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
     border-radius: 12px !important;
+    padding: 4px 8px !important;
+    margin-bottom: 10px !important;
+    transition: background 0.18s, border-color 0.18s !important;
 }
-
-hr { border-color: rgba(226,115,150,0.18) !important; }
-
-.stTabs [data-baseweb="tab"] { color: #6b1f38 !important; font-weight: 600 !important; }
-.stTabs [aria-selected="true"] { color: #E27396 !important; border-bottom-color: #E27396 !important; }
-
-.stLinkButton a {
-    background: rgba(255,255,255,0.45) !important;
-    border: 1px solid rgba(107,31,56,0.35) !important;
-    color: #6b1f38 !important;
-    border-radius: 8px !important;
-    font-weight: 700 !important;
-    padding: 6px 12px !important;
-}
-.stLinkButton a:hover { background: rgba(255,255,255,0.7) !important; }
-
-.job-row {
-    background: rgba(255,255,255,0.38);
-    border: 1px solid rgba(255,255,255,0.7);
-    border-radius: 12px;
-    padding: 4px 16px;
-    margin-bottom: 10px;
-    transition: background 0.2s;
-}
-.job-row:hover {
-    background: rgba(255,255,255,0.6);
-    border-color: rgba(226,115,150,0.4);
-}
-
-.stat-card {
-    background: rgba(255,255,255,0.38);
-    border: 1px solid rgba(255,255,255,0.65);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    background: rgba(255,255,255,0.14) !important;
+    border-color: rgba(244,114,182,0.5) !important;
 }
 
 [data-testid="stAlert"] { border-radius: 10px !important; }
 </style>
 """
 
-# Inject theme
-if st.session_state["dark_mode"]:
-    st.markdown(DARK_CSS, unsafe_allow_html=True)
-else:
-    st.markdown(LIGHT_CSS, unsafe_allow_html=True)
+st.markdown(DARK_CSS, unsafe_allow_html=True)
 
 # ── LOGIN ──────────────────────────────────────────────────────────────────────
 
 if not st.session_state["logged_in"]:
-
     st.title("🔐 Job Tracker Login")
-
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
     with tab1:
@@ -293,25 +161,16 @@ if not st.session_state["logged_in"]:
             else:
                 st.error("Username exists")
 
-
 # ── MAIN APP ───────────────────────────────────────────────────────────────────
 
 if st.session_state["logged_in"]:
-
-    t1, t2, t3 = st.columns([5, 1, 1])
+    t1, t3 = st.columns([6, 1])
 
     with t1:
-        if st.session_state["dark_mode"]:
-            st.markdown("✦ **CAREER DASHBOARD** ✦", unsafe_allow_html=True)
+        st.markdown("✦ **CAREER DASHBOARD** ✦", unsafe_allow_html=True)
         st.title("Job Tracker")
 
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
-
-    with t2:
-        mode_label = "☀️ Light" if st.session_state["dark_mode"] else "🌙 Dark"
-        if st.button(mode_label):
-            st.session_state["dark_mode"] = not st.session_state["dark_mode"]
-            st.rerun()
 
     with t3:
         if st.button("Sign Out"):
@@ -327,27 +186,21 @@ if st.session_state["logged_in"]:
         total = len(df_stats)
         interviews = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Interview", na=False)]) if "status" in df_stats else 0
         offers = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Offer", na=False)]) if "status" in df_stats else 0
+        
         def parse_score(s):
             try: return float(str(s).split("/")[0])
             except: return None
+        
         scores = df_stats["match_score"].apply(parse_score).dropna() if "match_score" in df_stats else pd.Series()
         avg_score = f"{scores.mean():.0f}%" if len(scores) > 0 else "—"
 
         sc1, sc2, sc3, sc4 = st.columns(4)
-        if st.session_state["dark_mode"]:
-            card_style = "background:rgba(255,182,213,0.08);border:1px solid rgba(244,114,182,0.22);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
-            num_color_default = "#fde8f0"
-            num_color_int = "#f472b6"
-            num_color_off = "#6ee7b7"
-            num_color_avg = "#c084fc"
-            lbl_color = "rgba(249,168,212,0.55)"
-        else:
-            card_style = "background:rgba(255,255,255,0.38);border:1px solid rgba(255,255,255,0.7);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
-            num_color_default = "#6b1f38"
-            num_color_int = "#E27396"
-            num_color_off = "#3a9aa8"
-            num_color_avg = "#6a8030"
-            lbl_color = "rgba(42,74,56,0.6)"
+        card_style = "background:rgba(255,182,213,0.08);border:1px solid rgba(244,114,182,0.22);border-radius:12px;padding:16px 20px;margin-bottom:8px;"
+        num_color_default = "#fde8f0"
+        num_color_int = "#f472b6"
+        num_color_off = "#6ee7b7"
+        num_color_avg = "#c084fc"
+        lbl_color = "rgba(249,168,212,0.55)"
 
         with sc1:
             st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:{num_color_default};line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};">Applications</div></div>', unsafe_allow_html=True)
@@ -370,7 +223,7 @@ if st.session_state["logged_in"]:
 
         if st.button("✨ Auto-Fill Details"):
             if url_in:
-                with st.spinner("Doing the heavy lifting... just a few moments more while we set things up..."):
+                with st.spinner("Doing the heavy lifting..."):
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
@@ -386,7 +239,7 @@ if st.session_state["logged_in"]:
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
+                with st.spinner("Analyzing match..."):
                     st.session_state["match_data"] = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
 
         if st.session_state["match_data"]:
@@ -399,13 +252,13 @@ if st.session_state["logged_in"]:
 
         if st.button("💾 Save"):
             resume_url = None
-            score = "No score found... guess your skills just broke our algorithm."
+            score = "N/A"
 
             if up_file is not None:
                 resume_url = upload_resume(up_file, st.session_state["username"])
 
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
+                with st.spinner("Saving results..."):
                     match_result = get_ai_match_feedback(final_desc, st.session_state["resume_txt"])
                     st.session_state["match_data"] = match_result
                     score = match_result.get("score", "N/A")
@@ -429,9 +282,7 @@ if st.session_state["logged_in"]:
     st.divider()
     st.header("📋 My Applied Jobs")
 
-    status_options = [
-        "📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"
-    ]
+    status_options = ["📝 Applied", "📨 Contacted", "📅 Interview", "✅ Offer", "❌ Rejected"]
 
     if jobs_list:
         df = pd.DataFrame(jobs_list)
@@ -458,12 +309,7 @@ if st.session_state["logged_in"]:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
         ratios = [1.5, 1.5, 0.8, 1.5, 1, 0.5, 0.5, 0.5]
-
-        # Column headers
-        if st.session_state["dark_mode"]:
-            hdr_color = "rgba(249,168,212,0.5)"
-        else:
-            hdr_color = "rgba(42,74,56,0.55)"
+        hdr_color = "rgba(249,168,212,0.5)"
 
         hdr = st.columns(ratios)
         for col, label in zip(hdr, ["COMPANY", "POSITION", "MATCH", "STATUS", "DATE APPLIED", "CV", "SNAP", "DEL"]):
@@ -471,41 +317,7 @@ if st.session_state["logged_in"]:
 
         st.divider()
 
-        # Row card CSS using st.container(border=True) + theme override
-        if st.session_state["dark_mode"]:
-            st.markdown("""<style>
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.08) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    border-radius: 12px !important;
-    padding: 4px 8px !important;
-    margin-bottom: 10px !important;
-    transition: background 0.18s, border-color 0.18s !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(255,255,255,0.14) !important;
-    border-color: rgba(244,114,182,0.5) !important;
-}
-</style>""", unsafe_allow_html=True)
-        else:
-            st.markdown("""<style>
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.55) !important;
-    border: 1.5px solid rgba(255,255,255,0.85) !important;
-    border-radius: 12px !important;
-    padding: 4px 8px !important;
-    margin-bottom: 10px !important;
-    transition: background 0.18s, border-color 0.18s !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(255,255,255,0.72) !important;
-    border-color: rgba(226,115,150,0.5) !important;
-}
-</style>""", unsafe_allow_html=True)
-
         for idx, row in df.iterrows():
-
             with st.container(border=True):
                 c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(ratios, vertical_alignment="center")
 
@@ -549,6 +361,5 @@ if st.session_state["logged_in"]:
                 if c8.button("🗑", key=f"d_{row['id']}"):
                     delete_job(row["id"])
                     st.rerun()
-
     else:
         st.write("You have no applications saved yet.")
