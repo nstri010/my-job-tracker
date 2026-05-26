@@ -104,6 +104,25 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 .stat-val { font-size: 32px; font-weight: 700; color: #f472b6; }
 .stat-lbl { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
 
+
+/* ── Fix expander icon text showing as words ── */
+[data-testid="stExpander"] summary svg {
+    display: inline-block !important;
+}
+/* Hide any rogue icon label text in expander */
+[data-testid="stExpander"] summary [data-testid="stIconMaterial"] {
+    display: none !important;
+}
+
+/* ── File uploader: prevent overflow into adjacent column ── */
+[data-testid="stFileUploader"] {
+    min-height: 80px !important;
+}
+[data-testid="stFileUploadDropzone"] {
+    min-height: 60px !important;
+    height: auto !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -193,7 +212,7 @@ if st.session_state["logged_in"]:
 
     # ADD JOB
 
-    with st.expander("Add New Application"):
+    with st.expander("+ Add New Application"):
 
         c1, c2 = st.columns(2)
 
@@ -217,14 +236,18 @@ if st.session_state["logged_in"]:
             height=220
         )
 
-        applied_date = st.date_input("Date Applied")
+        col1, col2 = st.columns(2)
 
-        up_file = st.file_uploader(
-            "Upload Resume",
-            type=["pdf", "docx", "txt"]
-        )
-        if up_file is not None:
-            st.session_state["resume_txt"] = extract_text_from_upload(up_file)
+        with col1:
+            up_file = st.file_uploader(
+                "Upload Resume",
+                type=["pdf", "docx", "txt"]
+            )
+            if up_file is not None:
+                st.session_state["resume_txt"] = extract_text_from_upload(up_file)
+
+        with col2:
+            applied_date = st.date_input("Date Applied")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
