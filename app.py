@@ -490,16 +490,17 @@ if st.session_state["logged_in"]:
         else:
             st.markdown("""<style>
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.38) !important;
-    border: 1px solid rgba(255,255,255,0.7) !important;
+    background: rgba(255,255,255,0.55) !important;
+    border: 1.5px solid rgba(255,255,255,0.85) !important;
     border-radius: 12px !important;
     padding: 4px 8px !important;
     margin-bottom: 10px !important;
     transition: background 0.18s, border-color 0.18s !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"]:hover {
-    background: rgba(255,255,255,0.58) !important;
-    border-color: rgba(226,115,150,0.45) !important;
+    background: rgba(255,255,255,0.72) !important;
+    border-color: rgba(226,115,150,0.5) !important;
 }
 </style>""", unsafe_allow_html=True)
 
