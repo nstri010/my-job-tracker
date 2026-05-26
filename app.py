@@ -221,18 +221,19 @@ if not st.session_state["logged_in"]:
     l_col, r_col = st.columns([1.1, 1], gap="large")
 
     with l_col:
-        with st.container(border=True):
-            st.markdown("<div style='font-size:16px;font-weight:700;color:#f472b6;margin-bottom:4px;'>✦ Career Hunt HQ</div>", unsafe_allow_html=True)
-            st.markdown("<div style='font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:28px;'>AI Resume Tracking Tool</div>", unsafe_allow_html=True)
-            st.markdown("<div style='font-size:42px;font-weight:800;color:#fafafa;line-height:1.1;letter-spacing:-0.03em;margin-bottom:16px;'>Find. Match.<br>File.</div>", unsafe_allow_html=True)
-            st.markdown("<div style='font-size:14px;color:#52525b;line-height:1.6;margin-bottom:32px;'>The smarter way to career hunt. No more spreadsheets or disorganized files.</div>", unsafe_allow_html=True)
-            st.markdown("""
-            <div class="stat-row">
-                <div><div class="stat-val">Fit Score</div><div class="stat-lbl">Match Rank</div></div>
-                <div><div class="stat-val">AI</div><div class="stat-lbl">Gemini Backed</div></div>
-                <div><div class="stat-val">1-Click</div><div class="stat-lbl">Auto-Fill</div></div>
+        st.markdown("""
+        <div style="background:rgba(18,18,24,0.8);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:36px 36px 40px 36px;">
+            <div style="font-size:15px;font-weight:700;color:#f472b6;margin-bottom:4px;">✦ Career Hunt HQ</div>
+            <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:28px;">AI Resume Tracking Tool</div>
+            <div style="font-size:38px;font-weight:800;color:#fafafa;line-height:1.1;letter-spacing:-0.03em;margin-bottom:14px;">Find. Match. File.</div>
+            <div style="font-size:13px;color:#52525b;line-height:1.6;margin-bottom:28px;">The smarter way to career hunt. No more spreadsheets or disorganized files.</div>
+            <div style="display:flex;gap:32px;">
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">Fit Score</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Check Your Rank</div></div>
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">AI</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Gemini Backed</div></div>
+                <div><div style="font-size:18px;font-weight:700;color:#f472b6;white-space:nowrap;">1-Click</div><div style="font-size:10px;color:#3f3f46;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;white-space:nowrap;">Auto-Fill</div></div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
     with r_col:
         with st.container():
