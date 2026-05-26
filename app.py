@@ -173,9 +173,6 @@ if not st.session_state["logged_in"]:
 
 if st.session_state["logged_in"]:
     st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
-    # FIXED: Added unique key
-    #if st.button("Sign Out", key="sign_out_dashboard_bottom"): 
-        #st.session_state.clear(); st.rerun()
 
 
 # MAIN APP
