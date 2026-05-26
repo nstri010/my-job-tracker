@@ -123,8 +123,8 @@ if not st.session_state["logged_in"]:
             </p>
             <div class="stat-row">
                 <div><div class="stat-val">Fit Score</div><div class="stat-lbl">Check Your Rank</div></div>
-                <div><div class="stat-val">AI</div><div class="stat-lbl">Analysis</div></div>
-                <div><div class="stat-val">AI</div><div class="stat-lbl">Analysis</div></div>
+                <div><div class="stat-val">AI</div><div class="stat-lbl">Gemini Backed Analysis</div></div>
+                <div><div class="stat-val">Hassel Free</div><div class="stat-lbl">Saved In One Location </div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
