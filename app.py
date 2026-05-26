@@ -25,6 +25,62 @@ st.set_page_config(
     layout="wide"
 )
 
+#AUTHENTICATION Page
+
+if not st.session_state["logged_in"]:
+    # Center the login box using columns
+    col1, col2, col3 = st.columns([1, 1.3, 1])
+    
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.title("Job Tracker")
+        st.caption("Secure Career Pipeline Management")
+        
+        # Mode Selector: Controls which form is displayed
+        auth_choice = st.radio(
+            "Select Mode", 
+            ["Login", "Sign Up", "Forgot Password"], 
+            horizontal=True, 
+            label_visibility="collapsed"
+        )
+        
+        with st.container(border=True):
+            # 1. LOGIN FORM
+            if auth_choice == "Login":
+                u = st.text_input("Username")
+                p = st.text_input("Password", type="password")
+                if st.button("Sign In", use_container_width=True):
+                    if login_user(u, p):
+                        st.session_state["logged_in"] = True
+                        st.session_state["username"] = u
+                        st.rerun()
+                    else:
+                        st.error("Authentication failed. Check your credentials.")
+
+            # 2. CREATE ACCOUNT FORM
+            elif auth_choice == "Sign Up":
+                new_u = st.text_input("Choose Username")
+                new_p = st.text_input("Choose Password", type="password")
+                if st.button("Create Account", use_container_width=True):
+                    # Calls the sign_up_user function from storage.py
+                    if sign_up_user(new_u, new_p):
+                        st.success("Account created! You can now log in.")
+                        # Optionally switch back to login mode automatically
+                        st.session_state["auth_mode"] = "Login" 
+                    else:
+                        st.error("Username already exists or sign-up failed.")
+
+            # 3. FORGOT PASSWORD FORM
+            elif auth_choice == "Forgot Password":
+                reset_u = st.text_input("Username to Reset")
+                if st.button("Request Password Reset", use_container_width=True):
+                    # Calls the send_password_reset function from storage.py
+                    if send_password_reset(reset_u):
+                        st.success("Reset instructions sent to your account's email.")
+                    else:
+                        st.error("Username not found.")
+
+
 # SESSION
 
 if "logged_in" not in st.session_state:
