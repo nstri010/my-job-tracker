@@ -42,8 +42,169 @@ if "resume_txt" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state["username"] = None
 
+if "dark_mode" not in st.session_state:
+    st.session_state["dark_mode"] = False
 
-# LOGIN
+# ── THEME CSS ──────────────────────────────────────────────────────────────────
+
+DARK_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Inter:wght@500;600;700&display=swap');
+
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(160deg, #2d1b2e 0%, #3d1f3a 45%, #1f1a35 100%) !important;
+    min-height: 100vh;
+}
+[data-testid="stHeader"] { background: transparent !important; }
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif !important;
+    font-style: italic !important;
+    color: #fde8f0 !important;
+}
+p, label, .stMarkdown, [data-testid="stText"] {
+    color: #f9a8d4 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+}
+[data-testid="stCaptionContainer"] p { color: #c084fc !important; font-weight: 600 !important; }
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #f472b6, #c084fc) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stButton > button:hover { opacity: 0.88 !important; }
+
+/* Inputs */
+.stTextInput input, .stTextArea textarea, .stDateInput input {
+    background: rgba(255,182,213,0.07) !important;
+    border: 1px solid rgba(244,114,182,0.25) !important;
+    color: #fde8f0 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+.stSelectbox > div > div {
+    background: rgba(255,182,213,0.07) !important;
+    border: 1px solid rgba(244,114,182,0.25) !important;
+    color: #fde8f0 !important;
+    border-radius: 8px !important;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: rgba(255,182,213,0.06) !important;
+    border: 1px solid rgba(244,114,182,0.15) !important;
+    border-radius: 10px !important;
+}
+
+/* Divider */
+hr { border-color: rgba(244,114,182,0.15) !important; }
+
+/* Tabs */
+.stTabs [data-baseweb="tab"] { color: #f9a8d4 !important; font-weight: 600 !important; }
+.stTabs [aria-selected="true"] { color: #f472b6 !important; border-bottom-color: #f472b6 !important; }
+
+/* Link buttons */
+.stLinkButton a {
+    background: rgba(244,114,182,0.12) !important;
+    border: 2px solid rgba(244,114,182,0.35) !important;
+    color: #f472b6 !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+}
+
+/* Sidebar/metric */
+[data-testid="metric-container"] { color: #fde8f0 !important; }
+
+/* Success/error */
+[data-testid="stAlert"] { border-radius: 8px !important; }
+</style>
+"""
+
+LIGHT_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@500;600;700&display=swap');
+
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(145deg, #c9a0bb 0%, #b8c98a 60%, #7bbec4 100%) !important;
+    min-height: 100vh;
+}
+[data-testid="stHeader"] { background: transparent !important; }
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif !important;
+    color: #6b1f38 !important;
+}
+p, label, .stMarkdown, [data-testid="stText"] {
+    color: #2a4a38 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+}
+[data-testid="stCaptionContainer"] p { color: #2a4a38 !important; font-weight: 600 !important; }
+
+/* Buttons */
+.stButton > button {
+    background: #E27396 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stButton > button:hover { opacity: 0.88 !important; }
+
+/* Inputs */
+.stTextInput input, .stTextArea textarea, .stDateInput input {
+    background: rgba(255,255,255,0.55) !important;
+    border: 1px solid rgba(226,115,150,0.3) !important;
+    color: #2a0a18 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+.stSelectbox > div > div {
+    background: rgba(255,255,255,0.55) !important;
+    border: 1px solid rgba(226,115,150,0.3) !important;
+    color: #2a0a18 !important;
+    border-radius: 8px !important;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: rgba(255,255,255,0.35) !important;
+    border: 1px solid rgba(255,255,255,0.5) !important;
+    border-radius: 10px !important;
+}
+
+/* Divider */
+hr { border-color: rgba(226,115,150,0.2) !important; }
+
+/* Tabs */
+.stTabs [data-baseweb="tab"] { color: #6b1f38 !important; font-weight: 600 !important; }
+.stTabs [aria-selected="true"] { color: #E27396 !important; border-bottom-color: #E27396 !important; }
+
+/* Link buttons */
+.stLinkButton a {
+    background: rgba(255,255,255,0.4) !important;
+    border: 2px solid rgba(107,31,56,0.35) !important;
+    color: #6b1f38 !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+}
+</style>
+"""
+
+# Inject theme
+if st.session_state["dark_mode"]:
+    st.markdown(DARK_CSS, unsafe_allow_html=True)
+else:
+    st.markdown(LIGHT_CSS, unsafe_allow_html=True)
+
+# ── LOGIN ──────────────────────────────────────────────────────────────────────
 
 if not st.session_state["logged_in"]:
 
@@ -76,17 +237,23 @@ if not st.session_state["logged_in"]:
                 st.error("Username exists")
 
 
-# MAIN APP
+# ── MAIN APP ───────────────────────────────────────────────────────────────────
 
 if st.session_state["logged_in"]:
 
-    t1, t2 = st.columns([5, 1])
+    t1, t2, t3 = st.columns([5, 1, 1])
 
     with t1:
         st.title("Job Tracker")
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
+        mode_label = "☀️ Light" if st.session_state["dark_mode"] else "🌙 Dark"
+        if st.button(mode_label):
+            st.session_state["dark_mode"] = not st.session_state["dark_mode"]
+            st.rerun()
+
+    with t3:
         if st.button("Sign Out"):
             st.session_state.clear()
             st.rerun()
@@ -128,7 +295,7 @@ if st.session_state["logged_in"]:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
         with col2:
-            applied_date = st.date_input("Date Applied")
+            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
