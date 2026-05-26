@@ -370,8 +370,15 @@ if st.session_state["logged_in"]:
         interviews = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Interview", na=False)]) if "status" in df_stats else 0
         offers = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Offer", na=False)]) if "status" in df_stats else 0
         def parse_score(s):
-            try: return float(str(s).split("/")[0])
-            except: return None
+            try:
+                parts = str(s).split("/")
+                numerator = float(parts[0])
+                if len(parts) > 1:
+                    denominator = float(parts[1])
+                    return (numerator / denominator) * 100 if denominator != 0 else None
+                return numerator  # already a percentage if no denominator
+            except:
+                return None
         scores = df_stats["match_score"].apply(parse_score).dropna() if "match_score" in df_stats else pd.Series()
         avg_score = f"{scores.mean():.0f}%" if len(scores) > 0 else "—"
 
