@@ -123,6 +123,11 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     height: auto !important;
 }
 
+
+/* ── Remove ghost cursor / focus caret on non-input elements ── */
+* { caret-color: transparent !important; }
+input, textarea { caret-color: white !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
