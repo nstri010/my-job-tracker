@@ -206,7 +206,7 @@ if st.session_state["logged_in"]:
     t1, t2 = st.columns([5, 1])
 
     with t1:
-        st.title("Job Tracker")
+        st.title("Career Hunt HQ")
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
