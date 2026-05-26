@@ -620,6 +620,8 @@ if st.session_state["logged_in"]:
 
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
+        ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
+
         # ── Column header row ──────────────────────────────────────────
         h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(ratios)
         for col, label in zip([h1,h2,h3,h4,h5,h6,h7,h8],
@@ -630,8 +632,7 @@ if st.session_state["logged_in"]:
                 unsafe_allow_html=True
             )
 
-        # ── Job rows — pure Streamlit columns, CSS handles styling ───
-        ratios = [1.6, 1.6, 0.9, 1.5, 1, 0.5, 0.5, 0.5]
+        # ── Job rows ───────────────────────────────────────────────────
 
         for idx, row in df.iterrows():
             curr      = row.get("status", "📝 Applied")
