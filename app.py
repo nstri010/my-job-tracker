@@ -63,7 +63,8 @@ h1, h2, h3 { font-family: 'Playfair Display', serif !important; color: #ffffff !
 p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14px !important; }
 
 /* ── Glassmorphism Panels ── */
-.login-panel {
+/* Applying this to the Streamlit Column Container directly */
+[data-testid="column"] > div:first-child {
     background: rgba(18, 18, 24, 0.7) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -73,7 +74,7 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 }
 
 /* ── Inputs (Terminal Style) ── */
-.stTextInput input, .stTextArea textarea {
+.stTextInput input {
     background: rgba(0, 0, 0, 0.4) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #ffffff !important;
@@ -111,8 +112,8 @@ if not st.session_state["logged_in"]:
     l_col, r_col = st.columns([1.1, 1], gap="large")
 
     with l_col:
+        # Static HTML content for the left panel
         st.markdown("""
-        <div class="login-panel">
             <div style="font-size:32px; color:#f472b6; margin-bottom:8px; font-family:'Playfair Display'">✦ Job Tracker</div>
             <div style="color:#64748b; font-size:12px; margin-bottom:40px; letter-spacing:2px; text-transform:uppercase;">AI Career Intelligence</div>
             <h1 style="font-size:62px; line-height:1.1; margin-bottom:24px;">Land Your<br>Dream Job.</h1>
@@ -123,13 +124,10 @@ if not st.session_state["logged_in"]:
                 <div><div class="stat-val">98%</div><div class="stat-lbl">Match Accuracy</div></div>
                 <div><div class="stat-val">24/7</div><div class="stat-lbl">Auto Tracking</div></div>
             </div>
-        </div>
         """, unsafe_allow_html=True)
 
     with r_col:
-        # OPEN THE PANEL
-        st.markdown('<div class="login-panel">', unsafe_allow_html=True)
-        
+        # Logic for switching between Login and Signup
         tab = st.session_state["login_tab"]
         
         if tab == "login":
@@ -167,9 +165,6 @@ if not st.session_state["logged_in"]:
             
             if st.button("← Back to Login", use_container_width=True):
                 st.session_state["login_tab"] = "login"; st.rerun()
-        
-        # CLOSE THE PANEL
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # ── DASHBOARD ──────────────────────────────────────────────────────────────────
 
