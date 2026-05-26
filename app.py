@@ -284,25 +284,16 @@ if not st.session_state["logged_in"]:
 
                 # Password strength indicator
                 if new_p:
-                    length = len(new_p)
-                    has_upper = any(c.isupper() for c in new_p)
-                    has_digit = any(c.isdigit() for c in new_p)
-                    has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in new_p)
-                    score = sum([length >= 8, has_upper, has_digit, has_special])
-                    labels = ["", "Weak", "Fair", "Good", "Strong"]
-                    colors = ["", "#ef4444", "#f97316", "#eab308", "#22c55e"]
-                    widths = ["", "25%", "50%", "75%", "100%"]
-                    label = labels[score]
-                    color = colors[score]
-                    width = widths[score]
-                    st.markdown(f"""
-                    <div style="margin-top:6px;margin-bottom:12px;">
-                        <div style="background:#1f1f1f;border-radius:4px;height:4px;width:100%;">
-                            <div style="background:{color};width:{width};height:4px;border-radius:4px;transition:width 0.3s;"></div>
+                    label, color, pct = password_strength(new_p)
+                    if label:
+                        st.markdown(f"""
+                        <div style="margin-top:6px;margin-bottom:12px;">
+                            <div style="background:#1f1f1f;border-radius:4px;height:4px;width:100%;">
+                                <div style="background:{color};width:{pct}%;height:4px;border-radius:4px;"></div>
+                            </div>
+                            <div style="font-size:11px;color:{color};margin-top:4px;">{label}</div>
                         </div>
-                        <div style="font-size:11px;color:{color};margin-top:4px;">{label}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
 
                 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                 if st.button("Sign Up", use_container_width=True):
