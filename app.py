@@ -55,17 +55,16 @@ st.markdown("""
 [data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
 [data-testid="stVerticalBlock"] { gap: 0.5rem !important; }
 
-/* Make the right login column look like a card */
-div[data-testid="stHorizontalBlock"] > div:nth-child(2) > div[data-testid="stVerticalBlock"] {
+/* Right login column card */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stVerticalBlock"] {
     background: #1e0e28 !important;
-    border: 1px solid #3a1a45 !important;
+    border: 1px solid #4a2248 !important;
     border-radius: 16px !important;
-    padding: 2rem 2.5rem !important;
-    margin-top: 0 !important;
+    padding: 2rem 2rem !important;
 }
 
-/* Make the left login column also fill height */
-div[data-testid="stHorizontalBlock"] > div:first-child > div[data-testid="stVerticalBlock"] {
+/* Left login column — match height */
+div[data-testid="stHorizontalBlock"] > div:nth-child(1) [data-testid="stVerticalBlock"] {
     height: 100% !important;
 }
 * { font-family: 'Inter', sans-serif !important; }
@@ -174,7 +173,7 @@ hr { border-color: #4a2248 !important; }
     border: 1px solid #3a1a45;
 }
 .login-right {
-    background: #1e0e28;
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%);
     border-radius: 16px;
     padding: 48px 40px;
     border: 1px solid #3a1a45;
@@ -257,6 +256,7 @@ if not st.session_state["logged_in"]:
 
     with right:
         tab = st.session_state["login_tab"]
+        st.markdown('<div class="login-right">', unsafe_allow_html=True)
 
         # ── SIGN IN ──
         if tab == "login":
