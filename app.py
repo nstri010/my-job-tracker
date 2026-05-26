@@ -51,22 +51,19 @@ st.markdown("""
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent !important; }
-[data-testid="stMainBlockContainer"] {
-    padding-top: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    max-width: 100% !important;
-}
+/* ── Login page column styling ── */
+[data-testid="stMainBlockContainer"] { padding-top: 0 !important; max-width: 100% !important; }
+
+/* Kill ALL vertical gaps globally on login */
 [data-testid="stVerticalBlock"] { gap: 0 !important; }
 
-/* Remove card from right column */
+/* Right column card background */
 div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
-    background: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%) !important;
+    border: 1px solid #3a1a45 !important;
+    border-radius: 16px !important;
+    padding: 1.5rem !important;
 }
-
 * { font-family: 'Inter', sans-serif !important; }
 h1 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
 h2, h3 { font-family: 'Playfair Display', serif !important; color: #ead8ee !important; }
@@ -91,55 +88,36 @@ hr { border-color: #4a2248 !important; }
     color: rgba(192,144,190,0.3) !important;
 }
 
-/* ── Sign In main button ── */
-.signin-btn > button {
-    background: linear-gradient(135deg, #7a2a70, #5a1a80) !important;
-    color: #f8e8ff !important;
+/* ── Primary action button (Login / Sign Up) ── */
+.primary-btn > button {
+    background: linear-gradient(135deg, #7a3a78, #5a2a88) !important;
+    color: #f0d8f8 !important;
     border: none !important;
-    border-radius: 10px !important;
-    font-size: 16px !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
     font-weight: 700 !important;
-    height: 52px !important;
-    letter-spacing: 0.02em !important;
+    padding: 0.6rem 1rem !important;
+    width: 100% !important;
 }
-.signin-btn > button:hover {
-    background: linear-gradient(135deg, #8a3a80, #6a2a90) !important;
-}
-
-/* ── Ghost/text-style buttons ── */
-.ghost-btn > button {
-    background: transparent !important;
-    color: #f472b6 !important;
-    border: none !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    padding: 0 !important;
-    text-decoration: none !important;
-}
-.ghost-btn > button:hover {
-    background: transparent !important;
-    color: #f9a8d4 !important;
-}
+.primary-btn > button:hover { background: linear-gradient(135deg, #8a4a88, #6a3a98) !important; }
 
 /* ── Inputs ── */
 .stTextInput input, .stTextArea textarea, .stDateInput input {
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid #4a2a4a !important;
+    background: #2a1230 !important;
+    border: 1px solid #5a2d58 !important;
     color: #ead8ee !important;
-    border-radius: 10px !important;
-    font-size: 15px !important;
+    border-radius: 8px !important;
     font-weight: 500 !important;
-    height: 52px !important;
 }
-.stTextInput input:focus {
+.stTextInput input:focus, .stTextArea textarea:focus {
     border-color: #a060a0 !important;
-    box-shadow: 0 0 0 2px rgba(160,96,160,0.15) !important;
+    box-shadow: 0 0 0 2px rgba(160,96,160,0.2) !important;
 }
 .stSelectbox > div > div {
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid #4a2a4a !important;
+    background: #2a1230 !important;
+    border: 1px solid #5a2d58 !important;
     color: #ead8ee !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
 }
 
 /* ── Expander ── */
@@ -182,34 +160,45 @@ hr { border-color: #4a2248 !important; }
 .stDivider { margin-top: 0.3rem !important; margin-bottom: 0.3rem !important; }
 [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] { margin-bottom: 0 !important; }
 
-/* ── Login left panel ── */
+/* ── Split login panel ── */
 .login-left {
-    padding: 80px 60px 60px 60px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-right: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(160deg, #1a0a20 0%, #2a1040 60%, #1a1535 100%);
+    border-radius: 16px;
+    padding: 48px 40px;
+    height: 100%;
+    min-height: 520px;
+    border: 1px solid #3a1a45;
 }
-.login-logo { font-size: 18px; color: #ead8ee; font-weight: 700; margin-bottom: 60px; }
-.login-headline { font-size: 48px; font-weight: 800; color: #ead8ee; line-height: 1.15; margin-bottom: 20px; }
-.login-sub-text { font-size: 16px; color: #7a5888; line-height: 1.7; max-width: 400px; margin-bottom: 60px; }
-.login-stat-row { display: flex; gap: 48px; }
-.login-stat-num { font-size: 36px; font-weight: 800; color: #f472b6; line-height: 1; }
+.login-right {
+    background: linear-gradient(160deg, #1a0a20 0%, #1e0e28 60%, #161230 100%);
+    border-radius: 16px;
+    padding: 48px 40px;
+    border: 1px solid #3a1a45;
+    min-height: 520px;
+}
+.login-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: #ead8ee;
+    margin-bottom: 8px;
+}
+.login-tagline {
+    font-size: 14px;
+    color: #8a6888;
+    margin-bottom: 40px;
+}
+.login-stat-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+}
+.login-stat-num { font-size: 24px; font-weight: 700; color: #f472b6; }
 .login-stat-num.green { color: #34d399; }
 .login-stat-num.purple { color: #c084fc; }
-.login-stat-lbl { font-size: 13px; color: #5a4068; margin-top: 4px; }
-
-/* ── Login right panel ── */
-.login-right {
-    padding: 80px 80px 60px 80px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.login-welcome { font-size: 36px; font-weight: 800; color: #ead8ee; margin-bottom: 8px; }
-.login-sub { font-size: 15px; color: #7a5888; margin-bottom: 40px; }
+.login-stat-lbl { font-size: 12px; color: #7a5888; margin-top: 2px; }
+.login-welcome { font-size: 26px; font-weight: 700; color: #ead8ee; margin-bottom: 6px; }
+.login-sub { font-size: 14px; color: #8a6888; margin-bottom: 32px; }
+.tab-row { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid #3a1a45; }
 .tab-btn {
     background: none; border: none; padding: 10px 24px;
     font-size: 15px; font-weight: 600; cursor: pointer;
@@ -240,66 +229,52 @@ def password_strength(pw):
 
 if not st.session_state["logged_in"]:
 
-    left, right = st.columns([1, 1], gap="small")
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    left, right = st.columns([1, 1], gap="medium")
 
     with left:
         st.markdown("""
         <div class="login-left">
             <div class="login-logo">✦ Job Tracker</div>
-            <div class="login-headline">
+            <div class="login-tagline">Your AI-powered career command center</div>
+            <div style="font-size:28px;font-weight:700;color:#ead8ee;line-height:1.3;margin-bottom:12px;">
                 Land Your<br><span style="color:#f472b6;">Dream Job</span>
             </div>
-            <div class="login-sub-text">
-                Track applications, scan your resume against job descriptions,
-                and get AI-powered match scores — all in one place.
+            <div style="font-size:14px;color:#8a6888;line-height:1.7;max-width:320px;">
+                Track applications, scan your resume against job descriptions, and get AI-powered match scores — all in one place.
             </div>
             <div class="login-stat-row">
-                <div>
-                    <div class="login-stat-num">AI</div>
-                    <div class="login-stat-lbl">Match Scoring</div>
-                </div>
-                <div>
-                    <div class="login-stat-num green">Auto</div>
-                    <div class="login-stat-lbl">Job Scraping</div>
-                </div>
-                <div>
-                    <div class="login-stat-num purple">Live</div>
-                    <div class="login-stat-lbl">Status Tracking</div>
-                </div>
+                <div><div class="login-stat-num">AI</div><div class="login-stat-lbl">Match Scoring</div></div>
+                <div><div class="login-stat-num green">Auto</div><div class="login-stat-lbl">Job Scraping</div></div>
+                <div><div class="login-stat-num purple">Live</div><div class="login-stat-lbl">Status Tracking</div></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
     with right:
         tab = st.session_state["login_tab"]
-        st.markdown('<div class="login-right">', unsafe_allow_html=True)
 
         # ── SIGN IN ──
         if tab == "login":
-            st.markdown("<div class='login-welcome'>Welcome Back</div>", unsafe_allow_html=True)
-            st.markdown("<div class='login-sub'>Sign in to continue your journey</div>", unsafe_allow_html=True)
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:26px;font-weight:700;color:#ead8ee;margin-bottom:4px;text-align:center;'>Welcome Back</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:13px;color:#8a6888;margin-bottom:28px;text-align:center;'>Sign in to continue your journey</div>", unsafe_allow_html=True)
 
             u = st.text_input("Username", key="login_username", placeholder="Enter your username")
             p = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
 
+            # Remember me + Forgot password row
             rm_col, fp_col = st.columns([1, 1])
             with rm_col:
-                st.checkbox("Remember me", key="remember_me")
+                remember = st.checkbox("Remember me", key="remember_me")
             with fp_col:
-                st.markdown(
-                    "<div style='text-align:right;padding-top:8px;'>"
-                    "<span style='font-size:14px;color:#f472b6;cursor:pointer;font-weight:600;'"
-                    " onclick=\"\">Forgot password?</span></div>",
-                    unsafe_allow_html=True
-                )
-                if st.button("→ Reset password", key="go_forgot", use_container_width=True):
+                if st.button("Forgot password?", key="go_forgot", use_container_width=True):
                     st.session_state["login_tab"] = "forgot"
                     st.session_state["reset_sent"] = False
                     st.rerun()
 
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            st.markdown('<div class="signin-btn">', unsafe_allow_html=True)
+
             if st.button("Sign In", key="do_login", use_container_width=True):
                 if login_user(u, p):
                     st.session_state["logged_in"] = True
@@ -307,15 +282,13 @@ if not st.session_state["logged_in"]:
                     st.rerun()
                 else:
                     st.error("Invalid username or password")
-            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown("""
-            <div style='text-align:center;margin-top:24px;font-size:14px;color:#6a4868;'>
+            <div style='text-align:center;margin-top:20px;font-size:13px;color:#7a5878;'>
                 Don't have an account?
-                <span style='color:#f472b6;font-weight:600;cursor:pointer;'> Sign up for free</span>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Create a free account →", key="go_signup", use_container_width=True):
+            if st.button("Sign up for free →", key="go_signup", use_container_width=True):
                 st.session_state["login_tab"] = "signup"
                 st.rerun()
 
