@@ -212,7 +212,7 @@ if st.session_state["logged_in"]:
 
     # ADD JOB
 
-    with st.expander("+ Add New Application"):
+    with st.expander("➕ Add New Application"):
 
         c1, c2 = st.columns(2)
 
