@@ -215,6 +215,33 @@ if st.session_state["logged_in"]:
             st.session_state.clear()
             st.rerun()
 
+      # ── STAT CARDS ──
+    jobs_list = load_jobs()
+    if jobs_list:
+        df_stats = pd.DataFrame(jobs_list)
+        total = len(df_stats)
+        interviews = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Interview", na=False)]) if "status" in df_stats else 0
+        offers = len(df_stats[df_stats.get("status", pd.Series(dtype=str)).str.contains("Offer", na=False)]) if "status" in df_stats else 0
+        def parse_score(s):
+            try: return float(str(s).split("/")[0])
+            except: return None
+        scores = df_stats["match_score"].apply(parse_score).dropna() if "match_score" in df_stats else pd.Series()
+        avg_score = f"{scores.mean():.0f}%" if len(scores) > 0 else "—"
+
+        sc1, sc2, sc3, sc4 = st.columns(4)
+        card_style = "background:#3d2040;border:1.5px solid #5a2a55;border-radius:10px;padding:16px 20px;margin-bottom:8px;"
+        lbl_color = "#8a6a88"
+
+        with sc1:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#e8d8ec;line-height:1;margin-bottom:4px;">{total}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Applications</div></div>', unsafe_allow_html=True)
+        with sc2:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#f472b6;line-height:1;margin-bottom:4px;">{interviews}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Interviews</div></div>', unsafe_allow_html=True)
+        with sc3:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#34d399;line-height:1;margin-bottom:4px;">{offers}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Offers</div></div>', unsafe_allow_html=True)
+        with sc4:
+            st.markdown(f'<div style="{card_style}"><div style="font-size:26px;font-weight:700;color:#c084fc;line-height:1;margin-bottom:4px;">{avg_score}</div><div style="font-size:12px;font-weight:600;color:{lbl_color};text-transform:uppercase;letter-spacing:0.05em;">Avg match</div></div>', unsafe_allow_html=True)
+
+
     # ADD JOB
 
     with st.expander("➕ Add New Application"):
