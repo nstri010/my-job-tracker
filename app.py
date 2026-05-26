@@ -364,12 +364,13 @@ if not st.session_state["logged_in"]:
                 elif password_strength(new_p)[0] == "Weak":
                     st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
                 else:
-                    if sign_up_user(new_u, new_p, new_e):
+                    ok, err = sign_up_user(new_u, new_p, new_e)
+                    if ok:
                         st.success("Account created! Check your email to confirm, then sign in.")
                         st.session_state["login_tab"] = "login"
                         st.rerun()
                     else:
-                        st.error("Username or email already exists — please try another")
+                        st.error(f"Sign up failed: {err}")
 
             st.markdown("<div style='text-align:center;margin-top:16px;font-size:13px;color:#7a5878;'>Already have an account?</div>", unsafe_allow_html=True)
             if st.button("Sign in →", key="go_login", use_container_width=True):
