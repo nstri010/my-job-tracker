@@ -9,7 +9,8 @@ from storage import (
     sign_up_user,
     login_user,
     upload_resume,
-    update_job_full
+    update_job_full,
+    send_password_reset  # Ensure this is imported for the forgot password logic
 )
 
 from utils import (
@@ -30,6 +31,10 @@ st.set_page_config(
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
+# FIXED: Initializing login_tab to prevent KeyError on first run
+if "login_tab" not in st.session_state:
+    st.session_state["login_tab"] = "login"
+
 if "formatted_desc" not in st.session_state:
     st.session_state["formatted_desc"] = ""
 
@@ -41,6 +46,9 @@ if "resume_txt" not in st.session_state:
 
 if "username" not in st.session_state:
     st.session_state["username"] = None
+
+if "reset_sent" not in st.session_state:
+    st.session_state["reset_sent"] = False
 
 
 # ── PASSWORD STRENGTH HELPER ───────────────────────────────────────────────────
@@ -110,19 +118,13 @@ if not st.session_state["logged_in"]:
             with rm_col:
                 st.checkbox("Remember me", key="remember_me")
             with fp_col:
-                st.markdown(
-                    "<div style='text-align:right;padding-top:8px;'>"
-                    "<span style='font-size:14px;color:#f472b6;cursor:pointer;font-weight:600;'"
-                    " onclick=\"\">Forgot password?</span></div>",
-                    unsafe_allow_html=True
-                )
-                if st.button("→ Reset password", key="go_forgot", use_container_width=True):
+                st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+                if st.button("Forgot password?", key="go_forgot", use_container_width=True):
                     st.session_state["login_tab"] = "forgot"
                     st.session_state["reset_sent"] = False
                     st.rerun()
 
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            st.markdown('<div class="signin-btn">', unsafe_allow_html=True)
             if st.button("Sign In", key="do_login", use_container_width=True):
                 if login_user(u, p):
                     st.session_state["logged_in"] = True
@@ -130,12 +132,10 @@ if not st.session_state["logged_in"]:
                     st.rerun()
                 else:
                     st.error("Invalid username or password")
-            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown("""
             <div style='text-align:center;margin-top:24px;font-size:14px;color:#6a4868;'>
                 Don't have an account?
-                <span style='color:#f472b6;font-weight:600;cursor:pointer;'> Sign up for free</span>
             </div>
             """, unsafe_allow_html=True)
             if st.button("Create a free account →", key="go_signup", use_container_width=True):
@@ -162,7 +162,6 @@ if not st.session_state["logged_in"]:
                         st.error("Please enter your username")
                     else:
                         send_password_reset(reset_u)
-                        # Always show success (don't reveal if user exists)
                         st.session_state["reset_sent"] = True
                         st.rerun()
 
@@ -181,7 +180,6 @@ if not st.session_state["logged_in"]:
             new_e = st.text_input("Email", key="signup_email", placeholder="Enter your real email address")
             new_p = st.text_input("Password", type="password", key="signup_password", placeholder="Choose a strong password")
 
-            # Password strength meter
             if new_p:
                 label, color, pct = password_strength(new_p)
                 st.markdown(f"""
@@ -195,24 +193,14 @@ if not st.session_state["logged_in"]:
 
             confirm_p = st.text_input("Confirm Password", type="password", key="signup_confirm", placeholder="Re-enter your password")
 
-            # Password match indicator
             if confirm_p:
                 if new_p == confirm_p:
                     st.markdown("<div style='font-size:12px;color:#22c55e;margin-top:-8px;margin-bottom:8px;'>✓ Passwords match</div>", unsafe_allow_html=True)
                 else:
                     st.markdown("<div style='font-size:12px;color:#ef4444;margin-top:-8px;margin-bottom:8px;'>✗ Passwords do not match</div>", unsafe_allow_html=True)
 
-            # Terms of service
             agree = st.checkbox("I agree to the Terms of Service and Privacy Policy", key="agree_terms")
-            st.markdown("""
-            <div style='font-size:11px;color:#5a3858;margin-top:-8px;margin-bottom:12px;line-height:1.5;'>
-                By creating an account you agree to our
-                <span style='color:#f472b6;cursor:pointer;'>Terms of Service</span> and
-                <span style='color:#f472b6;cursor:pointer;'>Privacy Policy</span>.
-                Your data is kept private and never sold.
-            </div>
-            """, unsafe_allow_html=True)
-
+            
             if st.button("Create Account", key="do_signup", use_container_width=True):
                 if not new_u or not new_e or not new_p:
                     st.error("Please fill in all fields")
@@ -223,11 +211,11 @@ if not st.session_state["logged_in"]:
                 elif not agree:
                     st.error("Please agree to the Terms of Service to continue")
                 elif password_strength(new_p)[0] == "Weak":
-                    st.warning("Please choose a stronger password (add uppercase, numbers, or symbols)")
+                    st.warning("Please choose a stronger password")
                 else:
                     ok, err = sign_up_user(new_u, new_p, new_e)
                     if ok:
-                        st.success("Account created! Check your email to confirm, then sign in.")
+                        st.success("Account created! Sign in to continue.")
                         st.session_state["login_tab"] = "login"
                         st.rerun()
                     else:
@@ -270,7 +258,7 @@ if st.session_state["logged_in"]:
 
         if st.button("✨ Auto-Fill Details"):
             if url_in:
-                with st.spinner("Doing the heavy lifting... just a few moments more while we set things up..."):
+                with st.spinner("Scraping job details..."):
                     raw = scrape_job_link(url_in)
                     st.session_state["formatted_desc"] = clean_description_with_ai(raw)
 
@@ -295,7 +283,7 @@ if st.session_state["logged_in"]:
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
-                with st.spinner("Adding the finishing touches... getting you one step closer to your next job."):
+                with st.spinner("Analyzing match..."):
                     st.session_state["match_data"] = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
@@ -313,7 +301,7 @@ if st.session_state["logged_in"]:
         if st.button("💾 Save"):
 
             resume_url = None
-            score = "No score found... guess your skills just broke our algorithm."
+            score = "N/A"
 
             if up_file is not None:
                 resume_url = upload_resume(
@@ -322,7 +310,7 @@ if st.session_state["logged_in"]:
                 )
 
             if st.session_state.get("resume_txt") and final_desc:
-                with st.spinner("Saving your results...time for a quick coffee break while we file this away."):
+                with st.spinner("Finalizing..."):
                     match_result = get_ai_match_feedback(
                         final_desc,
                         st.session_state["resume_txt"]
@@ -432,7 +420,6 @@ if st.session_state["logged_in"]:
                     update_job_full(row["id"], {"status": new_stat})
                     st.rerun()
 
-            # DATE APPLIED
             raw_date = row.get("created_at", "")
             try:
                 from datetime import datetime
