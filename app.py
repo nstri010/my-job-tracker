@@ -634,13 +634,7 @@ if st.session_state["logged_in"]:
                 denom = float(parts[1]) if len(parts) > 1 else 10
                 pct   = int((num / denom) * 100)
                 sc    = "#34d399" if pct >= 75 else "#fbbf24" if pct >= 50 else "#f87171"
-                score_html = (
-                    f'<div style="display:inline-flex;flex-direction:column;gap:4px;">'
-                    f'<span style="font-size:14px;font-weight:700;color:{sc};line-height:1;">{raw_score}</span>'
-                    f'<div style="background:rgba(255,255,255,0.08);border-radius:3px;height:3px;width:40px;">'
-                    f'<div style="height:3px;width:{pct}%;background:{sc};border-radius:3px;"></div></div>'
-                    f'</div>'
-                )
+                score_html = f'<span style="font-size:15px;font-weight:700;color:{sc};">{raw_score}</span>'
             except:
                 score_html = '<span style="color:#64748b;font-size:13px;">—</span>'
 
