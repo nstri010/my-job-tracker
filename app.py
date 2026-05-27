@@ -131,135 +131,71 @@ input, textarea { caret-color: white !important; }
 
 
 /* ── Job row cards ── */
-div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"].job-row-card {
-    background: rgba(18, 18, 24, 0.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 14px !important;
-    padding: 12px 16px !important;
-    margin-bottom: 10px !important;
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 10px !important;
+    padding: 2px 12px !important;
+    margin-bottom: 5px !important;
 }
 
-/* Style every job row via container hack */
-.job-card-wrap {
-    background: rgba(18, 18, 24, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 14px 20px;
-    margin-bottom: 10px;
+/* Zero out ALL internal gaps so content sits flush */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
 }
-
-
-/* ── Job row cards ── */
-.vault-row + div [data-testid="stHorizontalBlock"] {
-    background: rgba(22, 22, 32, 0.85) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    border-radius: 12px !important;
-    padding: 0 16px !important;
-    margin-bottom: 6px !important;
-    min-height: 56px !important;
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stHorizontalBlock"] {
     align-items: center !important;
-    transition: border-color 0.2s !important;
-}
-.vault-row + div [data-testid="stHorizontalBlock"]:hover {
-    border-color: rgba(255,255,255,0.13) !important;
-}
-
-/* Strip all paragraph margins inside rows */
-.vault-row + div p {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.2 !important;
-}
-
-/* Column inner div — center content */
-.vault-row + div [data-testid="stColumn"] > div {
-    display: flex !important;
-    align-items: center !important;
+    min-height: 54px !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
-
-/* Hide selectbox label */
-.vault-row + div [data-testid="stSelectbox"] label { display: none !important; }
-.vault-row + div [data-testid="stSelectbox"] > div { margin-top: 0 !important; }
-
-/* Uniform icon buttons */
-.vault-row + div button,
-.vault-row + div a[data-testid="stLinkButton"] {
-    width: 32px !important;
-    height: 32px !important;
-    min-height: 32px !important;
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] p {
+    margin: 0 !important;
     padding: 0 !important;
-    font-size: 14px !important;
-    border-radius: 7px !important;
+    line-height: 1 !important;
+}
+
+/* Selectbox: hide label */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label {
+    display: none !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > div {
+    margin-top: 0 !important;
+}
+
+/* All 3 icon buttons: uniform size and style */
+[data-testid="stVerticalBlockBorderWrapper"] button {
+    width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
 }
-.vault-row + div button:hover {
-    background: rgba(255,255,255,0.09) !important;
-    border-color: rgba(255,255,255,0.2) !important;
+[data-testid="stVerticalBlockBorderWrapper"] button:hover {
+    background: rgba(255,255,255,0.1) !important;
+    border-color: rgba(255,255,255,0.22) !important;
 }
-
-/* Text helpers */
-p.vr-company { font-size: 14px !important; font-weight: 600 !important; color: #f1f5f9 !important; }
-p.vr-pos     { font-size: 13px !important; color: #64748b !important; }
-p.vr-date    { font-size: 12px !important; color: #475569 !important; }
-
-
-/* ── Fix file uploader button ghost text ── */
-[data-testid="stFileUploaderDropzoneInput"] + div span {
-    display: none !important;
-}
-[data-testid="baseButton-secondary"] span[data-testid="stIconMaterial"] {
-    display: none !important;
-}
-/* Hide the "upload" icon label on the browse button */
-[data-testid="stFileUploader"] button span {
-    display: none !important;
-}
-[data-testid="stFileUploader"] button::before {
-    content: "Browse files" !important;
-    color: white !important;
-}
-
-/* ── Shorter date input bar ── */
-[data-testid="stDateInput"] input {
-    max-width: 140px !important;
-}
-[data-testid="stDateInput"] > div {
-    max-width: 140px !important;
-}
-
-
-/* ── Shorter Upload Resume bar ── */
-[data-testid="stFileUploader"] > div {
-    max-width: 400px !important;
-}
-[data-testid="stFileUploaderDropzone"] {
-    max-width: 400px !important;
-    padding: 8px 12px !important;
-    min-height: 50px !important;
-}
-
-
-/* ── Prevent login panel from being clipped by column ── */
-[data-testid="stHorizontalBlock"] > div:first-child {
-    overflow: visible !important;
-}
-[data-testid="stVerticalBlock"] {
-    overflow: visible !important;
-}
-
-
-/* ── Login panel native container ── */
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(18, 18, 24, 0.8) !important;
-    border: 1px solid rgba(255,255,255,0.07) !important;
-    border-radius: 20px !important;
-    padding: 8px !important;
+[data-testid="stVerticalBlockBorderWrapper"] a[data-testid="stLinkButton"] {
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 </style>
