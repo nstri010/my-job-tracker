@@ -540,17 +540,17 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        col_ratios = [2, 2, 1, 2, 1.5, 1, 1, 1]
+        col_ratios = [2, 2, 1.4, 2, 1.5, 1, 1, 1]
 
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
         # ── Headers: use st.columns to match row layout exactly ──────
-        header_labels = ["Company", "Position", "Match Score", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
+        header_labels = ["Company Name", "Position/Title", "Match Score", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
         h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
         for col, label in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_labels):
             col.markdown(
-                f'<span style="font-size:10px;font-weight:700;color:#4b5563;'
-                f'text-transform:uppercase;letter-spacing:0.08em;">{label}</span>',
+                f'<div style="padding-left:12px;font-size:10px;font-weight:700;color:#4b5563;'
+                f'text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">{label}</div>',
                 unsafe_allow_html=True
             )
 
