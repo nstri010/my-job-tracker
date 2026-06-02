@@ -123,6 +123,29 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     min-height: 60px !important;
     height: auto !important;
 }
+/* Hide the raw input "upload" text bleeding through */
+[data-testid="stFileUploadDropzone"] input[type="file"] {
+    opacity: 0 !important;
+    width: 0.1px !important;
+    height: 0.1px !important;
+    position: absolute !important;
+    overflow: hidden !important;
+    z-index: -1 !important;
+}
+/* Style the Browse files button */
+[data-testid="stFileUploadDropzone"] button {
+    background: rgba(244,114,182,0.15) !important;
+    border: 1px solid rgba(244,114,182,0.4) !important;
+    color: #f472b4 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 6px 16px !important;
+}
+[data-testid="stFileUploadDropzone"] button:hover {
+    background: rgba(244,114,182,0.25) !important;
+    border-color: rgba(244,114,182,0.7) !important;
+}
 
 
 /* ── Remove ghost cursor / focus caret on non-input elements ── */
