@@ -564,7 +564,7 @@ if st.session_state["logged_in"]:
         st.markdown('<div class="vault-header-row">', unsafe_allow_html=True)
         h1,h2,h3,h4,h5,h6,h7,h8 = st.columns(col_ratios)
         h1.caption("Company Name")
-        h2.caption("Position / Title")
+        h2.caption("Position")
         h3.caption("Match Score")
         h4.caption("Status")
         h5.caption("Date Applied")
@@ -573,7 +573,7 @@ if st.session_state["logged_in"]:
         h8.caption("Delete")
         #st.markdown('</div>', unsafe_allow_html=True)
 
-        # \u2500\u2500 Job rows \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        # Job rows
         for _, row in df.iterrows():
             curr      = row.get("status", "\U0001f4dd Applied")
             raw_score = row.get("match_score", "")
