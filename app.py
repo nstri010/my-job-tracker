@@ -540,93 +540,75 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        col_ratios = [2, 2, 1.2, 2, 1.5, 0.8, 0.8, 0.8]
-
-        # \u2500\u2500 CSS: header labels styled via caption, hide default caption margin \u2500\u2500
-        st.markdown("""
-        <style>
-        .vault-header-row [data-testid="stCaptionContainer"] p {
-            font-size: 10px !important;
-            font-weight: 700 !important;
-            color: #4b5563 !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.08em !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        .vault-header-row {
-            margin-bottom: -8px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-        # ── Header row: st.caption inside same col_ratios columns ──
-        st.markdown('<div class="vault-header-row">', unsafe_allow_html=True)
-        h1,h2,h3,h4,h5,h6,h7,h8 = st.columns(col_ratios)
-        h1.caption("Company Name")
-        h2.caption("Position")
-        h3.caption("Match Score")
-        h4.caption("Status")
-        h5.caption("Date Applied")
-        h6.caption("Resume")
-        h7.caption("Snapshot")
-        h8.caption("Delete")
-        #st.markdown('</div>', unsafe_allow_html=True)
-
-        # Job rows
-        for _, row in df.iterrows():
-            curr      = row.get("status", "\U0001f4dd Applied")
-            raw_score = row.get("match_score", "")
-            raw_date  = row.get("created_at", "")
-            company   = row.get("company", "\u2014")
-            position  = row.get("position", "\u2014")
-
+        # ── Build display DataFrame for data_editor ──────────────────
+        def fmt_date(raw_date):
             try:
-                parts = str(raw_score).split("/")
-                num   = float(parts[0])
-                denom = float(parts[1]) if len(parts) > 1 else 10
-                pct   = int((num / denom) * 100)
-                sc    = "#34d399" if pct >= 75 else "#fbbf24" if pct >= 50 else "#f87171"
-                score_disp = f'<b style="color:{sc};font-size:15px;">{raw_score}</b>'
+                return datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except:
-                score_disp = '<span style="color:#64748b;">\u2014</span>'
+                return str(raw_date)[:10] if raw_date else "—"
 
-            try:
-                date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
-            except:
-                date_str = str(raw_date)[:10] if raw_date else "\u2014"
+        def score_num(s):
+            try: return float(str(s).split("/")[0])
+            except: return 0.0
 
-            with st.container(border=True):
-                c1,c2,c3,c4,c5,c6,c7,c8 = st.columns(col_ratios, vertical_alignment="center")
-                c1.write(company)
-                c2.write(position)
-                c3.markdown(score_disp, unsafe_allow_html=True)
-                with c4:
-                    new_stat = st.selectbox(
-                        "Status", status_options,
-                        index=(status_options.index(curr) if curr in status_options else 0),
-                        key=f"s_{row['id']}", label_visibility="collapsed"
-                    )
-                    if new_stat != curr:
-                        update_job_full(row["id"], {"status": new_stat})
-                        st.rerun()
-                c5.write(date_str)
-                resume_link = str(row.get("resume_link") or "")
-                with c6:
-                    if resume_link:
-                        st.link_button("\U0001f4c4", resume_link, key=f"rl_{row['id']}")
-                    else:
-                        st.button("\U0001f4c4", key=f"r_{row['id']}", disabled=True)
-                pdf_url = str(row.get("pdf_url") or "")
-                with c7:
-                    if pdf_url:
-                        st.link_button("\U0001f4f8", pdf_url, key=f"pl_{row['id']}")
-                    else:
-                        st.button("\U0001f4f8", key=f"p_{row['id']}", disabled=True)
-                if c8.button("\u2715", key=f"d_{row['id']}"):
-                    delete_job(row["id"])
-                    st.rerun()
+        display_df = pd.DataFrame({
+            "Company":      df["company"].fillna("—"),
+            "Position":     df["position"].fillna("—"),
+            "Match Score":  df["match_score"].fillna("—"),
+            "Status":       df["status"].fillna(status_options[0]),
+            "Date Applied": df["created_at"].apply(fmt_date),
+            "Resume":       df["resume_link"].fillna("").astype(str),
+            "Snapshot":     df["pdf_url"].fillna("").astype(str),
+            "Delete":       [False] * len(df),
+        })
+        display_df.index = df["id"].tolist()
 
+        # ── Render as data_editor ──────────────────────────────────────
+        edited = st.data_editor(
+            display_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Company":      st.column_config.TextColumn("Company Name",      disabled=True),
+                "Position":     st.column_config.TextColumn("Position / Title",  disabled=True),
+                "Match Score":  st.column_config.TextColumn("Match Score",       disabled=True, width="small"),
+                "Status":       st.column_config.SelectboxColumn(
+                                    "Status",
+                                    options=status_options,
+                                    required=True,
+                                    width="medium",
+                                ),
+                "Date Applied": st.column_config.TextColumn("Date Applied",      disabled=True, width="medium"),
+                "Resume":       st.column_config.LinkColumn(
+                                    "Resume",
+                                    display_text="📄 View",
+                                    width="small",
+                                    disabled=True,
+                                ),
+                "Snapshot":     st.column_config.LinkColumn(
+                                    "Snapshot",
+                                    display_text="📸 View",
+                                    width="small",
+                                    disabled=True,
+                                ),
+                "Delete":       st.column_config.CheckboxColumn("Delete", width="small"),
+            },
+            key="job_table",
+        )
+
+        # ── Handle status changes ──────────────────────────────────────
+        for job_id, edited_row in edited.iterrows():
+            original = display_df.loc[job_id, "Status"]
+            if edited_row["Status"] != original:
+                update_job_full(job_id, {"status": edited_row["Status"]})
+                st.rerun()
+
+        # ── Handle deletes ─────────────────────────────────────────────
+        to_delete = edited[edited["Delete"] == True].index.tolist()
+        if to_delete:
+            for job_id in to_delete:
+                delete_job(job_id)
+            st.rerun()
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;color:#4b5563;">
