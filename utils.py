@@ -83,6 +83,28 @@ def extract_text_from_upload(uploaded_file):
     return text
 
 
+def _generate_with_retry(prompt, max_retries=3):
+    """Call Gemini with automatic retry on rate-limit (429) errors."""
+    for attempt in range(max_retries):
+        try:
+            response = _client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0)
+            )
+            return response.text
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                wait = 20 * (attempt + 1)  # 20s, 40s, 60s
+                time.sleep(wait)
+                if attempt == max_retries - 1:
+                    raise
+            else:
+                raise
+    return ""
+
+
 # CLEAN DESCRIPTION
 def clean_description_with_ai(raw_text):
     try:
@@ -95,11 +117,7 @@ Benefits
 
 Job Text:
 {raw_text}"""
-        response = _client.models.generate_content(
-            model=MODEL,
-            contents=prompt
-        )
-        return response.text
+        return _generate_with_retry(prompt)
     except Exception as e:
         return f"Formatting error: {e}"
 
@@ -129,12 +147,7 @@ Resume:
 Job Description:
 {job_desc}"""
 
-        response = _client.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(temperature=0)
-        )
-        result = response.text
+        result = _generate_with_retry(prompt)
 
         rating = "N/A"
         match = re.search(r"SCORE:\s*(\d+)\s*/\s*10", result, re.IGNORECASE)
