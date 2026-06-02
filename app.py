@@ -132,6 +132,15 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     overflow: hidden !important;
     z-index: -1 !important;
 }
+/* Hide the secondary "add" button that appears after a file is uploaded */
+[data-testid="stFileUploaderDeleteBtn"] ~ button,
+[data-testid="stFileUploadDropzone"] small {
+    display: none !important;
+}
+/* Also hide any text node / small label reading "add" */
+[data-testid="stFileUploader"] section > span:last-child {
+    display: none !important;
+}
 /* Style the Browse files button */
 [data-testid="stFileUploadDropzone"] button {
     background: rgba(244,114,182,0.15) !important;
@@ -563,75 +572,93 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        # ── Build display DataFrame for data_editor ──────────────────
-        def fmt_date(raw_date):
-            try:
-                return datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
-            except:
-                return str(raw_date)[:10] if raw_date else "—"
-
-        def score_num(s):
-            try: return float(str(s).split("/")[0])
-            except: return 0.0
-
-        display_df = pd.DataFrame({
-            "Company":      df["company"].fillna("—"),
-            "Position":     df["position"].fillna("—"),
-            "Match Score":  df["match_score"].fillna("—"),
-            "Status":       df["status"].fillna(status_options[0]),
-            "Date Applied": df["created_at"].apply(fmt_date),
-            "Resume":       df["resume_link"].fillna("").astype(str),
-            "Snapshot":     df["pdf_url"].fillna("").astype(str),
-            "Delete":       [False] * len(df),
-        })
-        display_df.index = df["id"].tolist()
-
-        # ── Render as data_editor ──────────────────────────────────────
-        edited = st.data_editor(
-            display_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Company":      st.column_config.TextColumn("Company Name",      disabled=True),
-                "Position":     st.column_config.TextColumn("Position / Title",  disabled=True),
-                "Match Score":  st.column_config.TextColumn("Match Score",       disabled=True, width="small"),
-                "Status":       st.column_config.SelectboxColumn(
-                                    "Status",
-                                    options=status_options,
-                                    required=True,
-                                    width="medium",
-                                ),
-                "Date Applied": st.column_config.TextColumn("Date Applied",      disabled=True, width="medium"),
-                "Resume":       st.column_config.LinkColumn(
-                                    "Resume",
-                                    display_text="📄 View",
-                                    width="small",
-                                    disabled=True,
-                                ),
-                "Snapshot":     st.column_config.LinkColumn(
-                                    "Snapshot",
-                                    display_text="📸 View",
-                                    width="small",
-                                    disabled=True,
-                                ),
-                "Delete":       st.column_config.CheckboxColumn("Delete", width="small"),
-            },
-            key="job_table",
-        )
-
-        # ── Handle status changes ──────────────────────────────────────
-        for job_id, edited_row in edited.iterrows():
-            original = display_df.loc[job_id, "Status"]
-            if edited_row["Status"] != original:
-                update_job_full(job_id, {"status": edited_row["Status"]})
-                st.rerun()
-
-        # ── Handle deletes ─────────────────────────────────────────────
-        to_delete = edited[edited["Delete"] == True].index.tolist()
-        if to_delete:
-            for job_id in to_delete:
-                delete_job(job_id)
+        # Handle action query params (status change / delete)
+        params = st.query_params
+        if "delete_id" in params:
+            delete_job(params["delete_id"])
+            st.query_params.clear()
             st.rerun()
+        if "set_status_id" in params and "set_status_val" in params:
+            update_job_full(params["set_status_id"], {"status": params["set_status_val"]})
+            st.query_params.clear()
+            st.rerun()
+
+        def fmt_date(raw_date):
+            try:    return datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
+            except: return str(raw_date)[:10] if raw_date else "—"
+
+        STATUS_CSS = {
+            "📝 Applied":   ("rgba(148,163,184,0.12)", "#94a3b8"),
+            "📨 Contacted": ("rgba(96,165,250,0.15)",  "#60a5fa"),
+            "📅 Interview": ("rgba(251,191,36,0.15)",  "#fbbf24"),
+            "✅ Offer":     ("rgba(52,211,153,0.15)",  "#34d399"),
+            "❌ Rejected":  ("rgba(248,113,113,0.12)", "#f87171"),
+        }
+
+        def score_color(raw):
+            try:
+                n = float(str(raw).split("/")[0])
+                return "#34d399" if n >= 7 else "#fbbf24" if n >= 4 else "#f87171"
+            except:
+                return "#94a3b8"
+
+        def build_row(row):
+            job_id   = str(row["id"])
+            company  = str(row.get("company", "—"))
+            position = str(row.get("position", "—"))
+            score    = str(row.get("match_score", "—"))
+            status   = str(row.get("status", status_options[0]))
+            date_str = fmt_date(row.get("created_at", ""))
+            resume   = str(row.get("resume_link") or "")
+            snapshot = str(row.get("pdf_url") or "")
+            sc       = score_color(score)
+            bg, fg   = STATUS_CSS.get(status, ("rgba(148,163,184,0.12)", "#94a3b8"))
+
+            opts = "".join(
+                '<option value="{v}" {sel}>{v}</option>'.format(
+                    v=o, sel='selected' if o == status else ''
+                )
+                for o in status_options
+            )
+            onchange = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
+            on_del   = "return confirm('Delete this application?')"
+            del_url  = "?delete_id={id}".format(id=job_id)
+
+            resume_cell   = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📄</a>'.format(u=resume) if resume else '<span style="font-size:18px;opacity:0.3;">📄</span>'
+            snapshot_cell = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:18px;opacity:0.3;">📸</span>'
+
+            return (
+                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
+                'gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;'
+                'border-radius:12px;padding:14px 16px;margin-bottom:8px;">'
+                + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
+                + '<span style="color:#cbd5e1;font-size:14px;">{}</span>'.format(position)
+                + '<span style="color:{};font-size:14px;font-weight:700;text-align:center;">{}</span>'.format(sc, score)
+                + '<select onchange="{oc}" style="background:{bg};color:{fg};border:1px solid {fg}44;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;">{opts}</select>'.format(oc=onchange, bg=bg, fg=fg, opts=opts)
+                + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
+                + '<span style="text-align:center;">{}</span>'.format(resume_cell)
+                + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
+                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;">✕</a></span>'.format(u=del_url, od=on_del)
+                + '</div>'
+            )
+
+        rows_html = "".join(build_row(row) for _, row in df.iterrows())
+
+        hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
+        header_html = (
+            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
+            'gap:12px;padding:0 16px 8px 16px;">'
+            + '<span style="{hs}">Company Name</span>'.format(hs=hs)
+            + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
+            + '<span style="{hs}">Status</span>'.format(hs=hs)
+            + '<span style="{hs}">Date Applied</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Resume</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Snapshot</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Delete</span>'.format(hs=hs)
+            + '</div>'
+        )
+        st.markdown(header_html + rows_html, unsafe_allow_html=True)
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;color:#4b5563;">
