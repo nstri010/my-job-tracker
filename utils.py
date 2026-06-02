@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import streamlit as st
 import fitz
 import docx
@@ -11,8 +12,9 @@ from io import BytesIO
 import img2pdf
 import os
 
-# GEMINI CONFIG
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+# GEMINI CONFIG — new google-genai SDK (works with free API keys)
+_client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
+MODEL = "gemini-2.0-flash"
 
 
 # PDF SNAPSHOT
@@ -42,12 +44,10 @@ def generate_pdf_snapshot(job_url, output_file):
             st.warning(f"⚠️ Screenshot API error: {response.status_code} — {response.text[:200]}")
             return False
 
-        # Save the JPEG temporarily
         tmp_jpg = output_file.replace(".pdf", "_tmp.jpg")
         with open(tmp_jpg, "wb") as f:
             f.write(response.content)
 
-        # Convert directly to PDF using img2pdf (no sizing issues)
         with open(output_file, "wb") as f:
             f.write(img2pdf.convert(tmp_jpg))
 
@@ -86,25 +86,19 @@ def extract_text_from_upload(uploaded_file):
 # CLEAN DESCRIPTION
 def clean_description_with_ai(raw_text):
     try:
-        prompt = f"""
-Organize this job posting.
-
-Create sections:
+        prompt = f"""Organize this job posting into these sections:
 
 Responsibilities
-
 Requirements
-
 Preferred Skills
-
 Benefits
 
 Job Text:
-
-{raw_text}
-"""
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
+{raw_text}"""
+        response = _client.models.generate_content(
+            model=MODEL,
+            contents=prompt
+        )
         return response.text
     except Exception as e:
         return f"Formatting error: {e}"
@@ -113,8 +107,7 @@ Job Text:
 # RESUME MATCH
 def get_ai_match_feedback(job_desc, resume_text):
     try:
-        prompt = f"""
-You are a resume evaluator. Compare the resume against the job description.
+        prompt = f"""You are a resume evaluator. Compare the resume against the job description.
 
 Your response MUST start with this exact line:
 SCORE: X/10
@@ -134,12 +127,12 @@ Resume:
 {resume_text}
 
 Job Description:
-{job_desc}
-"""
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.GenerationConfig(temperature=0)
+{job_desc}"""
+
+        response = _client.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0)
         )
         result = response.text
 
@@ -153,7 +146,6 @@ Job Description:
                 rating = match.group(1) + "/10"
 
         feedback = [line.strip() for line in result.split("\n") if line.strip()]
-
         return {"score": rating, "feedback": feedback}
 
     except Exception as e:
