@@ -544,22 +544,36 @@ if st.session_state["logged_in"]:
 
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
-        # ── Headers: use st.columns to match row layout exactly ──────
-        # align matches how each cell renders: left for text/select, center for score/buttons
+        # ── Inject CSS so st.columns has zero padding, making headers align perfectly ──
+        st.markdown("""
+        <style>
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        /* re-add left padding only for bordered containers so row content isn't flush */
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"] {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # ── Headers: one div per column, alignment matches cell content below ──
         header_cfg = [
-            ("Company Name",   "left",   "12px"),
-            ("Position/Title", "left",   "12px"),
-            ("Match Score",    "center", "0"),
-            ("Status",         "left",   "12px"),
-            ("Date Applied",   "left",   "12px"),
-            ("Resume",         "center", "0"),
-            ("Snapshot",       "center", "0"),
-            ("Delete",         "center", "0"),
+            ("Company Name",   "left"),
+            ("Position/Title", "left"),
+            ("Match Score",    "center"),
+            ("Status",         "left"),
+            ("Date Applied",   "left"),
+            ("Resume",         "center"),
+            ("Snapshot",       "center"),
+            ("Delete",         "center"),
         ]
         h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
-        for col, (label, align, pl) in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_cfg):
+        for col, (label, align) in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_cfg):
             col.markdown(
-                f'<div style="padding-left:{pl};text-align:{align};font-size:10px;font-weight:700;'
+                f'<div style="text-align:{align};font-size:10px;font-weight:700;'
                 f'color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">{label}</div>',
                 unsafe_allow_html=True
             )
