@@ -540,51 +540,46 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        col_ratios = [2, 2, 1.4, 2, 1.5, 1, 1, 1]
+        col_ratios = [2, 2, 1.2, 2, 1.5, 0.8, 0.8, 0.8]
 
-        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
-
-        # ── Inject CSS so st.columns has zero padding, making headers align perfectly ──
+        # \u2500\u2500 CSS: header labels styled via caption, hide default caption margin \u2500\u2500
         st.markdown("""
         <style>
-        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+        .vault-header-row [data-testid="stCaptionContainer"] p {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            color: #4b5563 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
-        /* re-add left padding only for bordered containers so row content isn't flush */
-        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"] {
-            padding-left: 4px !important;
-            padding-right: 4px !important;
+        .vault-header-row {
+            margin-bottom: -8px;
         }
         </style>
         """, unsafe_allow_html=True)
 
-        # ── Headers: one div per column, alignment matches cell content below ──
-        header_cfg = [
-            ("Company Name",   "left"),
-            ("Position/Title", "left"),
-            ("Match Score",    "center"),
-            ("Status",         "left"),
-            ("Date Applied",   "left"),
-            ("Resume",         "center"),
-            ("Snapshot",       "center"),
-            ("Delete",         "center"),
-        ]
-        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
-        for col, (label, align) in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_cfg):
-            col.markdown(
-                f'<div style="text-align:{align};font-size:10px;font-weight:700;'
-                f'color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">{label}</div>',
-                unsafe_allow_html=True
-            )
+        # ── Header row: st.caption inside same col_ratios columns ──
+        st.markdown('<div class="vault-header-row">', unsafe_allow_html=True)
+        h1,h2,h3,h4,h5,h6,h7,h8 = st.columns(col_ratios)
+        h1.caption("Company Name")
+        h2.caption("Position / Title")
+        h3.caption("Match Score")
+        h4.caption("Status")
+        h5.caption("Date Applied")
+        h6.caption("Resume")
+        h7.caption("Snapshot")
+        h8.caption("Delete")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # ── Job rows ───────────────────────────────────────────────────
+        # \u2500\u2500 Job rows \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         for _, row in df.iterrows():
-            curr      = row.get("status", "📝 Applied")
+            curr      = row.get("status", "\U0001f4dd Applied")
             raw_score = row.get("match_score", "")
             raw_date  = row.get("created_at", "")
-            company   = row.get("company", "—")
-            position  = row.get("position", "—")
+            company   = row.get("company", "\u2014")
+            position  = row.get("position", "\u2014")
 
             try:
                 parts = str(raw_score).split("/")
@@ -594,15 +589,15 @@ if st.session_state["logged_in"]:
                 sc    = "#34d399" if pct >= 75 else "#fbbf24" if pct >= 50 else "#f87171"
                 score_disp = f'<b style="color:{sc};font-size:15px;">{raw_score}</b>'
             except:
-                score_disp = '<span style="color:#64748b;">—</span>'
+                score_disp = '<span style="color:#64748b;">\u2014</span>'
 
             try:
                 date_str = datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except:
-                date_str = str(raw_date)[:10] if raw_date else "—"
+                date_str = str(raw_date)[:10] if raw_date else "\u2014"
 
             with st.container(border=True):
-                c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(col_ratios, vertical_alignment="center")
+                c1,c2,c3,c4,c5,c6,c7,c8 = st.columns(col_ratios, vertical_alignment="center")
                 c1.write(company)
                 c2.write(position)
                 c3.markdown(score_disp, unsafe_allow_html=True)
@@ -619,16 +614,16 @@ if st.session_state["logged_in"]:
                 resume_link = str(row.get("resume_link") or "")
                 with c6:
                     if resume_link:
-                        st.link_button("📄", resume_link, key=f"rl_{row['id']}")
+                        st.link_button("\U0001f4c4", resume_link, key=f"rl_{row['id']}")
                     else:
-                        st.button("📄", key=f"r_{row['id']}", disabled=True)
+                        st.button("\U0001f4c4", key=f"r_{row['id']}", disabled=True)
                 pdf_url = str(row.get("pdf_url") or "")
                 with c7:
                     if pdf_url:
-                        st.link_button("📸", pdf_url, key=f"pl_{row['id']}")
+                        st.link_button("\U0001f4f8", pdf_url, key=f"pl_{row['id']}")
                     else:
-                        st.button("📸", key=f"p_{row['id']}", disabled=True)
-                if c8.button("✕", key=f"d_{row['id']}"):
+                        st.button("\U0001f4f8", key=f"p_{row['id']}", disabled=True)
+                if c8.button("\u2715", key=f"d_{row['id']}"):
                     delete_job(row["id"])
                     st.rerun()
 
