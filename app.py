@@ -549,7 +549,7 @@ if st.session_state["logged_in"]:
         <div style="display:grid;grid-template-columns:2fr 2fr 1fr 2fr 1.5fr 1fr 1fr 1fr;
                     padding:0 24px 6px 24px;gap:8px;">
             {"".join(f'<span style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">{l}</span>'
-                     for l in ["Company","Position","Match","Status","Date Applied","CV","Snap",""])}
+                     for l in ["Company","Position","Match","Status","Date Applied","CV","Snap","Delete"])}
         </div>
         """, unsafe_allow_html=True)
 
