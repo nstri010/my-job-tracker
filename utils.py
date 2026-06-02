@@ -14,7 +14,7 @@ import os
 
 # GEMINI CONFIG — new google-genai SDK (works with free API keys)
 _client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-1.5-flash-8b"
 
 
 # PDF SNAPSHOT
