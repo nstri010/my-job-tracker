@@ -545,7 +545,7 @@ if st.session_state["logged_in"]:
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
         # ── Headers: use st.columns to match row layout exactly ──────
-        header_labels = ["Company Name", "Position/ Title", "Match\u00a0Score", "Status", "Date Applied", "Resume", "Job\u00a0Snapshot", "Delete"]
+        header_labels = ["Company", "Position", "Match Score", "Status", "Date Applied", "Resume", "Snapshot", "Delete"]
         h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
         for col, label in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_labels):
             col.markdown(
