@@ -544,14 +544,15 @@ if st.session_state["logged_in"]:
 
         st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
-        # ── Headers: padded to match the container border offset ──────
-        st.markdown(f"""
-        <div style="display:grid;grid-template-columns:2fr 2fr 1fr 2fr 1.5fr 1fr 1fr 1fr;
-                    padding:0 24px 6px 24px;gap:8px;">
-            {"".join(f'<span style="font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em;">{l}</span>'
-                     for l in ["Company Name","Position/ Title","Match Score","Status","Date Applied","Resume","Job Snapshot","Delete"])}
-        </div>
-        """, unsafe_allow_html=True)
+        # ── Headers: use st.columns to match row layout exactly ──────
+        header_labels = ["Company Name", "Position/ Title", "Match\u00a0Score", "Status", "Date Applied", "Resume", "Job\u00a0Snapshot", "Delete"]
+        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns(col_ratios)
+        for col, label in zip([h1, h2, h3, h4, h5, h6, h7, h8], header_labels):
+            col.markdown(
+                f'<span style="font-size:10px;font-weight:700;color:#4b5563;'
+                f'text-transform:uppercase;letter-spacing:0.08em;">{label}</span>',
+                unsafe_allow_html=True
+            )
 
         # ── Job rows ───────────────────────────────────────────────────
         for _, row in df.iterrows():
