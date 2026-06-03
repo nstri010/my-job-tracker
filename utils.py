@@ -1,3 +1,4 @@
+import google.generativeai as genai
 import streamlit as st
 import fitz
 import docx
@@ -9,18 +10,11 @@ import img2pdf
 import os
 
 # ── Gemini setup ──────────────────────────────────────────────────
-try:
-    import google.generativeai as genai
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    _GEMINI_OK = True
-except Exception:
-    _GEMINI_OK = False
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
 def _call_gemini(prompt, temperature=None, max_retries=4):
     """Call Gemini with automatic retry on rate-limit (429) errors."""
-    if not _GEMINI_OK:
-        raise RuntimeError("Gemini API not configured — check GOOGLE_API_KEY secret.")
     model = genai.GenerativeModel("gemini-2.0-flash")
     for attempt in range(max_retries):
         try:
