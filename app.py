@@ -44,10 +44,6 @@ if "login_tab" not in st.session_state:
     st.session_state["login_tab"] = "login"
 if "reset_sent" not in st.session_state:
     st.session_state["reset_sent"] = False
-# Re-check cookie if session lost during rerun (e.g. after query param nav)
-if not st.session_state["logged_in"] and _saved_user:
-    st.session_state["logged_in"] = True
-    st.session_state["username"] = _saved_user
 
 # ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -95,122 +91,23 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 }
 .stTextInput input:focus { border-color: #f472b6 !important; box-shadow: 0 0 10px rgba(244, 114, 182, 0.2) !important; }
 
-/* ── Buttons ── */
+/* ── Buttons: global default ── */
 .stButton > button {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-radius: 10px !important;
     font-weight: 600 !important;
     height: 45px !important;
     transition: all 0.3s ease !important;
 }
-.stButton > button:hover { 
-    background: rgba(244, 114, 182, 0.1) !important; 
+.stButton > button:hover {
+    background: rgba(244, 114, 182, 0.12) !important;
     border-color: #f472b6 !important;
 }
 
-/* ── Stat Grid ── */
-.stat-row { display: flex; gap: 32px; margin-top: 40px; }
-.stat-val { font-size: 22px; font-weight: 700; color: #f472b6; white-space: nowrap; }
-.stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
-
-
-/* ── Fix expander icon text showing as words ── */
-[data-testid="stExpander"] summary svg {
-    display: inline-block !important;
-}
-/* Hide any rogue icon label text in expander */
-[data-testid="stExpander"] summary [data-testid="stIconMaterial"] {
-    display: none !important;
-}
-
-/* ── File uploader: prevent overflow into adjacent column ── */
-[data-testid="stFileUploader"] {
-    min-height: 80px !important;
-}
-[data-testid="stFileUploadDropzone"] {
-    min-height: 60px !important;
-    height: auto !important;
-}
-/* Hide the raw input "upload" text bleeding through */
-[data-testid="stFileUploadDropzone"] input[type="file"] {
-    opacity: 0 !important;
-    width: 0.1px !important;
-    height: 0.1px !important;
-    position: absolute !important;
-    overflow: hidden !important;
-    z-index: -1 !important;
-}
-/* Hide the secondary "add" button that appears after a file is uploaded */
-[data-testid="stFileUploaderDeleteBtn"] ~ button,
-[data-testid="stFileUploadDropzone"] small {
-    display: none !important;
-}
-/* Also hide any text node / small label reading "add" */
-[data-testid="stFileUploader"] section > span:last-child {
-    display: none !important;
-}
-/* Style the Browse files button */
-[data-testid="stFileUploadDropzone"] button {
-    background: rgba(244,114,182,0.15) !important;
-    border: 1px solid rgba(244,114,182,0.4) !important;
-    color: #f472b4 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    padding: 6px 16px !important;
-}
-[data-testid="stFileUploadDropzone"] button:hover {
-    background: rgba(244,114,182,0.25) !important;
-    border-color: rgba(244,114,182,0.7) !important;
-}
-
-
-/* ── Remove ghost cursor / focus caret on non-input elements ── */
-* { caret-color: transparent !important; }
-input, textarea { caret-color: white !important; }
-
-
-/* ── Job row cards ── */
-[data-testid="stVerticalBlockBorderWrapper"] {
-    border-radius: 10px !important;
-    padding: 2px 12px !important;
-    margin-bottom: 5px !important;
-}
-
-/* Zero out ALL internal gaps so content sits flush */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlock"] {
-    gap: 0 !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stHorizontalBlock"] {
-    align-items: center !important;
-    min-height: 54px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stColumn"] > div {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] p {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-}
-
-/* Selectbox: hide label */
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] label {
-    display: none !important;
-}
-[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stSelectbox"] > div {
-    margin-top: 0 !important;
-}
-
-/* All 3 icon buttons: uniform size and style */
-[data-testid="stVerticalBlockBorderWrapper"] button {
+/* ── Vault row icon buttons (Resume, Snapshot, Delete inside bordered rows) ── */
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"] > button {
     width: 34px !important;
     height: 34px !important;
     min-height: 34px !important;
@@ -220,12 +117,12 @@ input, textarea { caret-color: white !important; }
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"] button:hover {
-    background: rgba(255,255,255,0.1) !important;
-    border-color: rgba(255,255,255,0.22) !important;
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stButton"] > button:hover {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(255,255,255,0.28) !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"] a[data-testid="stLinkButton"] {
     width: 34px !important;
@@ -236,9 +133,10 @@ input, textarea { caret-color: white !important; }
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
 }
+
 
 </style>
 """, unsafe_allow_html=True)
@@ -386,7 +284,9 @@ if st.session_state["logged_in"]:
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
-        if st.button("Sign Out"):
+        # FIXED: Added unique key
+        if st.button("Sign Out", key="sign_out_main_top"):
+            cookie_manager.delete("career_vault_user")
             st.session_state.clear()
             st.rerun()
 
@@ -582,6 +482,17 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
+        # Handle action query params (status change / delete)
+        params = st.query_params
+        if "delete_id" in params:
+            delete_job(params["delete_id"])
+            st.query_params.clear()
+            st.rerun()
+        if "set_status_id" in params and "set_status_val" in params:
+            update_job_full(params["set_status_id"], {"status": params["set_status_val"]})
+            st.query_params.clear()
+            st.rerun()
+
         def fmt_date(raw_date):
             try:    return datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except: return str(raw_date)[:10] if raw_date else "—"
@@ -601,44 +512,7 @@ if st.session_state["logged_in"]:
             except:
                 return "#94a3b8"
 
-        # CSS to make delete button look like ✕ icon, not a Streamlit button
-        st.markdown("""
-        <style>
-        [data-testid="stButton"] button[kind="secondary"] {
-            background: transparent !important;
-            border: none !important;
-            color: #6b7280 !important;
-            font-size: 18px !important;
-            padding: 0 4px !important;
-            min-height: 0 !important;
-            height: auto !important;
-            box-shadow: none !important;
-        }
-        [data-testid="stButton"] button[kind="secondary"]:hover {
-            color: #ef4444 !important;
-            background: transparent !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-        # Header row
-        hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
-        st.markdown(
-            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;gap:12px;padding:0 16px 8px 16px;">'
-            + '<span style="{hs}">Company Name</span>'.format(hs=hs)
-            + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
-            + '<span style="{hs}">Status</span>'.format(hs=hs)
-            + '<span style="{hs}">Date Applied</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Resume</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Snapshot</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Delete</span>'.format(hs=hs)
-            + '</div>',
-            unsafe_allow_html=True
-        )
-
-        # Each row: full HTML grid including delete link (query param, no logout now)
-        for _, row in df.iterrows():
+        def build_row(row):
             job_id   = str(row["id"])
             company  = str(row.get("company", "—"))
             position = str(row.get("position", "—"))
@@ -651,43 +525,50 @@ if st.session_state["logged_in"]:
             bg, fg   = STATUS_CSS.get(status, ("rgba(148,163,184,0.12)", "#94a3b8"))
 
             opts = "".join(
-                '<option value="{v}" {sel}>{v}</option>'.format(v=o, sel='selected' if o == status else '')
+                '<option value="{v}" {sel}>{v}</option>'.format(
+                    v=o, sel='selected' if o == status else ''
+                )
                 for o in status_options
             )
-            onchange  = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
-            del_href  = "?delete_id={id}".format(id=job_id)
-            on_del    = "return confirm('Delete this application?')"
+            onchange = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
+            on_del   = "return confirm('Delete this application?')"
+            del_url  = "?delete_id={id}".format(id=job_id)
+
             resume_cell   = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📄</a>'.format(u=resume) if resume else '<span style="font-size:18px;opacity:0.3;">📄</span>'
             snapshot_cell = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:18px;opacity:0.3;">📸</span>'
 
-            st.markdown(
-                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;border-radius:12px;padding:14px 16px;margin-bottom:4px;">'
+            return (
+                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
+                'gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;'
+                'border-radius:12px;padding:14px 16px;margin-bottom:8px;">'
                 + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
                 + '<span style="color:#cbd5e1;font-size:14px;">{}</span>'.format(position)
                 + '<span style="color:{};font-size:14px;font-weight:700;text-align:center;">{}</span>'.format(sc, score)
-                + '<select onchange="{oc}" style="background:{bg};color:{fg};border:1px solid {fg}44;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;text-align:center;">{opts}</select>'.format(oc=onchange, bg=bg, fg=fg, opts=opts)
+                + '<select onchange="{oc}" style="background:{bg};color:{fg};border:1px solid {fg}44;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;">{opts}</select>'.format(oc=onchange, bg=bg, fg=fg, opts=opts)
                 + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
                 + '<span style="text-align:center;">{}</span>'.format(resume_cell)
                 + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
-                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;line-height:1;">✕</a></span>'.format(u=del_href, od=on_del)
-                + '</div>',
-                unsafe_allow_html=True
+                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;">✕</a></span>'.format(u=del_url, od=on_del)
+                + '</div>'
             )
 
-        # Handle query params — session is now protected by cookie re-check above
-        params = st.query_params
-        if "delete_id" in params:
-            delete_job(params["delete_id"])
-            st.query_params.clear()
-            st.rerun()
+        rows_html = "".join(build_row(row) for _, row in df.iterrows())
 
-        # Status change still uses query params (doesn't log you out)
-        params = st.query_params
-        if "set_status_id" in params and "set_status_val" in params:
-            update_job_full(params["set_status_id"], {"status": params["set_status_val"]})
-            st.query_params.clear()
-            st.rerun()
-
+        hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
+        header_html = (
+            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
+            'gap:12px;padding:0 16px 8px 16px;">'
+            + '<span style="{hs}">Company Name</span>'.format(hs=hs)
+            + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
+            + '<span style="{hs}">Status</span>'.format(hs=hs)
+            + '<span style="{hs}">Date Applied</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Resume</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Snapshot</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Delete</span>'.format(hs=hs)
+            + '</div>'
+        )
+        st.markdown(header_html + rows_html, unsafe_allow_html=True)
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;color:#4b5563;">
