@@ -1,4 +1,3 @@
-import google.generativeai as genai
 import streamlit as st
 import fitz
 import docx
@@ -6,17 +5,22 @@ import re
 import requests
 import time
 from bs4 import BeautifulSoup
-from PIL import Image
-from io import BytesIO
 import img2pdf
 import os
 
-# GEMINI CONFIG
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+# ── Gemini setup ──────────────────────────────────────────────────
+try:
+    import google.generativeai as genai
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    _GEMINI_OK = True
+except Exception:
+    _GEMINI_OK = False
 
 
 def _call_gemini(prompt, temperature=None, max_retries=4):
-    """Call Gemini with automatic retry on rate-limit errors."""
+    """Call Gemini with automatic retry on rate-limit (429) errors."""
+    if not _GEMINI_OK:
+        raise RuntimeError("Gemini API not configured — check GOOGLE_API_KEY secret.")
     model = genai.GenerativeModel("gemini-2.0-flash")
     for attempt in range(max_retries):
         try:
@@ -27,11 +31,9 @@ def _call_gemini(prompt, temperature=None, max_retries=4):
         except Exception as e:
             msg = str(e)
             if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
-                # Parse retry delay from error if available, else back off
                 wait = 30 * (attempt + 1)
                 try:
-                    import re as _re
-                    m = _re.search(r'retry in (\d+)', msg, _re.IGNORECASE)
+                    m = re.search(r'retry in (\d+)', msg, re.IGNORECASE)
                     if m:
                         wait = int(m.group(1)) + 2
                 except Exception:
@@ -45,7 +47,7 @@ def _call_gemini(prompt, temperature=None, max_retries=4):
     return ""
 
 
-# PDF SNAPSHOT
+# ── PDF Snapshot ──────────────────────────────────────────────────
 def generate_pdf_snapshot(job_url, output_file):
     try:
         api_key = st.secrets["APIFLASH_KEY"]
@@ -80,7 +82,7 @@ def generate_pdf_snapshot(job_url, output_file):
         return False
 
 
-# SCRAPE JOB PAGE
+# ── Scrape Job Page ───────────────────────────────────────────────
 def scrape_job_link(url):
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
@@ -90,50 +92,46 @@ def scrape_job_link(url):
         return f"Scrape error: {e}"
 
 
-# EXTRACT RESUME TEXT
+# ── Extract Resume Text ───────────────────────────────────────────
 def extract_text_from_upload(uploaded_file):
     text = ""
-    if uploaded_file.name.endswith(".pdf"):
-        pdf = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-        for page in pdf:
-            text += page.get_text()
-    elif uploaded_file.name.endswith(".docx"):
-        document = docx.Document(uploaded_file)
-        for para in document.paragraphs:
-            text += para.text + "\n"
+    try:
+        if uploaded_file.name.endswith(".pdf"):
+            pdf = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+            for page in pdf:
+                text += page.get_text()
+        elif uploaded_file.name.endswith(".docx"):
+            document = docx.Document(uploaded_file)
+            for para in document.paragraphs:
+                text += para.text + "\n"
+        else:
+            text = uploaded_file.read().decode("utf-8", errors="ignore")
+    except Exception as e:
+        st.warning(f"Could not read file: {e}")
     return text
 
 
-# CLEAN DESCRIPTION
+# ── Clean Job Description ─────────────────────────────────────────
 def clean_description_with_ai(raw_text):
     try:
-        prompt = f"""
-Organize this job posting.
-
-Create sections:
+        prompt = f"""Organize this job posting into these sections:
 
 Responsibilities
-
 Requirements
-
 Preferred Skills
-
 Benefits
 
 Job Text:
-
-{raw_text}
-"""
+{raw_text}"""
         return _call_gemini(prompt)
     except Exception as e:
         return f"Formatting error: {e}"
 
 
-# RESUME MATCH
+# ── Resume Match Feedback ─────────────────────────────────────────
 def get_ai_match_feedback(job_desc, resume_text):
     try:
-        prompt = f"""
-You are a resume evaluator. Compare the resume against the job description.
+        prompt = f"""You are a resume evaluator. Compare the resume against the job description.
 
 Your response MUST start with this exact line:
 SCORE: X/10
@@ -153,8 +151,7 @@ Resume:
 {resume_text}
 
 Job Description:
-{job_desc}
-"""
+{job_desc}"""
         result = _call_gemini(prompt, temperature=0)
 
         rating = "N/A"
