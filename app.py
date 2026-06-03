@@ -534,8 +534,8 @@ if st.session_state["logged_in"]:
             on_del   = "return confirm('Delete this application?')"
             del_url  = "?delete_id={id}".format(id=job_id)
 
-            resume_cell   = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📄</a>'.format(u=resume) if resume else '<span style="font-size:18px;opacity:0.3;">📄</span>'
-            snapshot_cell = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:18px;opacity:0.3;">📸</span>'
+            resume_cell   = '<a href="{u}" target="_blank" style="font-size:16px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:8px;">📄</a>'.format(u=resume) if resume else '<span style="font-size:16px;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;opacity:0.4;">📄</span>'
+            snapshot_cell = '<a href="{u}" target="_blank" style="font-size:16px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:8px;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:16px;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;opacity:0.4;">📸</span>'
 
             return (
                 '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
@@ -548,7 +548,7 @@ if st.session_state["logged_in"]:
                 + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
                 + '<span style="text-align:center;">{}</span>'.format(resume_cell)
                 + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
-                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;">✕</a></span>'.format(u=del_url, od=on_del)
+                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="font-size:15px;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:8px;color:#9ca3af;">✕</a></span>'.format(u=del_url, od=on_del)
                 + '</div>'
             )
 
