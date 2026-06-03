@@ -15,11 +15,40 @@ import os
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
+def _call_gemini(prompt, temperature=None, max_retries=4):
+    """Call Gemini with automatic retry on rate-limit errors."""
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    for attempt in range(max_retries):
+        try:
+            kwargs = {}
+            if temperature is not None:
+                kwargs["generation_config"] = genai.GenerationConfig(temperature=temperature)
+            return model.generate_content(prompt, **kwargs).text
+        except Exception as e:
+            msg = str(e)
+            if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                # Parse retry delay from error if available, else back off
+                wait = 30 * (attempt + 1)
+                try:
+                    import re as _re
+                    m = _re.search(r'retry in (\d+)', msg, _re.IGNORECASE)
+                    if m:
+                        wait = int(m.group(1)) + 2
+                except Exception:
+                    pass
+                if attempt < max_retries - 1:
+                    time.sleep(wait)
+                else:
+                    raise
+            else:
+                raise
+    return ""
+
+
 # PDF SNAPSHOT
 def generate_pdf_snapshot(job_url, output_file):
     try:
         api_key = st.secrets["APIFLASH_KEY"]
-
         params = {
             "access_key": api_key,
             "url": job_url,
@@ -31,31 +60,23 @@ def generate_pdf_snapshot(job_url, output_file):
             "no_ads": "true",
             "delay": 2,
         }
-
         response = requests.get(
             "https://api.apiflash.com/v1/urltoimage",
             params=params,
             timeout=60
         )
-
         if response.status_code != 200:
-            st.warning(f"⚠️ Screenshot API error: {response.status_code} — {response.text[:200]}")
+            st.warning(f"Screenshot API error: {response.status_code} — {response.text[:200]}")
             return False
-
-        # Save the JPEG temporarily
         tmp_jpg = output_file.replace(".pdf", "_tmp.jpg")
         with open(tmp_jpg, "wb") as f:
             f.write(response.content)
-
-        # Convert directly to PDF using img2pdf (no sizing issues)
         with open(output_file, "wb") as f:
             f.write(img2pdf.convert(tmp_jpg))
-
         os.remove(tmp_jpg)
         return True
-
     except Exception as e:
-        st.warning(f"⚠️ Snapshot error: {e}")
+        st.warning(f"Snapshot error: {e}")
         return False
 
 
@@ -103,9 +124,7 @@ Job Text:
 
 {raw_text}
 """
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
-        return response.text
+        return _call_gemini(prompt)
     except Exception as e:
         return f"Formatting error: {e}"
 
@@ -136,12 +155,7 @@ Resume:
 Job Description:
 {job_desc}
 """
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.GenerationConfig(temperature=0)
-        )
-        result = response.text
+        result = _call_gemini(prompt, temperature=0)
 
         rating = "N/A"
         match = re.search(r"SCORE:\s*(\d+)\s*/\s*10", result, re.IGNORECASE)
@@ -153,7 +167,6 @@ Job Description:
                 rating = match.group(1) + "/10"
 
         feedback = [line.strip() for line in result.split("\n") if line.strip()]
-
         return {"score": rating, "feedback": feedback}
 
     except Exception as e:
