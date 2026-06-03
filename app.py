@@ -44,6 +44,10 @@ if "login_tab" not in st.session_state:
     st.session_state["login_tab"] = "login"
 if "reset_sent" not in st.session_state:
     st.session_state["reset_sent"] = False
+# Re-check cookie if session lost during rerun (e.g. after query param nav)
+if not st.session_state["logged_in"] and _saved_user:
+    st.session_state["logged_in"] = True
+    st.session_state["username"] = _saved_user
 
 # ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -635,7 +639,7 @@ if st.session_state["logged_in"]:
             unsafe_allow_html=True
         )
 
-        # Each row: full 8-col HTML grid, delete via st.button overlaid with CSS
+        # Each row: full HTML grid including delete link (query param, no logout now)
         for _, row in df.iterrows():
             job_id   = str(row["id"])
             company  = str(row.get("company", "—"))
@@ -652,11 +656,12 @@ if st.session_state["logged_in"]:
                 '<option value="{v}" {sel}>{v}</option>'.format(v=o, sel='selected' if o == status else '')
                 for o in status_options
             )
-            onchange = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
+            onchange  = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
+            del_href  = "?delete_id={id}".format(id=job_id)
+            on_del    = "return confirm('Delete this application?')"
             resume_cell   = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📄</a>'.format(u=resume) if resume else '<span style="font-size:18px;opacity:0.3;">📄</span>'
             snapshot_cell = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:18px;opacity:0.3;">📸</span>'
 
-            # Render the full row as HTML (all 8 cols including empty delete placeholder)
             st.markdown(
                 '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;border-radius:12px;padding:14px 16px;margin-bottom:4px;">'
                 + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
@@ -666,31 +671,17 @@ if st.session_state["logged_in"]:
                 + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
                 + '<span style="text-align:center;">{}</span>'.format(resume_cell)
                 + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
-                + '<span style="text-align:center;"></span>'  # delete placeholder
+                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;line-height:1;">✕</a></span>'.format(u=del_href, od=on_del)
                 + '</div>',
                 unsafe_allow_html=True
             )
-            # Delete button floated right using negative margin to sit inside the row
-            st.markdown(
-                '<style>'
-                '#del_btn_{id} div[data-testid="stButton"] button {{'
-                '  background:transparent!important;border:none!important;'
-                '  color:#6b7280!important;font-size:18px!important;'
-                '  padding:0!important;min-height:0!important;height:24px!important;'
-                '  box-shadow:none!important;margin-top:-52px!important;'
-                '  float:right!important;margin-right:4px!important;'
-                '}}'
-                '#del_btn_{id} div[data-testid="stButton"] button:hover {{'
-                '  color:#ef4444!important;background:transparent!important;'
-                '}}'
-                '</style>'
-                '<div id="del_btn_{id}">'.format(id=job_id),
-                unsafe_allow_html=True
-            )
-            if st.button("✕", key="del_" + job_id):
-                delete_job(job_id)
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Handle query params — session is now protected by cookie re-check above
+        params = st.query_params
+        if "delete_id" in params:
+            delete_job(params["delete_id"])
+            st.query_params.clear()
+            st.rerun()
 
         # Status change still uses query params (doesn't log you out)
         params = st.query_params
