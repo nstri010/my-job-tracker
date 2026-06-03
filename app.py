@@ -21,11 +21,21 @@ from utils import (
     extract_text_from_upload
 )
 
+import extra_streamlit_components as stx
+
 st.set_page_config(page_title="Career Hunt HQ", layout="wide")
+
+# Cookie-based session persistence
+@st.cache_resource
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+_saved_user = cookie_manager.get("career_vault_user")
 
 # SESSION
 if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
+    st.session_state["logged_in"] = bool(_saved_user)
 if "formatted_desc" not in st.session_state:
     st.session_state["formatted_desc"] = ""
 if "match_data" not in st.session_state:
@@ -33,7 +43,7 @@ if "match_data" not in st.session_state:
 if "resume_txt" not in st.session_state:
     st.session_state["resume_txt"] = None
 if "username" not in st.session_state:
-    st.session_state["username"] = None
+    st.session_state["username"] = _saved_user or None
 if "login_tab" not in st.session_state:
     st.session_state["login_tab"] = "login"
 if "reset_sent" not in st.session_state:
@@ -115,20 +125,47 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     display: none !important;
 }
 
-/* File uploader: hide dropzone, show only button */
-[data-testid="stFileUploadDropzone"] {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    min-height: 0 !important;
+/* ── File uploader: prevent overflow into adjacent column ── */
+[data-testid="stFileUploader"] {
+    min-height: 80px !important;
 }
-[data-testid="stFileUploadDropzone"] * { display: none !important; }
-[data-testid="stFileUploadDropzone"] button { display: inline-flex !important; background: rgba(244,114,182,0.15) !important; border: 1px solid rgba(244,114,182,0.4) !important; color: #f472b4 !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 13px !important; padding: 8px 20px !important; cursor: pointer !important; }
-[data-testid="stFileUploadDropzone"] button * { display: inline !important; }
-[data-testid="stFileUploadDropzone"] button:hover { background: rgba(244,114,182,0.3) !important; border-color: rgba(244,114,182,0.8) !important; }
-[data-testid="stFileUploadDropzone"] input[type="file"] { display: none !important; }
-[data-testid="stFileUploaderDeleteBtn"] ~ button { display: none !important; }
-[data-testid="stFileUploader"] { min-height: 0 !important; }
+[data-testid="stFileUploadDropzone"] {
+    min-height: 60px !important;
+    height: auto !important;
+}
+/* Hide the raw input "upload" text bleeding through */
+[data-testid="stFileUploadDropzone"] input[type="file"] {
+    opacity: 0 !important;
+    width: 0.1px !important;
+    height: 0.1px !important;
+    position: absolute !important;
+    overflow: hidden !important;
+    z-index: -1 !important;
+}
+/* Hide the secondary "add" button that appears after a file is uploaded */
+[data-testid="stFileUploaderDeleteBtn"] ~ button,
+[data-testid="stFileUploadDropzone"] small {
+    display: none !important;
+}
+/* Also hide any text node / small label reading "add" */
+[data-testid="stFileUploader"] section > span:last-child {
+    display: none !important;
+}
+/* Style the Browse files button */
+[data-testid="stFileUploadDropzone"] button {
+    background: rgba(244,114,182,0.15) !important;
+    border: 1px solid rgba(244,114,182,0.4) !important;
+    color: #f472b4 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 6px 16px !important;
+}
+[data-testid="stFileUploadDropzone"] button:hover {
+    background: rgba(244,114,182,0.25) !important;
+    border-color: rgba(244,114,182,0.7) !important;
+}
+
 
 /* ── Remove ghost cursor / focus caret on non-input elements ── */
 * { caret-color: transparent !important; }
@@ -260,6 +297,7 @@ if not st.session_state["logged_in"]:
                     if login_user(u, p):
                         st.session_state["logged_in"] = True
                         st.session_state["username"] = u
+                        cookie_manager.set("career_vault_user", u, max_age=30*24*3600)
                         st.rerun()
                     else: st.error("Invalid credentials")
 
@@ -350,6 +388,7 @@ if st.session_state["logged_in"]:
     with t2:
         # FIXED: Added unique key
         if st.button("Sign Out", key="sign_out_main_top"):
+            cookie_manager.delete("career_vault_user")
             st.session_state.clear()
             st.rerun()
 
