@@ -115,54 +115,20 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
     display: none !important;
 }
 
-/* ── File uploader ── */
-/* Hide the entire dropzone box and all its text/icons */
+/* File uploader: hide dropzone, show only button */
 [data-testid="stFileUploadDropzone"] {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     min-height: 0 !important;
 }
-/* Hide everything inside the dropzone EXCEPT the button */
-[data-testid="stFileUploadDropzone"] > div,
-[data-testid="stFileUploadDropzone"] span,
-[data-testid="stFileUploadDropzone"] small,
-[data-testid="stFileUploadDropzone"] svg,
-[data-testid="stFileUploadDropzone"] p {
-    display: none !important;
-}
-/* Hide raw file input */
-[data-testid="stFileUploadDropzone"] input[type="file"] {
-    opacity: 0 !important;
-    width: 0.1px !important;
-    height: 0.1px !important;
-    position: absolute !important;
-    z-index: -1 !important;
-}
-/* Show and style only the button */
-[data-testid="stFileUploadDropzone"] button {
-    display: inline-flex !important;
-    background: rgba(244,114,182,0.15) !important;
-    border: 1px solid rgba(244,114,182,0.4) !important;
-    color: #f472b4 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    padding: 8px 20px !important;
-    cursor: pointer !important;
-}
-[data-testid="stFileUploadDropzone"] button:hover {
-    background: rgba(244,114,182,0.3) !important;
-    border-color: rgba(244,114,182,0.8) !important;
-}
-/* Hide secondary add button after upload, keep delete chip */
-[data-testid="stFileUploaderDeleteBtn"] ~ button {
-    display: none !important;
-}
-[data-testid="stFileUploader"] {
-    min-height: 0 !important;
-}
-
+[data-testid="stFileUploadDropzone"] * { display: none !important; }
+[data-testid="stFileUploadDropzone"] button { display: inline-flex !important; background: rgba(244,114,182,0.15) !important; border: 1px solid rgba(244,114,182,0.4) !important; color: #f472b4 !important; border-radius: 8px !important; font-weight: 600 !important; font-size: 13px !important; padding: 8px 20px !important; cursor: pointer !important; }
+[data-testid="stFileUploadDropzone"] button * { display: inline !important; }
+[data-testid="stFileUploadDropzone"] button:hover { background: rgba(244,114,182,0.3) !important; border-color: rgba(244,114,182,0.8) !important; }
+[data-testid="stFileUploadDropzone"] input[type="file"] { display: none !important; }
+[data-testid="stFileUploaderDeleteBtn"] ~ button { display: none !important; }
+[data-testid="stFileUploader"] { min-height: 0 !important; }
 
 /* ── Remove ghost cursor / focus caret on non-input elements ── */
 * { caret-color: transparent !important; }
