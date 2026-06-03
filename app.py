@@ -386,9 +386,7 @@ if st.session_state["logged_in"]:
     st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     with t2:
-        # FIXED: Added unique key
-        if st.button("Sign Out", key="sign_out_main_top"):
-            cookie_manager.delete("career_vault_user")
+        if st.button("Sign Out"):
             st.session_state.clear()
             st.rerun()
 
