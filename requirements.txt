@@ -1,7 +1,7 @@
 streamlit
 pandas
 supabase
-google-generativeai
+google-genai
 requests
 beautifulsoup4
 python-docx
@@ -9,3 +9,4 @@ PyMuPDF
 reportlab
 Pillow
 img2pdf
+extra-streamlit-components
