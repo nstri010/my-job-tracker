@@ -580,17 +580,6 @@ if st.session_state["logged_in"]:
         else:
             df = df.sort_values("created_at", ascending=(sort_dir == "Oldest First"))
 
-        # Handle action query params (status change / delete)
-        params = st.query_params
-        if "delete_id" in params:
-            delete_job(params["delete_id"])
-            st.query_params.clear()
-            st.rerun()
-        if "set_status_id" in params and "set_status_val" in params:
-            update_job_full(params["set_status_id"], {"status": params["set_status_val"]})
-            st.query_params.clear()
-            st.rerun()
-
         def fmt_date(raw_date):
             try:    return datetime.fromisoformat(str(raw_date)).strftime("%b %d, %Y")
             except: return str(raw_date)[:10] if raw_date else "—"
@@ -610,7 +599,44 @@ if st.session_state["logged_in"]:
             except:
                 return "#94a3b8"
 
-        def build_row(row):
+        # CSS to make delete button look like ✕ icon, not a Streamlit button
+        st.markdown("""
+        <style>
+        [data-testid="stButton"] button[kind="secondary"] {
+            background: transparent !important;
+            border: none !important;
+            color: #6b7280 !important;
+            font-size: 18px !important;
+            padding: 0 4px !important;
+            min-height: 0 !important;
+            height: auto !important;
+            box-shadow: none !important;
+        }
+        [data-testid="stButton"] button[kind="secondary"]:hover {
+            color: #ef4444 !important;
+            background: transparent !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Header row
+        hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
+        st.markdown(
+            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;gap:12px;padding:0 16px 8px 16px;">'
+            + '<span style="{hs}">Company Name</span>'.format(hs=hs)
+            + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
+            + '<span style="{hs}">Status</span>'.format(hs=hs)
+            + '<span style="{hs}">Date Applied</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Resume</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Snapshot</span>'.format(hs=hs)
+            + '<span style="{hs};text-align:center;">Delete</span>'.format(hs=hs)
+            + '</div>',
+            unsafe_allow_html=True
+        )
+
+        # Each row: HTML for display columns + st.button for delete (no page nav)
+        for _, row in df.iterrows():
             job_id   = str(row["id"])
             company  = str(row.get("company", "—"))
             position = str(row.get("position", "—"))
@@ -623,50 +649,40 @@ if st.session_state["logged_in"]:
             bg, fg   = STATUS_CSS.get(status, ("rgba(148,163,184,0.12)", "#94a3b8"))
 
             opts = "".join(
-                '<option value="{v}" {sel}>{v}</option>'.format(
-                    v=o, sel='selected' if o == status else ''
-                )
+                '<option value="{v}" {sel}>{v}</option>'.format(v=o, sel='selected' if o == status else '')
                 for o in status_options
             )
             onchange = "window.location.href='?set_status_id={id}&set_status_val='+encodeURIComponent(this.value)".format(id=job_id)
-            on_del   = "return confirm('Delete this application?')"
-            del_url  = "?delete_id={id}".format(id=job_id)
-
             resume_cell   = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📄</a>'.format(u=resume) if resume else '<span style="font-size:18px;opacity:0.3;">📄</span>'
             snapshot_cell = '<a href="{u}" target="_blank" style="font-size:18px;text-decoration:none;">📸</a>'.format(u=snapshot) if snapshot else '<span style="font-size:18px;opacity:0.3;">📸</span>'
 
-            return (
-                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
-                'gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;'
-                'border-radius:12px;padding:14px 16px;margin-bottom:8px;">'
-                + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
-                + '<span style="color:#cbd5e1;font-size:14px;">{}</span>'.format(position)
-                + '<span style="color:{};font-size:14px;font-weight:700;text-align:center;">{}</span>'.format(sc, score)
-                + '<select onchange="{oc}" style="background:{bg};color:{fg};border:1px solid {fg}44;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;">{opts}</select>'.format(oc=onchange, bg=bg, fg=fg, opts=opts)
-                + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
-                + '<span style="text-align:center;">{}</span>'.format(resume_cell)
-                + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
-                + '<span style="text-align:center;"><a href="{u}" onclick="{od}" style="color:#6b7280;font-size:18px;text-decoration:none;cursor:pointer;">✕</a></span>'.format(u=del_url, od=on_del)
-                + '</div>'
-            )
+            # 7-col HTML + 1 Streamlit button column
+            c_row, c_del = st.columns([11.3, 0.7])
+            with c_row:
+                st.markdown(
+                    '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr;gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;border-radius:12px;padding:14px 16px;margin-bottom:4px;">'
+                    + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
+                    + '<span style="color:#cbd5e1;font-size:14px;">{}</span>'.format(position)
+                    + '<span style="color:{};font-size:14px;font-weight:700;text-align:center;">{}</span>'.format(sc, score)
+                    + '<select onchange="{oc}" style="background:{bg};color:{fg};border:1px solid {fg}44;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;text-align:center;">{opts}</select>'.format(oc=onchange, bg=bg, fg=fg, opts=opts)
+                    + '<span style="color:#94a3b8;font-size:14px;">{}</span>'.format(date_str)
+                    + '<span style="text-align:center;">{}</span>'.format(resume_cell)
+                    + '<span style="text-align:center;">{}</span>'.format(snapshot_cell)
+                    + '</div>',
+                    unsafe_allow_html=True
+                )
+            with c_del:
+                if st.button("✕", key="del_" + job_id):
+                    delete_job(job_id)
+                    st.rerun()
 
-        rows_html = "".join(build_row(row) for _, row in df.iterrows())
+        # Status change still uses query params (doesn't log you out)
+        params = st.query_params
+        if "set_status_id" in params and "set_status_val" in params:
+            update_job_full(params["set_status_id"], {"status": params["set_status_val"]})
+            st.query_params.clear()
+            st.rerun()
 
-        hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
-        header_html = (
-            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.5fr 0.5fr 0.5fr 0.5fr;'
-            'gap:12px;padding:0 16px 8px 16px;">'
-            + '<span style="{hs}">Company Name</span>'.format(hs=hs)
-            + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
-            + '<span style="{hs}">Status</span>'.format(hs=hs)
-            + '<span style="{hs}">Date Applied</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Resume</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Snapshot</span>'.format(hs=hs)
-            + '<span style="{hs};text-align:center;">Delete</span>'.format(hs=hs)
-            + '</div>'
-        )
-        st.markdown(header_html + rows_html, unsafe_allow_html=True)
     else:
         st.markdown("""
         <div style="text-align:center;padding:60px 20px;color:#4b5563;">
