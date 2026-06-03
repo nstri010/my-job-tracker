@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import streamlit as st
 import fitz
 import docx
@@ -9,19 +10,24 @@ from bs4 import BeautifulSoup
 import img2pdf
 import os
 
-# ── Gemini setup ──────────────────────────────────────────────────
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+# ── Gemini setup (new google-genai SDK) ───────────────────────────
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
+MODEL = "gemini-2.5-flash"
 
 
 def _call_gemini(prompt, temperature=None, max_retries=4):
     """Call Gemini with automatic retry on rate-limit (429) errors."""
-    model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
     for attempt in range(max_retries):
         try:
-            kwargs = {}
-            if temperature is not None:
-                kwargs["generation_config"] = genai.GenerationConfig(temperature=temperature)
-            return model.generate_content(prompt, **kwargs).text
+            config = types.GenerateContentConfig(
+                temperature=temperature if temperature is not None else 1.0
+            )
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=config
+            )
+            return response.text
         except Exception as e:
             msg = str(e)
             if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
