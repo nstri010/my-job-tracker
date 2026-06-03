@@ -26,11 +26,7 @@ import extra_streamlit_components as stx
 st.set_page_config(page_title="Career Hunt HQ", layout="wide")
 
 # Cookie-based session persistence
-@st.cache_resource
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
+cookie_manager = stx.CookieManager()
 _saved_user = cookie_manager.get("career_vault_user")
 
 # SESSION
