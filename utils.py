@@ -15,7 +15,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 def _call_gemini(prompt, temperature=None, max_retries=4):
     """Call Gemini with automatic retry on rate-limit (429) errors."""
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash-001")
     for attempt in range(max_retries):
         try:
             kwargs = {}
