@@ -370,8 +370,29 @@ if st.session_state["logged_in"]:
         with col1:
             up_file = st.file_uploader(
                 "Upload Resume",
-                type=["pdf", "docx", "txt"]
+                type=["pdf", "docx", "txt"],
+                label_visibility="visible"
             )
+            # JS to remove the native file input text that bleeds through
+            st.markdown("""
+            <script>
+            (function() {
+                function fixUploader() {
+                    var inputs = document.querySelectorAll('input[type="file"]');
+                    inputs.forEach(function(inp) {
+                        inp.style.cssText = "opacity:0!important;width:1px!important;height:1px!important;position:absolute!important;overflow:hidden!important;";
+                    });
+                    var spans = document.querySelectorAll('[data-testid="stFileUploadDropzone"] span');
+                    spans.forEach(function(s) {
+                        if (!s.closest("button")) s.style.display = "none";
+                    });
+                }
+                setTimeout(fixUploader, 300);
+                setTimeout(fixUploader, 800);
+                setTimeout(fixUploader, 1500);
+            })();
+            </script>
+            """, unsafe_allow_html=True)
             if up_file is not None:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
