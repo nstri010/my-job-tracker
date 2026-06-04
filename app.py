@@ -277,11 +277,20 @@ if not st.session_state["logged_in"]:
 if st.session_state["logged_in"]:
 
     # ── NAV BAR ────────────────────────────────────────────────────────────────
+    # Force all three columns to the same height and vertically center everything
+    st.markdown("""
+    <style>
+    div[data-testid="stHorizontalBlock"]:has(div[data-testid="column"]) {
+        align-items: center !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     nav_logo_col, nav_user_col, nav_btn_col = st.columns([3, 6, 1])
 
     with nav_logo_col:
         st.markdown("""
-        <div style="display:flex;align-items:center;gap:8px;padding:12px 0 4px 0;">
+        <div style="display:flex;align-items:center;height:45px;">
             <span style="font-size:15px;font-weight:700;color:#f472b6;">✦ Career Hunt HQ</span>
         </div>""", unsafe_allow_html=True)
 
@@ -293,7 +302,6 @@ if st.session_state["logged_in"]:
         </div>""", unsafe_allow_html=True)
 
     with nav_btn_col:
-        st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
         if st.button("Sign Out", key="sign_out_main_top"):
             cookie_manager.delete("career_vault_user")
             st.session_state.clear()
