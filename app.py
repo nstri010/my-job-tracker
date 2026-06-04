@@ -407,6 +407,7 @@ if st.session_state["logged_in"]:
         )
 
         col1, col2, spacer = st.columns([1, 0.75, 0.25])
+        )
 
 with col1:
     st.markdown("**Upload Resume**", unsafe_allow_html=False)
