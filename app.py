@@ -138,6 +138,13 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 }
 
 
+
+/* Hide arrow_down / arrow_right text in expander header */
+[data-testid="stExpander"] summary svg { display: inline-block !important; }
+[data-testid="stExpander"] summary [data-testid="stIconMaterial"] { display: none !important; }
+[data-testid="stExpander"] summary span { font-size: 0 !important; }
+[data-testid="stExpander"] summary > div > p { font-size: 14px !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
