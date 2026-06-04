@@ -538,7 +538,7 @@ if st.session_state["logged_in"]:
             delete_cell   = '<a href="{u}" onclick="{od}" style="{s}color:#9ca3af;">✕</a>'.format(u=del_url, od=on_del, s=btn)
 
             return (
-                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.6fr 1.4fr 0.6fr 0.6fr 0.6fr;'
+                '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.4fr 0.6fr 0.6fr 0.6fr;'
                 'gap:12px;align-items:center;background:#16161e;border:1px solid #2a2a35;'
                 'border-radius:12px;padding:14px 16px;margin-bottom:8px;">'
                 + '<span style="color:#fff;font-size:14px;font-weight:500;">{}</span>'.format(company)
@@ -554,7 +554,7 @@ if st.session_state["logged_in"]:
 
         hs = "font-size:10px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap;"
         header_html = (
-            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.6fr 1.4fr 0.6fr 0.6fr 0.6fr;gap:12px;padding:0 16px 8px 16px;">'
+            '<div style="display:grid;grid-template-columns:2fr 2fr 1fr 1.8fr 1.4fr 0.6fr 0.6fr 0.6fr;gap:12px;padding:0 16px 8px 16px;">'
             + '<span style="{hs}">Company Name</span>'.format(hs=hs)
             + '<span style="{hs}">Position / Title</span>'.format(hs=hs)
             + '<span style="{hs};text-align:center;">Match Score</span>'.format(hs=hs)
