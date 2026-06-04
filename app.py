@@ -139,6 +139,29 @@ button[kind="primary"], .btn-primary > button {
 [data-testid="stExpander"] summary {
     padding: 14px 18px !important;
 }
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1a1a18 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+[data-testid="stExpander"] summary svg {
+    color: #888780 !important;
+}
+
+/* ── Selectbox visible text ── */
+.stSelectbox [data-baseweb="select"] > div {
+    background: #ffffff !important;
+    border: 1px solid #e2e0d8 !important;
+    border-radius: 8px !important;
+}
+.stSelectbox [data-baseweb="select"] span {
+    font-size: 13px !important;
+    color: #1a1a18 !important;
+    font-family: 'DM Sans', sans-serif !important;
+}
 
 /* ── Divider ── */
 hr { border-color: #e8e6de !important; margin: 0 !important; }
@@ -338,14 +361,33 @@ if not st.session_state["logged_in"]:
 jobs_list = load_jobs()
 
 # ── Top nav ───────────────────────────────────────────────────────
+# ── Top nav — sign out button is a Streamlit button overlaid into the nav bar via CSS ──
 st.markdown(f"""
-<div style="background:#ffffff;border-bottom:1px solid #e8e6de;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;">
+<style>
+/* Overlay the sign-out button into the nav bar */
+[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button {{
+    position: absolute !important;
+    top: 12px !important;
+    right: 32px !important;
+    z-index: 1000 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e0d8 !important;
+    color: #5a5a58 !important;
+    font-size: 13px !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    height: 34px !important;
+    width: auto !important;
+}}
+</style>
+<div style="background:#ffffff;border-bottom:1px solid #e8e6de;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;position:relative;">
     <div style="display:flex;align-items:center;gap:8px;">
         <div style="width:8px;height:8px;border-radius:50%;background:#639922;"></div>
         <span style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#3B6D11;letter-spacing:0.05em;">JOBTRACK</span>
     </div>
     <div style="display:flex;align-items:center;gap:16px;">
         <span style="font-size:13px;color:#888780;font-family:'DM Sans',sans-serif;">Signed in as <strong style="color:#1a1a18;">{st.session_state['username']}</strong></span>
+        <div style="width:90px;"></div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -614,9 +656,9 @@ if jobs_list:
             <span style="font-size:13px;font-weight:600;color:{sc_col};">{score}</span>
             <select onchange="{onchange}"
                 style="background:{bg};color:{fg};border:1px solid {fg}55;border-radius:999px;
-                       padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;
+                       padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;
                        outline:none;appearance:none;-webkit-appearance:none;font-family:'DM Sans',sans-serif;
-                       text-align:center;">
+                       text-align:center;width:auto;max-width:140px;">
                 {opts}
             </select>
             <span style="font-size:12px;color:#aaa9a6;">{date_str}</span>
