@@ -145,13 +145,54 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 [data-testid="stExpander"] summary span { font-size: 0 !important; }
 [data-testid="stExpander"] summary > div > p { font-size: 14px !important; }
 
-/* Nuke the "upload" text that bleeds through the file input */
-[data-testid="stFileUploadDropzone"] * { display: none !important; }
-[data-testid="stFileUploadDropzone"] button { display: inline-flex !important; }
-[data-testid="stFileUploadDropzone"] button * { display: inline !important; }
-[data-testid="stFileUploadDropzone"] input[type="file"] { display: none !important; }
-[data-testid="stFileUploadDropzone"] { background: transparent !important; border: none !important; padding: 0 !important; min-height: 0 !important; }
+/* File uploader: hide everything, show only a fake styled button via wrapper */
+[data-testid="stFileUploadDropzone"] {
+    position: relative !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    overflow: hidden !important;
+}
+/* Hide every child element inside dropzone */
+[data-testid="stFileUploadDropzone"] > * {
+    visibility: hidden !important;
+}
+/* Paint a fake "Browse files" button on top using ::before */
+[data-testid="stFileUploadDropzone"]::before {
+    content: "Browse files" !important;
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    padding: 8px 20px !important;
+    background: rgba(244,114,182,0.15) !important;
+    border: 1px solid rgba(244,114,182,0.4) !important;
+    border-radius: 8px !important;
+    color: #f472b4 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    z-index: 1 !important;
+    white-space: nowrap !important;
+}
+/* Keep the real input clickable and stretched over the fake button */
+[data-testid="stFileUploadDropzone"] input[type="file"] {
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    width: 150px !important;
+    height: 40px !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    z-index: 2 !important;
+}
+/* Hide the secondary add button after upload */
 [data-testid="stFileUploaderDeleteBtn"] ~ button { display: none !important; }
+/* Show the file chip (name + delete) after upload */
+[data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] {
+    visibility: visible !important;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -368,31 +409,12 @@ if st.session_state["logged_in"]:
         col1, col2 = st.columns(2)
 
         with col1:
+            st.markdown("**Upload Resume**", unsafe_allow_html=False)
             up_file = st.file_uploader(
                 "Upload Resume",
                 type=["pdf", "docx", "txt"],
-                label_visibility="visible"
+                label_visibility="collapsed"
             )
-            # JS to remove the native file input text that bleeds through
-            st.markdown("""
-            <script>
-            (function() {
-                function fixUploader() {
-                    var inputs = document.querySelectorAll('input[type="file"]');
-                    inputs.forEach(function(inp) {
-                        inp.style.cssText = "opacity:0!important;width:1px!important;height:1px!important;position:absolute!important;overflow:hidden!important;";
-                    });
-                    var spans = document.querySelectorAll('[data-testid="stFileUploadDropzone"] span');
-                    spans.forEach(function(s) {
-                        if (!s.closest("button")) s.style.display = "none";
-                    });
-                }
-                setTimeout(fixUploader, 300);
-                setTimeout(fixUploader, 800);
-                setTimeout(fixUploader, 1500);
-            })();
-            </script>
-            """, unsafe_allow_html=True)
             if up_file is not None:
                 st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
