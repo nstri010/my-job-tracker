@@ -275,18 +275,31 @@ if not st.session_state["logged_in"]:
 
 # ── DASHBOARD ──────────────────────────────────────────────────────────────────
 if st.session_state["logged_in"]:
-    st.markdown(f"<h2>Welcome, {st.session_state['username']}</h2>", unsafe_allow_html=True)
 
-if st.session_state["logged_in"]:
-    t1, t2 = st.columns([5, 1])
-    with t1:
-        st.title("Career Hunt HQ")
-    st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
-    with t2:
+    # ── NAV BAR ────────────────────────────────────────────────────────────────
+    nav_logo_col, nav_user_col, nav_btn_col = st.columns([3, 6, 1])
+
+    with nav_logo_col:
+        st.markdown("""
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 0 4px 0;">
+            <span style="font-size:15px;font-weight:700;color:#f472b6;">✦ Career Hunt HQ</span>
+        </div>""", unsafe_allow_html=True)
+
+    with nav_user_col:
+        st.markdown(f"""
+        <div style="display:flex;align-items:center;justify-content:flex-end;height:45px;">
+            <span style="font-size:13px;color:#94a3b8;">Signed in as
+            <strong style="color:#e2e8f0;">{st.session_state['username']}</strong></span>
+        </div>""", unsafe_allow_html=True)
+
+    with nav_btn_col:
+        st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
         if st.button("Sign Out", key="sign_out_main_top"):
             cookie_manager.delete("career_vault_user")
             st.session_state.clear()
             st.rerun()
+
+    st.caption("⚠️ This website uses AI which may make errors. Make sure to double-check all results.")
 
     # ── STAT CARDS ─────────────────────────────────────────────────────────────
     jobs_list = load_jobs()
