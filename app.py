@@ -406,20 +406,23 @@ if st.session_state["logged_in"]:
             height=220
         )
 
-        col1, col2 = st.columns(2)
+        col1, col2, spacer = st.columns([1, 0.75, 0.25])
 
-        with col1:
-            st.markdown("**Upload Resume**", unsafe_allow_html=False)
-            up_file = st.file_uploader(
-                "Upload Resume",
-                type=["pdf", "docx", "txt"],
-                label_visibility="collapsed"
-            )
-            if up_file is not None:
-                st.session_state["resume_txt"] = extract_text_from_upload(up_file)
+with col1:
+    st.markdown("**Upload Resume**", unsafe_allow_html=False)
+    up_file = st.file_uploader(
+        "Upload Resume",
+        type=["pdf", "docx", "txt"],
+        label_visibility="collapsed"
+    )
+    if up_file is not None:
+        st.session_state["resume_txt"] = extract_text_from_upload(up_file)
 
-        with col2:
-            applied_date = st.date_input("Date Applied", format="MM/DD/YYYY")
+with col2:
+    applied_date = st.date_input(
+        "Date Applied",
+        format="MM/DD/YYYY"
+    )
 
         if st.button("🔍 Scan Resume"):
             if final_desc and st.session_state.get("resume_txt"):
