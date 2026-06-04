@@ -145,6 +145,14 @@ p, label { color: #94a3b8 !important; font-weight: 400 !important; font-size: 14
 [data-testid="stExpander"] summary span { font-size: 0 !important; }
 [data-testid="stExpander"] summary > div > p { font-size: 14px !important; }
 
+/* Nuke the "upload" text that bleeds through the file input */
+[data-testid="stFileUploadDropzone"] * { display: none !important; }
+[data-testid="stFileUploadDropzone"] button { display: inline-flex !important; }
+[data-testid="stFileUploadDropzone"] button * { display: inline !important; }
+[data-testid="stFileUploadDropzone"] input[type="file"] { display: none !important; }
+[data-testid="stFileUploadDropzone"] { background: transparent !important; border: none !important; padding: 0 !important; min-height: 0 !important; }
+[data-testid="stFileUploaderDeleteBtn"] ~ button { display: none !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
